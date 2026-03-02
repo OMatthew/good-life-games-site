@@ -43,12 +43,19 @@ const projects = [
     cta: 'Visit Bearing Fruit',
   },
   {
-    name: 'GeoGroups',
-    status: 'Public project',
+    name: 'Good Life Games Site',
+    status: 'Live portfolio',
+    description: 'The company website and portfolio hub for projects built under Good Life Games.',
+    href: 'https://github.com/OMatthew/good-life-games-site',
+    cta: 'View source on GitHub',
+  },
+  {
+    name: 'Holy Habits (mobile)',
+    status: 'Active build',
     description:
-      'A place-focused community concept designed to help people organize and connect around shared local context.',
-    href: '#',
-    cta: 'Project details coming soon',
+      'The source app project behind Bearing Fruit, focused on spiritual formation through habits and guided tools.',
+    href: 'https://github.com/OMatthew/holy-habits-react',
+    cta: 'View app repository',
   },
 ]
 
@@ -67,6 +74,7 @@ function App() {
           <nav className="topnav" aria-label="Primary">
             <a href="#about">About</a>
             <a href="#projects">Projects</a>
+            <a href="#legal">Legal</a>
             <a href="#contact">Contact</a>
           </nav>
         </div>
@@ -137,8 +145,8 @@ function App() {
 
         <section className="section shell" id="projects">
           <div className="section-head">
-            <p className="eyebrow">Current Work</p>
-            <h2>Projects from Good Life Games</h2>
+            <p className="eyebrow">Portfolio</p>
+            <h2>Products and projects from Good Life Games</h2>
           </div>
 
           <div className="project-grid">
@@ -147,11 +155,38 @@ function App() {
                 <p className="project-status">{project.status}</p>
                 <h3>{project.name}</h3>
                 <p>{project.description}</p>
-                <a href={project.href} className="project-link">
+                <a href={project.href} className="project-link" target="_blank" rel="noreferrer">
                   {project.cta}
                 </a>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className="section shell" id="legal">
+          <div className="section-head">
+            <p className="eyebrow">Company & Legal</p>
+            <h2>Transparent operations for partners and platforms</h2>
+          </div>
+          <div className="legal-card">
+            <p className="legal-line">
+              Good Life Games LLC is an independent software studio building consumer products with a focus on
+              thoughtful design, reliability, and long-term value.
+            </p>
+            <p className="legal-line">
+              Legal docs:
+              <a href="/privacy.html" target="_blank" rel="noreferrer">
+                Privacy Policy
+              </a>
+              <span>•</span>
+              <a href="/terms.html" target="_blank" rel="noreferrer">
+                Terms of Use
+              </a>
+            </p>
+            <p className="legal-line">
+              Business contact:{' '}
+              <a href="mailto:matthew@goodlifegames.io">matthew@goodlifegames.io</a>
+            </p>
           </div>
         </section>
 
@@ -173,6 +208,15 @@ function App() {
             <p className="footer-brand">Good Life Games LLC</p>
             <p className="footer-tagline">Useful software with a human center.</p>
           </div>
+          <p className="footer-links">
+            <a href="/privacy.html" target="_blank" rel="noreferrer">
+              Privacy
+            </a>
+            <a href="/terms.html" target="_blank" rel="noreferrer">
+              Terms
+            </a>
+            <a href="mailto:matthew@goodlifegames.io">Email</a>
+          </p>
           <p className="footer-status">
             <span className="status-dot" aria-hidden="true" />
             System operational

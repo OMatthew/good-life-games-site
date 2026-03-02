@@ -239,6 +239,35 @@ h1 em {
   text-decoration: underline;
 }
 
+.legal-card {
+  border-radius: 1rem;
+  padding: 1.15rem;
+  border: 1px solid var(--surface-2);
+  background: var(--surface-1);
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--accent-gold-soft) 12%, transparent);
+}
+
+.legal-line {
+  margin: 0;
+  color: var(--ink-1);
+  line-height: 1.6;
+}
+
+.legal-line + .legal-line {
+  margin-top: 0.8rem;
+}
+
+.legal-line a {
+  margin-left: 0.45rem;
+  color: var(--accent-teal-strong);
+  font-weight: 700;
+}
+
+.legal-line span {
+  margin: 0 0.45rem;
+  color: var(--ink-2);
+}
+
 .contact-card {
   margin-bottom: 3rem;
   background: linear-gradient(160deg, var(--surface-1), color-mix(in srgb, var(--accent-gold-soft) 35%, var(--surface-1)));
@@ -306,6 +335,25 @@ h1 em {
   color: var(--ink-2);
 }
 
+.footer-links {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--ink-1);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-links a:hover {
+  color: var(--ink-0);
+  text-decoration: underline;
+}
+
 .footer-status {
   margin: 0;
   display: inline-flex;
@@ -347,6 +395,10 @@ h1 em {
     height: 65vw;
     right: -16%;
     top: 6%;
+  }
+
+  .footer-links {
+    width: 100%;
   }
 
   h1 {
