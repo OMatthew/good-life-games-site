@@ -43,19 +43,20 @@ const projects = [
     cta: 'Visit Bearing Fruit',
   },
   {
-    name: 'Good Life Games Site',
-    status: 'Live portfolio',
-    description: 'The company website and portfolio hub for projects built under Good Life Games.',
-    href: 'https://github.com/OMatthew/good-life-games-site',
-    cta: 'View source on GitHub',
+    name: 'GeoGroups',
+    status: 'Live project',
+    description:
+      'A place-focused community project built to help people organize and connect around shared local context.',
+    href: 'https://geogroups.org',
+    cta: 'Visit GeoGroups',
   },
   {
-    name: 'Holy Habits (mobile)',
-    status: 'Active build',
+    name: 'Research Publication',
+    status: 'Published paper',
     description:
-      'The source app project behind Bearing Fruit, focused on spiritual formation through habits and guided tools.',
-    href: 'https://github.com/OMatthew/holy-habits-react',
-    cta: 'View app repository',
+      'Peer-reviewed publication listed on the U.S. National Library of Medicine (PMC).',
+    href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10564567/',
+    cta: 'Read on PMC',
   },
 ]
 
