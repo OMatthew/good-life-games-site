@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
+function GlgMark() {
+  return (
+    <span className="brand-mark" role="img" aria-label="Good Life Games logo">
+      <img src="/logo.png" alt="" width="34" height="34" style={{ display: 'block' }} />
+    </span>
+  )
+}
+
 const values = [
   {
     icon: (
@@ -131,17 +139,162 @@ function RevealSection({ className, children, id }: { className?: string; childr
   )
 }
 
+const manifestoLine1 = 'Most software is designed to keep you scrolling.'
+const manifestoWords = ['We', 'build', 'tools', 'that', 'help', 'you', 'grow\u00a0\u2014', 'grounded,', 'present,', 'and', 'free.']
+const accentWord = 'present,'
+
+function ManifestoReveal() {
+  const ref = useRef<HTMLElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.unobserve(el)
+        }
+      },
+      { threshold: 0.3 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <section className="manifesto" ref={ref}>
+      <div className="shell">
+        <p
+          className="manifesto-line"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(10px)',
+            transition: 'opacity 0.5s ease-out, transform 0.5s ease-out',
+            transitionDelay: '0ms',
+          }}
+        >
+          {manifestoLine1}
+        </p>
+        <p className="manifesto-line manifesto-strong" aria-label="We build tools that help you grow — grounded, present, and free.">
+          {manifestoWords.map((word, i) => (
+            <span
+              key={i}
+              className={`mword${word === accentWord ? ' mword-accent' : ''}`}
+              style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(12px)',
+                transition: 'opacity 0.45s ease-out, transform 0.45s ease-out',
+                transitionDelay: `${200 + i * 65}ms`,
+              }}
+            >
+              {word}
+            </span>
+          ))}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+const MORPH_CYCLE_MS = 32_000
+// Keyframe phase boundaries (fractions of cycle)
+// blob 0–30%, blob→▽ 30–40%, ▽ 40–50%, ▽→heart 50–60%, heart 60–72%, heart→blob 72–84%, blob 84–100%
+const MORPH_NEXT_START: Record<string, number> = { blob: 0.30, triangle: 0.50, heart: 0.72 }
+
+function getMorphPhase(frac: number): string {
+  if (frac < 0.30) return 'blob'
+  if (frac < 0.40) return 'transition'
+  if (frac < 0.50) return 'triangle'
+  if (frac < 0.60) return 'transition'
+  if (frac < 0.72) return 'heart'
+  if (frac < 0.84) return 'transition'
+  return 'blob'
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const heroRef = useRef<HTMLElement>(null)
+  const heroArtRef = useRef<HTMLDivElement>(null)
+  const morphStartRef = useRef(Date.now())
+  const morphLockedRef = useRef(false)
+  const morphSyncStyleRef = useRef<HTMLStyleElement | null>(null)
+
+  useEffect(() => {
+    const syncStyle = document.createElement('style')
+    document.head.appendChild(syncStyle)
+    morphSyncStyleRef.current = syncStyle
+    return () => {
+      syncStyle.remove()
+      morphSyncStyleRef.current = null
+    }
+  }, [])
+
+  const handleArtClick = () => {
+    if (morphLockedRef.current) return
+    const art = heroArtRef.current
+    if (!art) return
+
+    const elapsed = (Date.now() - morphStartRef.current) % MORPH_CYCLE_MS
+    const frac = elapsed / MORPH_CYCLE_MS
+    const phase = getMorphPhase(frac)
+    const target = MORPH_NEXT_START[phase]
+    if (target === undefined) return // already mid-transition
+
+    morphLockedRef.current = true
+
+    const delaySec = -(MORPH_CYCLE_MS / 1000 * target)
+    const syncStyle = morphSyncStyleRef.current
+    art.style.animationName = 'none'
+    if (syncStyle) syncStyle.textContent = '.hero-art::before { animation-name: none !important; }'
+    void art.offsetHeight // force reflow to restart animation
+    art.style.animationName = ''
+    art.style.animationDelay = `${delaySec}s`
+    if (syncStyle) syncStyle.textContent = `.hero-art::before { animation-delay: ${delaySec}s !important; }`
+    morphStartRef.current = Date.now() - target * MORPH_CYCLE_MS
+
+    // Unlock after longest transition completes (heart→blob = 12% of 32s ≈ 3.84s)
+    setTimeout(() => { morphLockedRef.current = false }, 4000)
+  }
+
+  useEffect(() => {
+    const hero = heroRef.current
+    const art = heroArtRef.current
+    if (!hero || !art) return
+
+    const handleMove = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return
+
+      const rect = hero.getBoundingClientRect()
+      const normX = ((event.clientX - rect.left) / rect.width - 0.5) * 2
+      const normY = ((event.clientY - rect.top) / rect.height - 0.5) * 2
+
+      const clampedX = Math.max(-1, Math.min(1, normX))
+      const clampedY = Math.max(-1, Math.min(1, normY))
+
+      art.style.translate = `${(clampedX * 40).toFixed(1)}px ${(clampedY * 28).toFixed(1)}px`
+    }
+
+    const handleLeave = () => {
+      art.style.translate = '0px 0px'
+    }
+
+    hero.addEventListener('pointermove', handleMove)
+    hero.addEventListener('pointerleave', handleLeave)
+
+    return () => {
+      hero.removeEventListener('pointermove', handleMove)
+      hero.removeEventListener('pointerleave', handleLeave)
+    }
+  }, [])
 
   return (
     <>
       <header className="topbar">
         <div className="topbar-pill shell">
           <a className="brand" href="#top" aria-label="Good Life Games home">
-            <span className="brand-mark" aria-hidden="true">
-              GLG
-            </span>
+            <GlgMark />
             <span className="brand-text">Good Life Games</span>
           </a>
 
@@ -168,8 +321,16 @@ function App() {
       </header>
 
       <main id="top">
-        <section className="hero shell">
-          <div className="hero-art" aria-hidden="true" />
+        <section className="hero shell" ref={heroRef}>
+          <div className="hero-art" aria-hidden="true" ref={heroArtRef} />
+          <div
+            className="hero-art-btn"
+            role="button"
+            tabIndex={0}
+            aria-label="Advance shape"
+            onClick={handleArtClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleArtClick() }}
+          />
           <div className="hero-content fade-in">
             <p className="eyebrow">Independent Product Studio</p>
             <h1>
@@ -229,14 +390,7 @@ function App() {
           </div>
         </RevealSection>
 
-        <RevealSection className="manifesto">
-          <div className="shell">
-            <p className="manifesto-line">Most software is designed to keep you scrolling.</p>
-            <p className="manifesto-line manifesto-strong">
-              We build tools that help you grow &mdash; grounded, <span>present</span>, and free.
-            </p>
-          </div>
-        </RevealSection>
+        <ManifestoReveal />
 
         <RevealSection className="section shell" id="projects">
           <div className="section-head">
@@ -312,9 +466,12 @@ function App() {
 
       <footer className="footer">
         <div className="shell footer-inner">
-          <div>
-            <p className="footer-brand">Good Life Games LLC</p>
-            <p className="footer-tagline">Play well. Live well.</p>
+          <div className="footer-logo-block">
+            <img src="/logo.png" alt="" className="footer-logo" aria-hidden="true" />
+            <div>
+              <p className="footer-brand">Good Life Games LLC</p>
+              <p className="footer-tagline">Play well. Live well.</p>
+            </div>
           </div>
           <p className="footer-links">
             <a href="/privacy.html" target="_blank" rel="noreferrer">

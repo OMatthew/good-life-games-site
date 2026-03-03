@@ -26,7 +26,7 @@
 .project-card {
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out, box-shadow 0.2s ease;
+  transition: opacity 0.5s ease-out, transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 /* ── Hero fade-in on load ── */
@@ -75,16 +75,35 @@
 }
 
 .brand-mark {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.6rem;
+  height: 2.6rem;
   border-radius: 999px;
   display: grid;
   place-items: center;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  overflow: hidden;
   background: var(--accent-teal-soft);
   border: 1px solid var(--surface-3);
+  transition: transform 0.15s ease;
+}
+
+.brand-mark:hover {
+  transform: scale(1.1);
+}
+
+.brand-mark:active {
+  transform: scale(0.95);
+}
+
+/* ── GLG wink animation ── */
+.glg-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.1s ease-in;
+}
+
+.glg-eye.winking {
+  transform: scaleY(0.08);
+  transition: transform 0.08s ease-in;
 }
 
 .brand-text {
@@ -166,33 +185,55 @@
   position: relative;
 }
 
+.hero-art-btn {
+  position: absolute;
+  right: -4%;
+  top: 8%;
+  width: min(42vw, 460px);
+  height: min(42vw, 460px);
+  cursor: pointer;
+  z-index: 1;
+  background: transparent;
+  border: none;
+}
+
 .hero-art {
   position: absolute;
   right: -4%;
   top: 8%;
   width: min(42vw, 460px);
   height: min(42vw, 460px);
-  border-radius: 38% 62% 58% 42% / 40% 44% 56% 60%;
-  background: radial-gradient(circle at 30% 30%, #fff6e4 0%, #f2dec0 38%, #cae8eb 90%);
+  clip-path: path('M 215,55 C 345,30 450,125 445,260 C 440,395 320,450 200,445 C 80,440 20,345 25,215 C 30,85 115,80 215,55 Z');
+  background: radial-gradient(circle at 30% 28%, #fff8f2 0%, #fff6e4 45%, #cae8eb 90%);
   opacity: 0.72;
   filter: blur(1px);
   z-index: -1;
-  animation: blobMorph 12s ease-in-out infinite alternate;
+  transition: translate 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: shapemorph 32s ease-in-out infinite;
 }
 
-@keyframes blobMorph {
-  0% {
-    border-radius: 38% 62% 58% 42% / 40% 44% 56% 60%;
-  }
-  33% {
-    border-radius: 50% 50% 40% 60% / 55% 38% 62% 45%;
-  }
-  66% {
-    border-radius: 42% 58% 52% 48% / 48% 56% 44% 52%;
-  }
-  100% {
-    border-radius: 60% 40% 45% 55% / 38% 62% 38% 62%;
-  }
+.hero-art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 35% 30%, #fff6e4 0%, #f2d8a5 42%, #f0a8a8 90%);
+  opacity: 0;
+  animation: colorWarm 32s ease-in-out infinite;
+}
+
+@keyframes shapemorph {
+  0%       { clip-path: path('M 215,55 C 345,30 450,125 445,260 C 440,395 320,450 200,445 C 80,440 20,345 25,215 C 30,85 115,80 215,55 Z'); }
+  7%       { clip-path: path('M 240,60 C 375,35 455,135 445,275 C 435,415 305,455 185,445 C 65,435 18,330 22,200 C 26,70 130,85 240,60 Z'); }
+  14%      { clip-path: path('M 225,75 C 350,45 455,145 450,265 C 445,385 325,445 205,440 C 85,435 15,350 20,225 C 25,100 125,100 225,75 Z'); }
+  21%, 30% { clip-path: path('M 215,55 C 345,30 450,125 445,260 C 440,395 320,450 200,445 C 80,440 20,345 25,215 C 30,85 115,80 215,55 Z'); }
+  40%, 50% { clip-path: path('M 230,80 C 320,80 410,80 410,80 C 350,192 290,304 230,415 C 170,304 110,192 50,80 C 50,80 140,80 230,80 Z'); }
+  60%, 72% { clip-path: path('M 230,155 C 230,95 375,55 385,155 C 395,240 315,340 230,405 C 145,340 65,240 75,155 C 85,55 230,95 230,155 Z'); }
+  84%, 100%{ clip-path: path('M 215,55 C 345,30 450,125 445,260 C 440,395 320,450 200,445 C 80,440 20,345 25,215 C 30,85 115,80 215,55 Z'); }
+}
+
+@keyframes colorWarm {
+  0%, 50%, 84%, 100% { opacity: 0; }
+  60%, 72%           { opacity: 0.82; }
 }
 
 .eyebrow {
@@ -333,8 +374,10 @@ h1 em {
 .value-card:hover,
 .process-card:hover,
 .project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 36px color-mix(in srgb, var(--accent-gold-soft) 22%, transparent);
+  transform: translateY(-5px) scale(1.015);
+  box-shadow:
+    0 20px 40px color-mix(in srgb, var(--accent-gold-soft) 28%, transparent),
+    0 0 0 1.5px color-mix(in srgb, var(--accent-teal-strong) 18%, transparent);
 }
 
 .value-card h3,
@@ -494,6 +537,16 @@ h1 em {
   color: #f2d8a5;
 }
 
+/* ── Manifesto word reveal ── */
+.mword {
+  display: inline-block;
+  margin-right: 0.28em;
+}
+
+.mword-accent {
+  color: #f2d8a5;
+}
+
 /* ── Footer ── */
 .footer {
   padding: 1.4rem 0 1.8rem;
@@ -548,6 +601,18 @@ h1 em {
   gap: 0.45rem;
   color: var(--ink-1);
   font-size: 0.92rem;
+}
+
+.footer-logo-block {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-logo {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
 }
 
 .status-dot {
@@ -617,6 +682,11 @@ h1 em {
     top: 6%;
   }
 
+  .footer-logo {
+    width: 2.6rem;
+    height: 2.6rem;
+  }
+
   .footer-links {
     width: 100%;
   }
@@ -627,5 +697,22 @@ h1 em {
 
   .project-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-art,
+  .hero-art::before {
+    animation: none;
+  }
+
+  .hero-art {
+    transition: none;
+    translate: 0px 0px;
+    clip-path: path('M 230,155 C 230,95 375,55 385,155 C 395,240 315,340 230,405 C 145,340 65,240 75,155 C 85,55 230,95 230,155 Z');
+  }
+
+  .hero-art::before {
+    opacity: 0.6;
   }
 }
