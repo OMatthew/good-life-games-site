@@ -276,6 +276,10 @@ h1 em {
   padding: clamp(2rem, 4.8vw, 3.4rem) 0;
 }
 
+.section[id] {
+  scroll-margin-top: 6.4rem;
+}
+
 .section-head h2 {
   margin: 0.65rem 0 0;
   font-family: var(--font-display);
