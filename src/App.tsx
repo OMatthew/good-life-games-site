@@ -200,16 +200,16 @@ function ManifestoReveal() {
 
 const MORPH_CYCLE_MS = 32_000
 // Keyframe phase boundaries (fractions of cycle)
-// blob 0–30%, blob→▽ 30–40%, ▽ 40–50%, ▽→heart 50–60%, heart 60–72%, heart→blob 72–84%, blob 84–100%
-const MORPH_NEXT_START: Record<string, number> = { blob: 0.30, triangle: 0.50, heart: 0.72 }
+// blob 0–15%, blob→▽ 15–25%, ▽ 25–35%, ▽→heart 35–43%, heart 43–55%, heart→blob 55–65%, blob 65–100%
+const MORPH_NEXT_START: Record<string, number> = { blob: 0.15, triangle: 0.35, heart: 0.55 }
 
 function getMorphPhase(frac: number): string {
-  if (frac < 0.30) return 'blob'
-  if (frac < 0.40) return 'transition'
-  if (frac < 0.50) return 'triangle'
-  if (frac < 0.60) return 'transition'
-  if (frac < 0.72) return 'heart'
-  if (frac < 0.84) return 'transition'
+  if (frac < 0.15) return 'blob'
+  if (frac < 0.25) return 'transition'
+  if (frac < 0.35) return 'triangle'
+  if (frac < 0.43) return 'transition'
+  if (frac < 0.55) return 'heart'
+  if (frac < 0.65) return 'transition'
   return 'blob'
 }
 
@@ -263,10 +263,13 @@ function App() {
     const art = heroArtRef.current
     if (!hero || !art) return
 
+    // Parallax target: the click button sits exactly over the shape (z-index 1)
+    const artBtn = hero.querySelector('.hero-art-btn') as HTMLElement | null
+
     const handleMove = (event: PointerEvent) => {
       if (event.pointerType === 'touch') return
 
-      const rect = hero.getBoundingClientRect()
+      const rect = (artBtn ?? art).getBoundingClientRect()
       const normX = ((event.clientX - rect.left) / rect.width - 0.5) * 2
       const normY = ((event.clientY - rect.top) / rect.height - 0.5) * 2
 
@@ -280,12 +283,12 @@ function App() {
       art.style.translate = '0px 0px'
     }
 
-    hero.addEventListener('pointermove', handleMove)
-    hero.addEventListener('pointerleave', handleLeave)
+    artBtn?.addEventListener('pointermove', handleMove)
+    artBtn?.addEventListener('pointerleave', handleLeave)
 
     return () => {
-      hero.removeEventListener('pointermove', handleMove)
-      hero.removeEventListener('pointerleave', handleLeave)
+      artBtn?.removeEventListener('pointermove', handleMove)
+      artBtn?.removeEventListener('pointerleave', handleLeave)
     }
   }, [])
 
@@ -358,7 +361,7 @@ function App() {
           </div>
 
           <p className="founder-line">
-            Founded by Matthew O&apos;Hair &mdash; a software engineer and published researcher building tools at the
+            Founded by Matthew O&apos;Hair, M.Ed. &mdash; a software engineer and published researcher building tools at the
             intersection of health, faith, and productivity.
           </p>
 
