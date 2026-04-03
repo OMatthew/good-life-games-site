@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Encode+Sans:wght@900&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap');
 
 :root {
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Manrope', 'Segoe UI', sans-serif;
+  --font-logo: 'Encode Sans', sans-serif;
 
   --surface-0: #fffdf8;
   --surface-1: #f7f3ea;
@@ -13,9 +14,12 @@
   --ink-1: #495761;
   --ink-2: #6f7d87;
 
-  --accent-teal-strong: #146b73;
-  --accent-teal-soft: #d7eef0;
+  --accent-teal-dark: #097b80;
+  --accent-teal-strong: #0cb0b5;
+  --accent-teal-soft: #ccfbf9;
   --accent-gold-soft: #f2d8a5;
+  --accent-amber-strong: #d97706;
+  --accent-amber-soft: #fef3c7;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

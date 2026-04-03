@@ -4,7 +4,7 @@ import './App.css'
 function GlgMark() {
   return (
     <span className="brand-mark" role="img" aria-label="Good Life Games logo">
-      <img src="/logo.png" alt="" width="34" height="34" style={{ display: 'block' }} />
+      <img src="/logo.png" alt="" className="logo-img" />
     </span>
   )
 }
@@ -470,7 +470,9 @@ function App() {
       <footer className="footer">
         <div className="shell footer-inner">
           <div className="footer-logo-block">
-            <img src="/logo.png" alt="" className="footer-logo" aria-hidden="true" />
+            <span className="footer-logo">
+              <img src="/logo.png" alt="" className="logo-img" aria-hidden="true" />
+            </span>
             <div>
               <p className="footer-brand">Good Life Games LLC</p>
               <p className="footer-tagline">Play well. Live well.</p>
