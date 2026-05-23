@@ -15,14 +15,12 @@
 }
 
 .reveal.visible .value-card,
-.reveal.visible .process-card,
 .reveal.visible .project-card {
   opacity: 1;
   transform: translateY(0);
 }
 
 .value-card,
-.process-card,
 .project-card {
   opacity: 0;
   transform: translateY(16px);
@@ -417,8 +415,7 @@ h1 em::after {
 
 /* ── Grids ── */
 .value-grid,
-.project-grid,
-.process-grid {
+.project-grid {
   margin-top: 1.25rem;
   display: grid;
   gap: 1rem;
@@ -432,15 +429,10 @@ h1 em::after {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-.process-grid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
 /* ── Cards (shared) ── */
 .value-card,
 .project-card,
-.contact-card,
-.process-card {
+.contact-card {
   border-radius: 1.25rem;
   padding: 1.25rem;
   border: 1px solid var(--surface-2);
@@ -449,7 +441,6 @@ h1 em::after {
 }
 
 .value-card:hover,
-.process-card:hover,
 .project-card:hover {
   transform: translateY(-5px) scale(1.015);
   box-shadow:
@@ -458,8 +449,7 @@ h1 em::after {
 }
 
 .value-card h3,
-.project-card h3,
-.process-card h3 {
+.project-card h3 {
   margin: 0;
   font-size: 1.1rem;
   color: var(--ink-0);
@@ -467,8 +457,7 @@ h1 em::after {
 
 .value-card p,
 .project-card p,
-.contact-card p,
-.process-card p {
+.contact-card p {
   margin: 0.65rem 0 0;
   color: var(--ink-1);
   line-height: 1.55;
@@ -489,15 +478,6 @@ h1 em::after {
 
 .value-card:nth-child(3) .value-icon {
   color: var(--accent-teal-dark);
-}
-
-/* ── Process cards ── */
-.process-step {
-  margin: 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  color: var(--accent-teal-strong);
 }
 
 /* ── Project cards ── */

@@ -39,25 +39,7 @@ const values = [
       </svg>
     ),
     title: 'Long-Term Good',
-    body: 'We pursue products that are useful, honest, and sustainable for years.',
-  },
-]
-
-const process = [
-  {
-    step: '01',
-    title: 'Listen Deeply',
-    body: 'We start with lived experience, not assumptions. The problem has to be human before it can be technical.',
-  },
-  {
-    step: '02',
-    title: 'Ship the Core',
-    body: 'We prioritize the smallest version that can genuinely help someone, then iterate from real usage.',
-  },
-  {
-    step: '03',
-    title: 'Refine with Care',
-    body: 'We improve details, clarity, and reliability over time so products stay useful and trustworthy.',
+    body: 'We don’t sell user data, run ads, or chase engagement metrics. Our products earn their keep by being genuinely useful.',
   },
 ]
 
@@ -75,9 +57,9 @@ const projects = [
   {
     name: 'Bearing Fruit',
     tag: 'Mobile App',
-    status: 'Shipping 2026',
+    status: 'Soft Launch \u00b7 Beta',
     description:
-      'A grace-centered spiritual formation app with 12 Biblical practices, interactive prayer tools, and spaced-repetition scripture memorization \u2014 designed to help Christians build gentle, lasting rhythms of faith.',
+      'A grace-centered spiritual formation app with 12 Biblical practices, interactive prayer tools, and spaced-repetition scripture memorization \u2014 designed to help Christians build gentle, lasting rhythms of faith. Available now on iOS and Android in soft launch ahead of a wider beta release.',
     href: 'https://bearingfruit.app',
     cta: 'Visit Bearing Fruit',
   },
@@ -317,7 +299,7 @@ function App() {
           <nav className={`topnav ${menuOpen ? 'topnav-open' : ''}`} aria-label="Primary">
             <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
             <a href="#projects" onClick={() => setMenuOpen(false)}>Projects</a>
-            <a href="#legal" onClick={() => setMenuOpen(false)}>Legal</a>
+            <a href="#legal" onClick={() => setMenuOpen(false)}>Company</a>
             <a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a>
           </nav>
         </div>
@@ -361,8 +343,8 @@ function App() {
           </div>
 
           <p className="founder-line">
-            Founded by Matthew O&apos;Hair, M.Ed. &mdash; a software engineer and published researcher building tools at the
-            intersection of health, faith, and productivity.
+            Founded by Matthew O&apos;Hair &mdash; a software engineer with a background in education and published health
+            research, building tools at the intersection of health, faith, and productivity.
           </p>
 
           <div className="value-grid">
@@ -371,23 +353,6 @@ function App() {
                 <div className="value-icon">{value.icon}</div>
                 <h3>{value.title}</h3>
                 <p>{value.body}</p>
-              </article>
-            ))}
-          </div>
-        </RevealSection>
-
-        <RevealSection className="section shell">
-          <div className="section-head">
-            <p className="eyebrow">Our Process</p>
-            <h2>Thoughtful software, built in honest steps.</h2>
-          </div>
-
-          <div className="process-grid">
-            {process.map((item, i) => (
-              <article key={item.step} className="process-card" style={{ transitionDelay: `${i * 80}ms` }}>
-                <p className="process-step">{item.step}</p>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
               </article>
             ))}
           </div>
@@ -448,19 +413,21 @@ function App() {
                 Terms of Use
               </a>
             </p>
-            <p className="legal-line">
-              Business contact:{' '}
-              <a href="mailto:matthew@goodlifegames.io">matthew@goodlifegames.io</a>
-            </p>
           </div>
         </RevealSection>
 
         <RevealSection className="section shell" id="contact">
           <div className="contact-card">
             <p className="eyebrow">Contact</p>
-            <h2>Let&apos;s build something meaningful.</h2>
-            <p>
-              For partnership, support, or general questions, email{' '}
+            <h2>Get in touch.</h2>
+            <p className="contact-line">
+              <strong>App support &mdash;</strong> please reach out through each product&apos;s own site:{' '}
+              <a href="https://bearingfruit.app" target="_blank" rel="noreferrer">Bearing Fruit</a>
+              {' · '}
+              <a href="https://geogroups.org" target="_blank" rel="noreferrer">GeoGroups</a>.
+            </p>
+            <p className="contact-line">
+              <strong>Partnerships, research collaborations, and press &mdash;</strong>{' '}
               <a href="mailto:matthew@goodlifegames.io">matthew@goodlifegames.io</a>.
             </p>
           </div>
