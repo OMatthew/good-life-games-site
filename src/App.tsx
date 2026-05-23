@@ -62,6 +62,10 @@ const projects = [
       'A grace-centered spiritual formation app with 12 Biblical practices, interactive prayer tools, and spaced-repetition scripture memorization \u2014 designed to help Christians build gentle, lasting rhythms of faith. Available now on iOS and Android in soft launch ahead of a wider beta release.',
     href: 'https://bearingfruit.app',
     cta: 'Visit Bearing Fruit',
+    extraLinks: [
+      { label: 'App Store', href: 'https://apps.apple.com/us/app/bearing-fruit/id6760858138' },
+      { label: 'Google Play', href: 'https://play.google.com/store/apps/details?id=app.bearingfruit' },
+    ],
   },
   {
     name: 'GeoGroups',
@@ -387,6 +391,16 @@ function App() {
                       <path d="M7 7h10v10" />
                     </svg>
                   </a>
+                )}
+                {project.extraLinks && (
+                  <p className="project-extra-links">
+                    {project.extraLinks.map((link, idx) => (
+                      <span key={link.href}>
+                        {idx > 0 && <span className="extra-dot" aria-hidden="true">·</span>}
+                        <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+                      </span>
+                    ))}
+                  </p>
                 )}
               </article>
             ))}

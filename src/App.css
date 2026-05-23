@@ -532,6 +532,29 @@ h1 em::after {
   text-underline-offset: 4px;
 }
 
+.project-extra-links {
+  margin: 0.55rem 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+.project-extra-links a {
+  color: var(--accent-teal-strong);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.project-extra-links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.project-extra-links .extra-dot {
+  margin: 0 0.4rem;
+  opacity: 0.55;
+}
+
 /* ── Legal ── */
 .legal-card {
   border-radius: 1.25rem;
