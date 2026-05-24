@@ -314,21 +314,21 @@ h1 em {
   position: relative;
   display: inline-block;
   text-shadow: 
-    1px 0 var(--surface-0),
-    -1px 0 var(--surface-0),
-    0 1px var(--surface-0),
-    0 -1px var(--surface-0);
+    1.15px 0 var(--surface-0),
+    -1.15px 0 var(--surface-0),
+    0 1.15px var(--surface-0),
+    0 -1.15px var(--surface-0);
 }
 
 h1 em::after {
   content: '';
   position: absolute;
-  bottom: 0.01em;
+  bottom: 0.035em;
   left: -5px;
   right: -7px;
   height: 0.3em;
   background: var(--accent-amber-strong);
-  border-radius: 4px;
+  border-radius: 3px;
   z-index: -1;
   transform: rotate(-1deg);
 }
