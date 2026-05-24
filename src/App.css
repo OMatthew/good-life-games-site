@@ -327,7 +327,7 @@ h1 em::after {
   left: -5px;
   right: -7px;
   height: 0.3em;
-  background: var(--accent-amber-strong);
+  background: color-mix(in srgb, var(--accent-amber-strong) 80%, transparent);
   border-radius: 3px;
   z-index: -1;
   transform: rotate(-1deg);
