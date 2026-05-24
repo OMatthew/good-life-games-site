@@ -323,7 +323,7 @@ function App() {
           <div className="hero-content fade-in">
             <p className="eyebrow">Independent Product Studio</p>
             <h1>
-              Software for the <em>good life</em>.
+              Software for the <em>good life.</em>
             </h1>
             <p className="hero-copy">
               We build tools with the warmth and engagement of play &mdash; helping people
