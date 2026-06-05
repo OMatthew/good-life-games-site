@@ -449,7 +449,7 @@ h1 em::after {
 }
 
 .value-card h3,
-.project-card h3 {
+.project-card h4 {
   margin: 0;
   font-size: 1.1rem;
   color: var(--ink-0);
@@ -481,6 +481,48 @@ h1 em::after {
 }
 
 /* ── Project cards ── */
+.proof-band {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.proof-band span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-teal-strong) 32%, var(--surface-2));
+  background: color-mix(in srgb, var(--surface-1) 78%, #ffffff);
+  color: var(--ink-1);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.project-group {
+  margin-top: clamp(1.6rem, 3.4vw, 2.4rem);
+}
+
+.project-group-head {
+  max-width: 68ch;
+}
+
+.project-group-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.8vw, 1.65rem);
+  line-height: 1.2;
+  color: var(--ink-0);
+}
+
+.project-group-head p {
+  margin: 0.45rem 0 0;
+  color: var(--ink-1);
+  line-height: 1.55;
+}
+
 .project-meta {
   display: flex;
   align-items: center;
@@ -512,6 +554,24 @@ h1 em::after {
 .project-featured {
   border-color: var(--accent-teal-strong);
   border-width: 1.5px;
+}
+
+.project-period {
+  margin: 0 0 0.35rem;
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.project-highlights {
+  margin: 0.75rem 0 0;
+  padding-left: 1.05rem;
+  color: var(--ink-1);
+  line-height: 1.45;
+}
+
+.project-highlights li+li {
+  margin-top: 0.35rem;
 }
 
 .project-link {

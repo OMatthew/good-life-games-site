@@ -43,52 +43,194 @@ const values = [
   },
 ]
 
-const projects = [
+type ProjectLink = {
+  label: string
+  href: string
+}
+
+type Project = {
+  name: string
+  tag: string
+  status: string
+  period: string
+  description: string
+  highlights: string[]
+  href?: string
+  cta?: string
+  extraLinks?: ProjectLink[]
+  featured?: boolean
+}
+
+type ProjectGroup = {
+  title: string
+  intro: string
+  projects: Project[]
+}
+
+const proofPoints = [
+  'Live iOS/Android apps',
+  'Unity/C# health + learning games',
+  'Peer-reviewed digital-health research',
+  'React Native / Expo / Next / Node / PostgreSQL',
+  'Product design, UX, and small-team delivery',
+]
+
+const projectGroups: ProjectGroup[] = [
   {
-    name: 'Heart Health Mountain',
-    tag: 'Research & Mobile App',
-    status: 'Published Research',
-    description:
-      'A sensor-controlled digital game built for NIH-funded clinical trials in heart failure and hypertension self-management. Developed with Dr. Kavita Radhakrishnan at UT Austin, featured in multiple peer-reviewed studies (2020\u20132025) including cultural adaptations for the Lumbee Tribe and Spanish-speaking populations.',
-    href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10564567/',
-    cta: 'Read on PubMed Central',
-    featured: true,
-  },
-  {
-    name: 'Bearing Fruit',
-    tag: 'Mobile App',
-    status: 'Soft Launch \u00b7 Beta',
-    description:
-      'A grace-centered spiritual formation app with 12 Biblical practices, interactive prayer tools, and spaced-repetition scripture memorization \u2014 designed to help Christians build gentle, lasting rhythms of faith. Available now on iOS and Android in soft launch ahead of a wider beta release.',
-    href: 'https://bearingfruit.app',
-    cta: 'Visit Bearing Fruit',
-    extraLinks: [
-      { label: 'App Store', href: 'https://apps.apple.com/us/app/bearing-fruit/id6760858138' },
-      { label: 'Google Play', href: 'https://play.google.com/store/apps/details?id=app.bearingfruit' },
+    title: 'Current Products',
+    intro: 'Active Good Life Games products and pilots built around faith, health, community, and useful daily rhythms.',
+    projects: [
+      {
+        name: 'Bearing Fruit',
+        tag: 'Mobile App',
+        status: 'Live / Soft Launch',
+        period: '2025 - Present',
+        description:
+          'A grace-centered spiritual formation app for iOS and Android, designed to help Christians build gentle rhythms of prayer, Scripture, Sabbath, and other holy habits.',
+        highlights: [
+          'Led product, UX, content strategy, and AI-assisted React Native / Expo development.',
+          'Shipped guided prayer, Bible reading, Scripture memorization, habit scheduling, achievement badges, analytics, support tiers, and a Next.js marketing site.',
+        ],
+        href: 'https://bearingfruit.app',
+        cta: 'Visit Bearing Fruit',
+        extraLinks: [
+          { label: 'App Store', href: 'https://apps.apple.com/us/app/bearing-fruit/id6760858138' },
+          { label: 'Google Play', href: 'https://play.google.com/store/apps/details?id=app.bearingfruit' },
+        ],
+        featured: true,
+      },
+      {
+        name: 'GeoGroups',
+        tag: 'Decision-Support Web App',
+        status: 'Pilot',
+        period: '2026',
+        description:
+          'A lightweight spatial intelligence tool for church small-group coordinators, focused on better placement decisions rather than replacing a church management system.',
+        highlights: [
+          'Designed around a real coordinator workflow: placement recommendations, coverage visualization, and capacity awareness.',
+          'Pilot direction uses React/Next, Node/Express, PostgreSQL, and Mapbox for mapping and geocoding.',
+        ],
+        href: 'https://geogroups.org',
+        cta: 'Visit GeoGroups',
+      },
+      {
+        name: 'HeartHabitz',
+        tag: 'Mobile Health App',
+        status: 'Prototype',
+        period: '2025 - 2026',
+        description:
+          'A React Native health-habit app exploring habit support, reminders, sync, and secure account flows for personal health behavior change.',
+        highlights: [
+          'Designed and guided development of the Expo mobile app and supporting backend.',
+          'Stack included React Native, Node.js, Express, PostgreSQL, local-first data, MFA/TOTP authentication, reminders, and sync.',
+        ],
+      },
     ],
   },
   {
-    name: 'GeoGroups',
-    tag: 'Web App',
-    status: 'Pilot',
-    description:
-      'A decision-support tool helping church leaders place members into geographically optimal small groups \u2014 bringing spatial intelligence to community building.',
-    href: 'https://geogroups.org',
-    cta: 'Visit GeoGroups',
+    title: 'Health & Research',
+    intro: 'Digital-health games and research collaborations where playful systems supported behavior change and clinical study design.',
+    projects: [
+      {
+        name: 'Heart Health Mountain',
+        tag: 'Unity/C# Research Game',
+        status: 'Published Research',
+        period: '2013 - 2025',
+        description:
+          'A sensor-controlled digital health game for heart-failure self-care, built for UT Austin research and extended through NIH-supported studies.',
+        highlights: [
+          'Built Unity/C# gameplay and self-care mechanics connected to activity-tracker and smart-scale workflows.',
+          'Used in peer-reviewed studies, including a JMIR Serious Games randomized controlled trial and related digital-health publications.',
+        ],
+        href: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10564567/',
+        cta: 'Read on PubMed Central',
+        featured: true,
+      },
+      {
+        name: 'SAGA Lab Education Apps, Games & Multimedia',
+        tag: 'Learning Games',
+        status: 'University Research',
+        period: '2013 - 2017',
+        description:
+          'Educational-technology work at UT Austin spanning learning apps, games, digital media production, and interdisciplinary research collaborations.',
+        highlights: [
+          'Led projects and supervised a team of eight digital artists and programmers.',
+          'Worked on Environ, Alien Rescue, Salamander Rescue, and health-game pilots connected to heart failure, hypertension, asthma, and obesity research.',
+        ],
+      },
+    ],
   },
   {
-    name: 'Tab Triage',
-    tag: 'Web App + Extension',
-    status: 'In Development',
-    description:
-      'A local-first URL triage system that deduplicates, summarizes, and scores relevance for large link batches \u2014 turning browser tab overload into a ranked, actionable inbox.',
+    title: 'Learning / EdTech / Prior Work',
+    intro: 'Earlier ventures and training products that shaped the studio approach to learning, collaboration, and game-based engagement.',
+    projects: [
+      {
+        name: 'Yogi',
+        tag: 'Unity/C# Learning App',
+        status: 'Prior Product',
+        period: '2017 - 2020',
+        description:
+          'A game-based learning mobile app built around flashcards, quiz modes, mini-games, progress feedback, and lightweight course authoring.',
+        highlights: [
+          'Designed and developed Unity/C# systems for authentication, leaderboards, analytics, flashcards, and multiple game modes.',
+          'Explored a more playful alternative to conventional studying and review workflows.',
+        ],
+      },
+      {
+        name: 'ClioVis',
+        tag: 'Prior Venture',
+        status: '2016 - 2022',
+        period: '2016 - 2022',
+        description:
+          'A real-time collaborative timeline, mind-mapping, and presentation platform used by educators and students internationally.',
+        highlights: [
+          'Co-founded the company and led product design, UX, roadmap, and go-to-market materials.',
+          'Contributed Vue.js front-end code and collaborated on a real-time architecture using C# project servers, WebSockets, Kubernetes, Redis, and MySQL.',
+        ],
+      },
+      {
+        name: 'National Highway Institute Training Simulations',
+        tag: 'Training Simulation',
+        status: 'Client Work',
+        period: 'Freelance',
+        description:
+          'Interactive 3D training simulations and instructional materials built for professional education and government training contexts.',
+        highlights: [
+          'Designed and built simulation assets and learning interactions.',
+          'Delivered supporting web, graphic, animation, and digital-signage work for education, government, and small-business clients.',
+        ],
+      },
+    ],
   },
   {
-    name: 'CommandSpeed',
-    tag: 'Web App',
-    status: 'In Development',
-    description:
-      'A gamified keyboard shortcut trainer for spreadsheet power users. Race the clock through progressive difficulty levels to master Excel and Google Sheets shortcuts.',
+    title: 'Emerging Tools',
+    intro: 'Small, focused tools exploring AI-assisted workflows, local-first systems, and practical productivity training.',
+    projects: [
+      {
+        name: 'Tab Triage / SignalFoundry',
+        tag: 'Local-First AI Workflow',
+        status: 'In Development',
+        period: '2026',
+        description:
+          'A local-first research workflow that turns large batches of URLs and notes into ranked, evidence-backed opportunities.',
+        highlights: [
+          'Parses, deduplicates, extracts, summarizes, and scores research inputs with cache-first reruns.',
+          'Designed around a ranked inbox, evidence workspace, durable opportunity briefs, and conservative suppression of repeated low-signal links.',
+        ],
+      },
+      {
+        name: 'CommandSpeed',
+        tag: 'Shortcut Learning Game',
+        status: 'In Development',
+        period: '2025 - 2026',
+        description:
+          'A gamified keyboard-shortcut trainer for spreadsheet power users, modernized from a Unity concept into a React web app.',
+        highlights: [
+          'Teaches Excel and Google Sheets shortcuts through progressive, timed game levels.',
+          'Explores the same Good Life Games pattern: practical skill-building made more engaging through game structure.',
+        ],
+      },
+    ],
   },
 ]
 
@@ -203,11 +345,12 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const heroRef = useRef<HTMLElement>(null)
   const heroArtRef = useRef<HTMLDivElement>(null)
-  const morphStartRef = useRef(Date.now())
+  const morphStartRef = useRef(0)
   const morphLockedRef = useRef(false)
   const morphSyncStyleRef = useRef<HTMLStyleElement | null>(null)
 
   useEffect(() => {
+    morphStartRef.current = Date.now()
     const syncStyle = document.createElement('style')
     document.head.appendChild(syncStyle)
     morphSyncStyleRef.current = syncStyle
@@ -347,8 +490,9 @@ function App() {
           </div>
 
           <p className="founder-line">
-            Founded by Matthew O&apos;Hair &mdash; a software engineer with a background in education and published health
-            research, building tools at the intersection of health, faith, and productivity.
+            Founded by Matthew O&apos;Hair &mdash; a product designer, technical product lead, and front-end/mobile
+            developer with a background in learning technologies, Unity/C# game development, and published
+            digital-health research.
           </p>
 
           <div className="value-grid">
@@ -367,44 +511,65 @@ function App() {
         <RevealSection className="section shell" id="projects">
           <div className="section-head">
             <p className="eyebrow">Portfolio</p>
-            <h2>Products and research from Good Life Games</h2>
+            <h2>Selected work from Good Life Games and related ventures</h2>
           </div>
 
-          <div className="project-grid">
-            {projects.map((project, i) => (
-              <article
-                key={project.name}
-                className={`project-card ${project.featured ? 'project-featured' : ''}`}
-                style={{ transitionDelay: `${i * 80}ms` }}
-              >
-                <div className="project-meta">
-                  <span className="project-tag">{project.tag}</span>
-                  <span className="project-status">{project.status}</span>
-                </div>
-                <h3>{project.name}</h3>
-                <p>{project.description}</p>
-                {project.href && (
-                  <a href={project.href} className="project-link" target="_blank" rel="noreferrer">
-                    {project.cta}
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M7 17L17 7" />
-                      <path d="M7 7h10v10" />
-                    </svg>
-                  </a>
-                )}
-                {project.extraLinks && (
-                  <p className="project-extra-links">
-                    {project.extraLinks.map((link, idx) => (
-                      <span key={link.href}>
-                        {idx > 0 && <span className="extra-dot" aria-hidden="true">·</span>}
-                        <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
-                      </span>
-                    ))}
-                  </p>
-                )}
-              </article>
+          <div className="proof-band" aria-label="Good Life Games proof points">
+            {proofPoints.map((point) => (
+              <span key={point}>{point}</span>
             ))}
           </div>
+
+          {projectGroups.map((group, groupIndex) => (
+            <section className="project-group" key={group.title} aria-labelledby={`project-group-${groupIndex}`}>
+              <div className="project-group-head">
+                <h3 id={`project-group-${groupIndex}`}>{group.title}</h3>
+                <p>{group.intro}</p>
+              </div>
+
+              <div className="project-grid">
+                {group.projects.map((project, i) => (
+                  <article
+                    key={project.name}
+                    className={`project-card ${project.featured ? 'project-featured' : ''}`}
+                    style={{ transitionDelay: `${(groupIndex + i) * 80}ms` }}
+                  >
+                    <div className="project-meta">
+                      <span className="project-tag">{project.tag}</span>
+                      <span className="project-status">{project.status}</span>
+                    </div>
+                    <p className="project-period">{project.period}</p>
+                    <h4>{project.name}</h4>
+                    <p>{project.description}</p>
+                    <ul className="project-highlights">
+                      {project.highlights.map((highlight) => (
+                        <li key={highlight}>{highlight}</li>
+                      ))}
+                    </ul>
+                    {project.href && (
+                      <a href={project.href} className="project-link" target="_blank" rel="noreferrer">
+                        {project.cta}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M7 17L17 7" />
+                          <path d="M7 7h10v10" />
+                        </svg>
+                      </a>
+                    )}
+                    {project.extraLinks && (
+                      <p className="project-extra-links">
+                        {project.extraLinks.map((link, idx) => (
+                          <span key={link.href}>
+                            {idx > 0 && <span className="extra-dot" aria-hidden="true">&middot;</span>}
+                            <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+                          </span>
+                        ))}
+                      </p>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
         </RevealSection>
 
         <RevealSection className="section shell" id="legal">
@@ -441,7 +606,7 @@ function App() {
               <a href="https://geogroups.org" target="_blank" rel="noreferrer">GeoGroups</a>.
             </p>
             <p className="contact-line">
-              <strong>Partnerships, research collaborations, and press &mdash;</strong>{' '}
+              <strong>Partnerships, research collaborations, consulting, fractional product/design/dev work, and press &mdash;</strong>{' '}
               <a href="mailto:matthew@goodlifegames.io">matthew@goodlifegames.io</a>.
             </p>
           </div>
