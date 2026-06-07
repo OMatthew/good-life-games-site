@@ -360,7 +360,7 @@ function getMorphPhase(frac: number): string {
 function StoreIcon({ icon }: { icon: 'apple' | 'google' }) {
   if (icon === 'apple') {
     return (
-      <svg className="store-icon store-icon-apple" width="14" height="14" viewBox="-1 0 22 25" fill="currentColor" aria-hidden="true">
+      <svg className="store-icon store-icon-apple" width="14" height="14" viewBox="-1 -1 22 26" fill="currentColor" aria-hidden="true">
         <path d="M16.365 1.43c0 1.14-.43 2.2-1.13 3.01-.84.99-2.24 1.76-3.39 1.66-.13-1.11.42-2.29 1.1-3.03.77-.84 2.16-1.5 3.42-1.64zM20.5 17.05c-.6 1.38-.88 1.99-1.65 3.2-1.06 1.69-2.56 3.8-4.43 3.81-1.66.02-2.09-1.08-4.34-1.07-2.26.01-2.73 1.09-4.39 1.07-1.86-.02-3.28-1.91-4.35-3.6-2.98-4.7-3.3-10.21-1.45-13.14 1.3-2.08 3.36-3.29 5.29-3.29 1.97 0 3.2 1.08 4.83 1.08 1.58 0 2.54-1.08 4.82-1.08 1.72 0 3.55.94 4.85 2.56-4.26 2.33-3.57 8.4.71 10.45z"/>
       </svg>
     )
