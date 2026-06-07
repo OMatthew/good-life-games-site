@@ -55,6 +55,9 @@ type Project = {
   period: string
   description: string
   highlights: string[]
+  image?: string
+  imageBg?: string
+  monogram?: string
   href?: string
   cta?: string
   extraLinks?: ProjectLink[]
@@ -85,6 +88,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Mobile App',
         status: 'Live / Soft Launch',
         period: '2025 - Present',
+        image: '/project-logos/bearing-fruit.png',
         description:
           'A grace-centered spiritual formation app for iOS and Android, designed to help Christians build gentle rhythms of prayer, Scripture, Sabbath, and other holy habits.',
         highlights: [
@@ -104,6 +108,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Decision-Support Web App',
         status: 'Pilot',
         period: '2026',
+        image: '/project-logos/geogroups.png',
         description:
           'A lightweight spatial intelligence tool for church small-group coordinators, focused on better placement decisions rather than replacing a church management system.',
         highlights: [
@@ -118,6 +123,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Mobile Health App',
         status: 'Prototype',
         period: '2025 - 2026',
+        image: '/project-logos/hearthabitz.png',
         description:
           'A React Native health-habit app exploring habit support, reminders, sync, and secure account flows for personal health behavior change.',
         highlights: [
@@ -136,6 +142,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Unity/C# Research Game',
         status: 'Published Research',
         period: '2013 - 2025',
+        image: '/project-logos/heart-health-mountain.png',
         description:
           'A sensor-controlled digital health game for heart-failure self-care, built for UT Austin research and extended through NIH-supported studies.',
         highlights: [
@@ -147,10 +154,11 @@ const projectGroups: ProjectGroup[] = [
         featured: true,
       },
       {
-        name: 'SAGA Lab Education Apps, Games & Multimedia',
+        name: 'SAGA Lab Educational Apps, Games & Multimedia',
         tag: 'Learning Games',
         status: 'University Research',
         period: '2013 - 2017',
+        image: '/project-logos/saga.png',
         description:
           'Educational-technology work at UT Austin spanning learning apps, games, digital media production, and interdisciplinary research collaborations.',
         highlights: [
@@ -169,6 +177,8 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Unity/C# Learning App',
         status: 'Prior Product',
         period: '2017 - 2020',
+        image: '/project-logos/yogi.png',
+        imageBg: '#5A20E7',
         description:
           'A game-based learning mobile app built around flashcards, quiz modes, mini-games, progress feedback, and lightweight course authoring.',
         highlights: [
@@ -181,6 +191,9 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Prior Venture',
         status: '2016 - 2022',
         period: '2016 - 2022',
+        image: '/project-logos/cliovis.png',
+        href: 'https://cliovis.com',
+        cta: 'Visit ClioVis',
         description:
           'A real-time collaborative timeline, mind-mapping, and presentation platform used by educators and students internationally.',
         highlights: [
@@ -193,6 +206,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Training Simulation',
         status: 'Client Work',
         period: 'Freelance',
+        image: '/project-logos/nhi.png',
         description:
           'Interactive 3D training simulations and instructional materials built for professional education and government training contexts.',
         highlights: [
@@ -211,6 +225,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Local-First AI Workflow',
         status: 'In Development',
         period: '2026',
+        image: '/project-logos/tab-triage.png',
         description:
           'A local-first research workflow that turns large batches of URLs and notes into ranked, evidence-backed opportunities.',
         highlights: [
@@ -223,6 +238,7 @@ const projectGroups: ProjectGroup[] = [
         tag: 'Shortcut Learning Game',
         status: 'In Development',
         period: '2025 - 2026',
+        image: '/project-logos/commandspeed.png',
         description:
           'A gamified keyboard-shortcut trainer for spreadsheet power users, modernized from a Unity concept into a React web app.',
         highlights: [
@@ -268,8 +284,8 @@ function RevealSection({ className, children, id }: { className?: string; childr
 }
 
 const manifestoLine1 = 'Most software is designed to keep you scrolling.'
-const manifestoWords = ['We', 'build', 'tools', 'that', 'help', 'you', 'grow\u00a0\u2014', 'grounded,', 'present,', 'and', 'free.']
-const accentWord = 'present,'
+const manifestoWords = ['We', 'build', 'tools', 'that', 'help', 'you', 'grow.']
+const accentWord = 'grow.'
 
 function ManifestoReveal() {
   const ref = useRef<HTMLElement>(null)
@@ -305,7 +321,7 @@ function ManifestoReveal() {
         >
           {manifestoLine1}
         </p>
-        <p className="manifesto-line manifesto-strong" aria-label="We build tools that help you grow — grounded, present, and free.">
+        <p className="manifesto-line manifesto-strong" aria-label="We build tools that help you grow.">
           {manifestoWords.map((word, i) => (
             <span
               key={i}
@@ -339,6 +355,99 @@ function getMorphPhase(frac: number): string {
   if (frac < 0.55) return 'heart'
   if (frac < 0.65) return 'transition'
   return 'blob'
+}
+
+function ProjectLogo({ project }: { project: Project }) {
+  if (project.image) {
+    return (
+      <img
+        className="project-logo"
+        src={project.image}
+        alt=""
+        loading="lazy"
+        style={project.imageBg ? { background: project.imageBg } : undefined}
+      />
+    )
+  }
+  const initials = project.monogram ?? project.name.charAt(0)
+  return (
+    <span className={`project-logo project-logo-monogram len-${initials.length}`} aria-hidden="true">
+      {initials}
+    </span>
+  )
+}
+
+function ProjectCard({ project, style }: { project: Project; style?: React.CSSProperties }) {
+  const [expanded, setExpanded] = useState(false)
+  const hasHighlights = project.highlights.length > 0
+  const isLink = Boolean(project.href)
+
+  return (
+    <article
+      className={`project-card ${project.featured ? 'project-featured' : ''} ${isLink ? 'is-link' : ''}`}
+      style={style}
+    >
+      <div className="project-meta">
+        <span className="project-tag">{project.tag}</span>
+        <span className="project-status">{project.status}</span>
+      </div>
+      <div className="project-header">
+        <ProjectLogo project={project} />
+        <div className="project-headings">
+          <p className="project-period">{project.period}</p>
+          <h4>{project.name}</h4>
+        </div>
+      </div>
+      <p>{project.description}</p>
+
+      {hasHighlights && (
+        <>
+          <button
+            type="button"
+            className="project-details-toggle"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+          >
+            {expanded ? 'Hide details' : 'Details'}
+            <svg
+              className={`chevron ${expanded ? 'chevron-open' : ''}`}
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          {expanded && (
+            <ul className="project-highlights">
+              {project.highlights.map((highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+
+      {project.href && (
+        <a href={project.href} className="project-link" target="_blank" rel="noreferrer">
+          {project.cta}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 17L17 7" />
+            <path d="M7 7h10v10" />
+          </svg>
+        </a>
+      )}
+      {project.extraLinks && (
+        <p className="project-extra-links">
+          {project.extraLinks.map((link, idx) => (
+            <span key={link.href}>
+              {idx > 0 && <span className="extra-dot" aria-hidden="true">&middot;</span>}
+              <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+            </span>
+          ))}
+        </p>
+      )}
+    </article>
+  )
 }
 
 function App() {
@@ -486,13 +595,12 @@ function App() {
         <RevealSection className="section shell" id="about">
           <div className="section-head">
             <p className="eyebrow">How We Work</p>
-            <h2>Small team. High standards. Practical outcomes.</h2>
+            <h2>Independent studio. High standards. Practical outcomes.</h2>
           </div>
 
           <p className="founder-line">
-            Founded by Matthew O&apos;Hair &mdash; a product designer, technical product lead, and front-end/mobile
-            developer with a background in learning technologies, Unity/C# game development, and published
-            digital-health research.
+            Founded by Matthew O&apos;Hair &mdash; a designer and developer who has spent over a decade building
+            learning, health, and game-based products, including published digital-health research.
           </p>
 
           <div className="value-grid">
@@ -529,43 +637,11 @@ function App() {
 
               <div className="project-grid">
                 {group.projects.map((project, i) => (
-                  <article
+                  <ProjectCard
                     key={project.name}
-                    className={`project-card ${project.featured ? 'project-featured' : ''}`}
+                    project={project}
                     style={{ transitionDelay: `${(groupIndex + i) * 80}ms` }}
-                  >
-                    <div className="project-meta">
-                      <span className="project-tag">{project.tag}</span>
-                      <span className="project-status">{project.status}</span>
-                    </div>
-                    <p className="project-period">{project.period}</p>
-                    <h4>{project.name}</h4>
-                    <p>{project.description}</p>
-                    <ul className="project-highlights">
-                      {project.highlights.map((highlight) => (
-                        <li key={highlight}>{highlight}</li>
-                      ))}
-                    </ul>
-                    {project.href && (
-                      <a href={project.href} className="project-link" target="_blank" rel="noreferrer">
-                        {project.cta}
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M7 17L17 7" />
-                          <path d="M7 7h10v10" />
-                        </svg>
-                      </a>
-                    )}
-                    {project.extraLinks && (
-                      <p className="project-extra-links">
-                        {project.extraLinks.map((link, idx) => (
-                          <span key={link.href}>
-                            {idx > 0 && <span className="extra-dot" aria-hidden="true">&middot;</span>}
-                            <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
-                          </span>
-                        ))}
-                      </p>
-                    )}
-                  </article>
+                  />
                 ))}
               </div>
             </section>
@@ -575,7 +651,7 @@ function App() {
         <RevealSection className="section shell" id="legal">
           <div className="section-head">
             <p className="eyebrow">Company &amp; Legal</p>
-            <h2>Transparent operations for partners and platforms</h2>
+            <h2>The company behind the products.</h2>
           </div>
           <div className="legal-card">
             <p className="legal-line">
@@ -632,10 +708,6 @@ function App() {
               Terms
             </a>
             <a href="mailto:matthew@goodlifegames.io">Email</a>
-          </p>
-          <p className="footer-status">
-            <span className="status-dot" aria-hidden="true" />
-            System operational
           </p>
         </div>
       </footer>
