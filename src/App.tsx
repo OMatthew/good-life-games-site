@@ -46,6 +46,7 @@ const values = [
 type ProjectLink = {
   label: string
   href: string
+  icon?: 'apple' | 'google'
 }
 
 type Project = {
@@ -98,8 +99,8 @@ const projectGroups: ProjectGroup[] = [
         href: 'https://bearingfruit.app',
         cta: 'Visit Bearing Fruit',
         extraLinks: [
-          { label: 'App Store', href: 'https://apps.apple.com/us/app/bearing-fruit/id6760858138' },
-          { label: 'Google Play', href: 'https://play.google.com/store/apps/details?id=app.bearingfruit' },
+          { label: 'App Store', href: 'https://apps.apple.com/us/app/bearing-fruit/id6760858138', icon: 'apple' },
+          { label: 'Google Play', href: 'https://play.google.com/store/apps/details?id=app.bearingfruit', icon: 'google' },
         ],
         featured: true,
       },
@@ -344,17 +345,34 @@ function ManifestoReveal() {
 
 const MORPH_CYCLE_MS = 32_000
 // Keyframe phase boundaries (fractions of cycle)
-// blob 0–15%, blob→▽ 15–25%, ▽ 25–35%, ▽→heart 35–43%, heart 43–55%, heart→blob 55–65%, blob 65–100%
-const MORPH_NEXT_START: Record<string, number> = { blob: 0.15, triangle: 0.35, heart: 0.55 }
+// blob 0–7.5%, blob→▽ 7.5–17.5%, ▽ 17.5–26.5%, ▽→heart 26.5–34.5%, heart 34.5–82%, heart→blob 82–100%
+const MORPH_NEXT_START: Record<string, number> = { blob: 0.075, triangle: 0.265, heart: 0.82 }
 
 function getMorphPhase(frac: number): string {
-  if (frac < 0.15) return 'blob'
-  if (frac < 0.25) return 'transition'
-  if (frac < 0.35) return 'triangle'
-  if (frac < 0.43) return 'transition'
-  if (frac < 0.55) return 'heart'
-  if (frac < 0.65) return 'transition'
-  return 'blob'
+  if (frac < 0.075) return 'blob'
+  if (frac < 0.175) return 'transition'
+  if (frac < 0.265) return 'triangle'
+  if (frac < 0.345) return 'transition'
+  if (frac < 0.82) return 'heart'
+  return 'transition'
+}
+
+function StoreIcon({ icon }: { icon: 'apple' | 'google' }) {
+  if (icon === 'apple') {
+    return (
+      <svg className="store-icon store-icon-apple" width="14" height="14" viewBox="-1 0 22 25" fill="currentColor" aria-hidden="true">
+        <path d="M16.365 1.43c0 1.14-.43 2.2-1.13 3.01-.84.99-2.24 1.76-3.39 1.66-.13-1.11.42-2.29 1.1-3.03.77-.84 2.16-1.5 3.42-1.64zM20.5 17.05c-.6 1.38-.88 1.99-1.65 3.2-1.06 1.69-2.56 3.8-4.43 3.81-1.66.02-2.09-1.08-4.34-1.07-2.26.01-2.73 1.09-4.39 1.07-1.86-.02-3.28-1.91-4.35-3.6-2.98-4.7-3.3-10.21-1.45-13.14 1.3-2.08 3.36-3.29 5.29-3.29 1.97 0 3.2 1.08 4.83 1.08 1.58 0 2.54-1.08 4.82-1.08 1.72 0 3.55.94 4.85 2.56-4.26 2.33-3.57 8.4.71 10.45z"/>
+      </svg>
+    )
+  }
+  return (
+    <svg className="store-icon" width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#00D7FE" d="M3.06 2.4a1.5 1.5 0 0 0-.55 1.18v16.84c0 .47.21.89.55 1.18l9.05-9.6z" />
+      <path fill="#FFCE00" d="M16.4 8.2l-3.34 3.55 3.34 3.55 4.02-2.32a1.36 1.36 0 0 0 0-2.46z" />
+      <path fill="#FE3D44" d="M16.4 8.2 4.84 1.52a1.4 1.4 0 0 0-1.78.88l9.99 9.35z" />
+      <path fill="#00F076" d="M3.06 21.6c.46.4 1.16.46 1.78.12L16.4 15.3l-3.35-3.55z" />
+    </svg>
+  )
 }
 
 function ProjectLogo({ project }: { project: Project }) {
@@ -437,12 +455,12 @@ function ProjectCard({ project, style }: { project: Project; style?: React.CSSPr
         </a>
       )}
       {project.extraLinks && (
-        <p className="project-extra-links">
-          {project.extraLinks.map((link, idx) => (
-            <span key={link.href}>
-              {idx > 0 && <span className="extra-dot" aria-hidden="true">&middot;</span>}
-              <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
-            </span>
+        <p className="project-store-links">
+          {project.extraLinks.map((link) => (
+            <a key={link.href} className="store-btn" href={link.href} target="_blank" rel="noreferrer">
+              {link.icon && <StoreIcon icon={link.icon} />}
+              {link.label}
+            </a>
           ))}
         </p>
       )}
@@ -492,8 +510,8 @@ function App() {
     if (syncStyle) syncStyle.textContent = `.hero-art::before { animation-delay: ${delaySec}s !important; }`
     morphStartRef.current = Date.now() - target * MORPH_CYCLE_MS
 
-    // Unlock after longest transition completes (heart→blob = 12% of 32s ≈ 3.84s)
-    setTimeout(() => { morphLockedRef.current = false }, 4000)
+    // Unlock after longest transition completes (heart→blob = 18% of 32s ≈ 5.76s)
+    setTimeout(() => { morphLockedRef.current = false }, 6000)
   }
 
   useEffect(() => {
@@ -536,7 +554,10 @@ function App() {
         <div className="topbar-pill shell">
           <a className="brand" href="#top" aria-label="Good Life Games home">
             <GlgMark />
-            <span className="brand-text">Good Life Games</span>
+            <span className="brand-lockup">
+              <span className="brand-text">Good Life Games</span>
+              <span className="brand-tagline">Play well. Live well.</span>
+            </span>
           </a>
 
           <button
