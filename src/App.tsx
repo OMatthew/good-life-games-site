@@ -85,7 +85,7 @@ const projectGroups: ProjectGroup[] = [
     projects: [
       {
         name: 'Bearing Fruit',
-        tag: 'Mobile App',
+        tag: 'Faith App',
         status: 'Live / Soft Launch',
         period: '2025 - Present',
         image: '/project-logos/bearing-fruit.png',
@@ -105,7 +105,7 @@ const projectGroups: ProjectGroup[] = [
       },
       {
         name: 'GeoGroups',
-        tag: 'Decision-Support Web App',
+        tag: 'Web App',
         status: 'Pilot',
         period: '2026',
         image: '/project-logos/geogroups.png',
@@ -120,7 +120,7 @@ const projectGroups: ProjectGroup[] = [
       },
       {
         name: 'HeartHabitz',
-        tag: 'Mobile Health App',
+        tag: 'Health App',
         status: 'Prototype',
         period: '2025 - 2026',
         image: '/project-logos/hearthabitz.png',
@@ -139,9 +139,9 @@ const projectGroups: ProjectGroup[] = [
     projects: [
       {
         name: 'Heart Health Mountain',
-        tag: 'Unity/C# Research Game',
+        tag: 'Health Game',
         status: 'Published Research',
-        period: '2013 - 2025',
+        period: '2017 - 2026',
         image: '/project-logos/heart-health-mountain.png',
         description:
           'A sensor-controlled digital health game for heart-failure self-care, built for UT Austin research and extended through NIH-supported studies.',
@@ -155,7 +155,7 @@ const projectGroups: ProjectGroup[] = [
       },
       {
         name: 'SAGA Lab Educational Apps, Games & Multimedia',
-        tag: 'Learning Games',
+        tag: 'Educational Games & Apps',
         status: 'University Research',
         period: '2013 - 2017',
         image: '/project-logos/saga.png',
@@ -174,9 +174,9 @@ const projectGroups: ProjectGroup[] = [
     projects: [
       {
         name: 'Yogi',
-        tag: 'Unity/C# Learning App',
+        tag: 'Learning App',
         status: 'Prior Product',
-        period: '2017 - 2020',
+        period: '2016 - 2020',
         image: '/project-logos/yogi.png',
         imageBg: '#5A20E7',
         description:
@@ -188,9 +188,9 @@ const projectGroups: ProjectGroup[] = [
       },
       {
         name: 'ClioVis',
-        tag: 'Prior Venture',
-        status: '2016 - 2022',
-        period: '2016 - 2022',
+        tag: 'EdTech Platform',
+        status: 'Prior Product',
+        period: '2016 - 2021',
         image: '/project-logos/cliovis.png',
         href: 'https://cliovis.com',
         cta: 'Visit ClioVis',
@@ -222,7 +222,7 @@ const projectGroups: ProjectGroup[] = [
     projects: [
       {
         name: 'Tab Triage / SignalFoundry',
-        tag: 'Local-First AI Workflow',
+        tag: 'Productivity Tool',
         status: 'In Development',
         period: '2026',
         image: '/project-logos/tab-triage.png',
@@ -235,7 +235,7 @@ const projectGroups: ProjectGroup[] = [
       },
       {
         name: 'CommandSpeed',
-        tag: 'Shortcut Learning Game',
+        tag: 'Learning Game',
         status: 'In Development',
         period: '2025 - 2026',
         image: '/project-logos/commandspeed.png',
