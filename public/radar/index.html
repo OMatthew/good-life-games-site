@@ -76,6 +76,75 @@
         padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2rem) 4rem;
       }
 
+      body.auth-locked .wrap { display: none; }
+      body.auth-unlocked .auth-gate { display: none; }
+
+      .auth-gate {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: clamp(2rem, 6vw, 4rem) 1.25rem;
+      }
+
+      .auth-panel {
+        width: min(100%, 420px);
+        background: #fff;
+        border: 1px solid var(--surface-2);
+        border-radius: 14px;
+        padding: clamp(1.4rem, 5vw, 2rem);
+        box-shadow: 0 12px 42px -30px rgba(31, 41, 48, 0.35);
+      }
+
+      .auth-panel h1 {
+        font-size: clamp(1.65rem, 5vw, 2.1rem);
+        margin-bottom: 0.6rem;
+      }
+
+      .auth-panel p { margin-bottom: 1.1rem; }
+
+      .auth-form { display: grid; gap: 0.75rem; }
+
+      .auth-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--teal-dark);
+      }
+
+      .auth-input {
+        width: 100%;
+        border: 1px solid var(--surface-3);
+        border-radius: 10px;
+        padding: 0.78rem 0.85rem;
+        font: inherit;
+        color: var(--ink-0);
+        background: var(--surface-0);
+      }
+
+      .auth-input:focus {
+        outline: 2px solid var(--teal-soft);
+        border-color: var(--teal-dark);
+      }
+
+      .auth-button {
+        border: 0;
+        border-radius: 10px;
+        padding: 0.82rem 1rem;
+        font: inherit;
+        font-weight: 700;
+        color: #fff;
+        background: var(--teal-dark);
+        cursor: pointer;
+      }
+
+      .auth-error {
+        min-height: 1.3rem;
+        margin: 0;
+        font-size: 0.88rem;
+        color: #b45309;
+      }
+
       /* ---------- type ---------- */
       h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; color: var(--ink-0); }
       h1 { font-size: clamp(2.1rem, 6vw, 3.3rem); letter-spacing: -0.01em; margin: 0 0 1rem; }
@@ -181,7 +250,28 @@
       .footer p { color: var(--ink-2); font-size: 0.85rem; }
     </style>
   </head>
-  <body>
+  <body class="auth-locked">
+    <section class="auth-gate" aria-labelledby="auth-title">
+      <div class="auth-panel">
+        <div class="badge"><span class="dot"></span> Private project outline</div>
+        <h1 id="auth-title">HarrisRadar</h1>
+        <p>Enter the password to view this Harris County parcel radar outline.</p>
+        <form class="auth-form" id="auth-form">
+          <label class="auth-label" for="auth-password">Password</label>
+          <input
+            class="auth-input"
+            id="auth-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button class="auth-button" type="submit">View outline</button>
+          <p class="auth-error" id="auth-error" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
     <main class="wrap">
       <!-- HERO -->
       <div class="badge"><span class="dot"></span> HarrisRadar · project outline</div>
@@ -387,5 +477,46 @@
         </p>
       </footer>
     </main>
+    <script>
+      (() => {
+        const storageKey = 'harrisradar-unlocked';
+        const passwordHash = '5631e13dae9f435bdff2521db94a3b9762572b303404d595adc1346d202807e1';
+        const form = document.getElementById('auth-form');
+        const input = document.getElementById('auth-password');
+        const error = document.getElementById('auth-error');
+
+        const showPage = () => {
+          document.body.classList.remove('auth-locked');
+          document.body.classList.add('auth-unlocked');
+        };
+
+        const hashText = async (text) => {
+          const bytes = new TextEncoder().encode(text);
+          const digest = await crypto.subtle.digest('SHA-256', bytes);
+          return Array.from(new Uint8Array(digest))
+            .map((byte) => byte.toString(16).padStart(2, '0'))
+            .join('');
+        };
+
+        if (sessionStorage.getItem(storageKey) === 'true') {
+          showPage();
+          return;
+        }
+
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          error.textContent = '';
+
+          if ((await hashText(input.value)) === passwordHash) {
+            sessionStorage.setItem(storageKey, 'true');
+            showPage();
+          } else {
+            input.value = '';
+            input.focus();
+            error.textContent = 'That password did not work.';
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
