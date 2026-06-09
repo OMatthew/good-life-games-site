@@ -126,6 +126,9 @@
       .split .lbl { font-size: 0.9rem; color: var(--ink-2); }
       @media (max-width: 480px) { .split { grid-template-columns: 1fr; } }
 
+      .decision { font-size: 1.02rem; }
+      .supporting-counts { margin-top: 1.4rem; }
+      .supporting-counts h3 { margin-bottom: 0.55rem; }
       .foot-note { font-size: 0.85rem; color: var(--ink-2); margin-top: 0.85rem; }
 
       /* ---------- steps ---------- */
@@ -149,13 +152,14 @@
       /* ---------- sample table ---------- */
       .tablecard { margin-top: 1.5rem; border: 1px solid var(--surface-2); border-radius: 16px; overflow: hidden; background: #fff; }
       .table-scroll { overflow-x: auto; }
-      table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.9rem; }
+      table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.9rem; }
       thead th {
         text-align: left; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
         color: var(--ink-2); background: var(--surface-1); padding: 0.7rem 0.9rem; white-space: nowrap;
       }
       tbody td { padding: 0.75rem 0.9rem; border-top: 1px solid var(--surface-1); color: var(--ink-1); }
       tbody td.score { font-family: var(--font-display); font-weight: 700; color: var(--teal-dark); }
+      tbody td.type { font-weight: 700; color: var(--amber-strong); }
       tbody td.why { color: var(--ink-1); }
       .table-cap { padding: 0.65rem 0.95rem; font-size: 0.8rem; color: var(--ink-2); background: var(--surface-1); border-top: 1px solid var(--surface-2); }
 
@@ -166,16 +170,6 @@
       .flabel { display: block; font-weight: 700; color: var(--teal-text); font-size: 0.74rem; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.3rem; }
 
       /* ---------- questions ---------- */
-      .q-key { display: grid; gap: 0.85rem; margin-top: 1.5rem; }
-      .q {
-        background: #fff; border: 1px solid var(--surface-2); border-radius: 14px; padding: 1.15rem 1.25rem;
-      }
-      .q.key { border-color: var(--gold-soft); box-shadow: 0 6px 20px -14px rgba(217, 119, 6, 0.5); }
-      .q .tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--amber-strong); margin-bottom: 0.4rem; }
-      .q p { margin: 0.35rem 0 0; font-size: 0.96rem; }
-      .q .opt { margin-top: 0.6rem; padding-left: 0.9rem; border-left: 2px solid var(--surface-2); }
-      .q .opt b { color: var(--teal-text); }
-
       .q-quick { margin-top: 1rem; background: var(--surface-1); border: 1px solid var(--surface-2); border-radius: 14px; padding: 1.1rem 1.3rem; }
       .q-quick h3 { margin-bottom: 0.6rem; }
       .q-quick ol { margin: 0; padding-left: 1.2rem; }
@@ -220,27 +214,17 @@
       <!-- YOUR SCREEN IN NUMBERS -->
       <section class="section">
         <h2>Your confirmed starting screen</h2>
-        <p>
-          You said to start with <strong>raw or underbuilt land: 5 acres and up, with building
-          footprint under 10% of the lot.</strong> That means coverage is the physical building
-          footprint, not a value ratio. Fully vacant land stays in as 0% coverage, and each row gets
-          tagged as vacant or improved so you can sort the two buckets separately.
+        <p class="decision">
+          The first screen is now locked: <strong>raw or underbuilt land, 5 acres and up, with
+          physical building footprint under 10% of the lot.</strong> Coverage means the building's
+          footprint, not its appraised value.
         </p>
 
-        <div class="funnel">
-          <div class="tier t1">
-            <span class="num">1,547,035</span>
-            <span class="lbl">every parcel in Harris County</span>
-          </div>
-          <div class="tier t2">
-            <span class="num">25,683</span>
-            <span class="lbl">are 5 acres or larger</span>
-          </div>
-          <div class="tier t3">
-            <span class="num">13,374</span>
-            <span class="lbl">&hellip;have no building or come in under 10% coverage*</span>
-          </div>
-        </div>
+        <p>
+          That creates two working buckets. Vacant land stays in as 0% physical coverage. Improved
+          land stays in when the existing building has a small footprint relative to the lot. Every
+          row should be tagged so you can sort or filter the two opportunity types separately.
+        </p>
 
         <div class="split">
           <div class="card hi">
@@ -253,11 +237,81 @@
           </div>
         </div>
 
-        <p class="foot-note">
-          *First cut. The first build will compute physical lot coverage from HCAD building
-          footprint data, and fall back to the value-ratio read only where footprint data is missing.
-          (Keep only commercial, industrial, multifamily, and land classes and the under-10% set is
-          about 8,150.)
+        <div class="supporting-counts">
+          <h3>First-cut size of the search</h3>
+          <p>
+            The numbers below use the current appraisal roll and a low-improvement-value proxy until
+            the build loads HCAD's building-footprint data.
+          </p>
+
+          <div class="funnel">
+            <div class="tier t1">
+              <span class="num">1,547,035</span>
+              <span class="lbl">every parcel in Harris County</span>
+            </div>
+            <div class="tier t2">
+              <span class="num">25,683</span>
+              <span class="lbl">are 5 acres or larger</span>
+            </div>
+            <div class="tier t3">
+              <span class="num">13,374</span>
+              <span class="lbl">&hellip;also clear the current low-improvement proxy*</span>
+            </div>
+          </div>
+
+          <p class="foot-note">
+            *Proxy count, not the final physical-coverage count. The real build will calculate
+            footprint coverage from HCAD building data and use the value-ratio read only as a
+            fallback where footprint data is missing. Keep only commercial, industrial, multifamily,
+            and land classes and this proxy set is about 8,150.
+          </p>
+        </div>
+      </section>
+
+      <!-- WHAT YOU'D GET -->
+      <section class="section">
+        <h2>What you'd get</h2>
+        <p>A dashboard you can filter and sort, with a spreadsheet export and a map. Each row is one parcel. Roughly like this:</p>
+        <div class="tablecard">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Score</th><th>Type</th><th>Location</th><th>Acres</th><th>Coverage</th>
+                  <th>Land value</th><th>Why it's on the list</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="score">91</td><td class="type">Improved</td><td>NW · near Beltway 8</td><td>7.2</td><td>4%</td>
+                  <td>$2.1M</td><td class="why">Old building, value's in the dirt; permits picking up nearby</td>
+                </tr>
+                <tr>
+                  <td class="score">86</td><td class="type">Vacant</td><td>East End</td><td>5.4</td><td>0%</td>
+                  <td>$1.3M</td><td class="why">Vacant; out of the floodplain; owner changed last year</td>
+                </tr>
+                <tr>
+                  <td class="score">78</td><td class="type">Improved</td><td>NE · frontage road</td><td>11.0</td><td>6%</td>
+                  <td>$3.4M</td><td class="why">Underbuilt corridor site; priced below the block</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-cap">Made-up rows, just to show the shape. The real list comes ranked from live data.</div>
+        </div>
+        <h3 style="margin-top:1.7rem">What each parcel comes with</h3>
+        <div class="fields">
+          <div class="fblock"><span class="flabel">The parcel</span>Exact site address, HCAD account number, legal description, lot size in acres, and a pin on the map.</div>
+          <div class="fblock"><span class="flabel">Ownership</span>Current owner and mailing address, how long they've held it, and any recent change of hands.</div>
+          <div class="fblock"><span class="flabel">Value</span>Land value, building value, total market value, value per acre, and how the building value stacks up against the land.</div>
+          <div class="fblock"><span class="flabel">The building</span>Size, year built, age, and footprint as a share of the lot (the coverage read).</div>
+          <div class="fblock"><span class="flabel">Trend</span>Last year's value and the year-over-year change, plus how the surrounding area is moving.</div>
+          <div class="fblock"><span class="flabel">Risk &amp; signals</span>Flood zone (100- and 500-year). As I wire in the sources: nearby permit activity, tax delinquency, and foreclosure postings.</div>
+          <div class="fblock"><span class="flabel">The score</span>A score from 0 to 100, with a plain breakdown of which factors pushed it up or down.</div>
+        </div>
+        <p class="foot-note" style="margin-top:0.9rem">
+          The sample rows above are generic on purpose, so I'm not putting invented owners and
+          addresses on screen.
         </p>
       </section>
 
@@ -297,53 +351,6 @@
         </div>
       </section>
 
-      <!-- WHAT YOU'D GET -->
-      <section class="section">
-        <h2>What you'd get</h2>
-        <p>A dashboard you can filter and sort, with a spreadsheet export and a map. Each row is one parcel. Roughly like this:</p>
-        <div class="tablecard">
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>Score</th><th>Location</th><th>Acres</th><th>Coverage</th>
-                  <th>Land value</th><th>Why it's on the list</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="score">91</td><td>NW · near Beltway 8</td><td>7.2</td><td>4%</td>
-                  <td>$2.1M</td><td class="why">Old building, value's in the dirt; permits picking up nearby</td>
-                </tr>
-                <tr>
-                  <td class="score">86</td><td>East End</td><td>5.4</td><td>0%</td>
-                  <td>$1.3M</td><td class="why">Vacant; out of the floodplain; owner changed last year</td>
-                </tr>
-                <tr>
-                  <td class="score">78</td><td>NE · frontage road</td><td>11.0</td><td>6%</td>
-                  <td>$3.4M</td><td class="why">Underbuilt corridor site; priced below the block</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="table-cap">Made-up rows, just to show the shape. The real list comes ranked from live data.</div>
-        </div>
-        <h3 style="margin-top:1.7rem">What each parcel comes with</h3>
-        <div class="fields">
-          <div class="fblock"><span class="flabel">The parcel</span>Exact site address, HCAD account number, legal description, lot size in acres, and a pin on the map.</div>
-          <div class="fblock"><span class="flabel">Ownership</span>Current owner and mailing address, how long they've held it, and any recent change of hands.</div>
-          <div class="fblock"><span class="flabel">Value</span>Land value, building value, total market value, value per acre, and how the building value stacks up against the land.</div>
-          <div class="fblock"><span class="flabel">The building</span>Size, year built, age, and footprint as a share of the lot (the coverage read).</div>
-          <div class="fblock"><span class="flabel">Trend</span>Last year's value and the year-over-year change, plus how the surrounding area is moving.</div>
-          <div class="fblock"><span class="flabel">Risk &amp; signals</span>Flood zone (100- and 500-year). As I wire in the sources: nearby permit activity, tax delinquency, and foreclosure postings.</div>
-          <div class="fblock"><span class="flabel">The score</span>A score from 0 to 100, with a plain breakdown of which factors pushed it up or down.</div>
-        </div>
-        <p class="foot-note" style="margin-top:0.9rem">
-          The sample rows above are generic on purpose, so I'm not putting invented owners and
-          addresses on screen.
-        </p>
-      </section>
-
       <!-- QUESTIONS -->
       <section class="section">
         <h2>What I still need from you</h2>
@@ -351,32 +358,6 @@
           The main scope question is answered. The remaining inputs mainly tune the ranking once the
           raw and underbuilt land screen is in place.
         </p>
-
-        <div class="q-key">
-          <div class="q key">
-            <span class="tag">Confirmed</span>
-            <h3>Use the physical coverage read first</h3>
-            <div class="opt">
-              <p><b>A) Building footprint vs. lot.</b> The building covers under 10% of the land
-                (e.g. a 15,000 sf building on a 5-acre site). This is the default screen now.</p>
-            </div>
-            <p style="margin-top:0.7rem">
-              That matches the target: <strong>raw land and underbuilt sites with a small building
-              on a big parcel.</strong> The value-ratio version can still be kept as a secondary
-              signal, but it should not define the first list.
-            </p>
-          </div>
-
-          <div class="q key">
-            <span class="tag">Confirmed</span>
-            <h3>Keep fully vacant land in</h3>
-            <p>
-              Vacant land is 0% physical coverage, so it belongs in the first pass. The dashboard
-              should tag each candidate as <strong>vacant</strong> or <strong>improved</strong> so
-              you can sort or filter them without mixing two different kinds of opportunities.
-            </p>
-          </div>
-        </div>
 
         <div class="q-quick">
           <h3>Quick confirms (defaults in parentheses)</h3>
