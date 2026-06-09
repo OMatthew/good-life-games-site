@@ -7,7 +7,7 @@
     <title>Harris County CRE Opportunity Radar</title>
     <meta
       name="description"
-      content="An early outline of a tool that reads the public record on every Harris County parcel and surfaces a short, ranked list of underbuilt sites."
+      content="An early outline of a tool that reads the public record on every Harris County parcel and surfaces a short, ranked list of raw and underbuilt land."
     />
 
     <!-- Open Graph / link unfurl -->
@@ -16,13 +16,13 @@
     <meta property="og:title" content="HarrisRadar — Harris County CRE Opportunity Radar" />
     <meta
       property="og:description"
-      content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of underbuilt sites worth a look."
+      content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of raw and underbuilt land worth a look."
     />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="HarrisRadar — Harris County CRE Opportunity Radar" />
     <meta
       name="twitter:description"
-      content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of underbuilt sites worth a look."
+      content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of raw and underbuilt land worth a look."
     />
 
     <link rel="icon" type="image/png" href="/logo.png" />
@@ -195,9 +195,9 @@
       <h1>A commercial real estate opportunity radar for Harris County.</h1>
       <p class="lead">
         The idea: pull the public record on all <strong>1.5 million</strong> parcels in Harris
-        County, score every one, and give you a dashboard that surfaces the underbuilt sites worth a
-        look. Filter it whenever you want, or get a short summary each week. Every parcel shows why
-        it's there.
+        County, score every one, and give you a dashboard that surfaces raw land and underbuilt
+        sites worth a look. Filter it whenever you want, or get a short summary each week. Every
+        parcel shows why it's there.
       </p>
 
       <!-- THE IDEA -->
@@ -219,10 +219,12 @@
 
       <!-- YOUR SCREEN IN NUMBERS -->
       <section class="section">
-        <h2>Your criteria, against live data</h2>
+        <h2>Your confirmed starting screen</h2>
         <p>
-          You said to start with <strong>5 acres and up, under 10% coverage.</strong> Run against the
-          current appraisal roll, that narrows the county like this:
+          You said to start with <strong>raw or underbuilt land: 5 acres and up, with building
+          footprint under 10% of the lot.</strong> That means coverage is the physical building
+          footprint, not a value ratio. Fully vacant land stays in as 0% coverage, and each row gets
+          tagged as vacant or improved so you can sort the two buckets separately.
         </p>
 
         <div class="funnel">
@@ -236,25 +238,26 @@
           </div>
           <div class="tier t3">
             <span class="num">13,374</span>
-            <span class="lbl">&hellip;and come in under 10% coverage*</span>
+            <span class="lbl">&hellip;have no building or come in under 10% coverage*</span>
           </div>
         </div>
 
         <div class="split">
           <div class="card hi">
-            <div class="num amber">~1,600</div>
-            <div class="lbl">a small building on a big lot (the value-add play)</div>
+            <div class="num">Vacant</div>
+            <div class="lbl">raw land at 0% physical coverage</div>
           </div>
           <div class="card">
-            <div class="num">~12,900</div>
-            <div class="lbl">are fully vacant land</div>
+            <div class="num amber">Improved</div>
+            <div class="lbl">small building footprint on a big lot</div>
           </div>
         </div>
 
         <p class="foot-note">
-          *First cut. "Coverage" can mean two different things, and they produce very different
-          lists. That's the first question for you below. (Keep only commercial, industrial,
-          multifamily, and land classes and the under-10% set is about 8,150.)
+          *First cut. The first build will compute physical lot coverage from HCAD building
+          footprint data, and fall back to the value-ratio read only where footprint data is missing.
+          (Keep only commercial, industrial, multifamily, and land classes and the under-10% set is
+          about 8,150.)
         </p>
       </section>
 
@@ -343,38 +346,34 @@
 
       <!-- QUESTIONS -->
       <section class="section">
-        <h2>What I need from you</h2>
+        <h2>What I still need from you</h2>
         <p>
-          Two of these actually change what shows up. The rest I can start on reasonable defaults and
-          adjust once you've seen a list.
+          The main scope question is answered. The remaining inputs mainly tune the ranking once the
+          raw and underbuilt land screen is in place.
         </p>
 
         <div class="q-key">
           <div class="q key">
-            <span class="tag">Question 1 · matters most</span>
-            <h3>When you say "under 10% coverage," which do you mean?</h3>
+            <span class="tag">Confirmed</span>
+            <h3>Use the physical coverage read first</h3>
             <div class="opt">
               <p><b>A) Building footprint vs. lot.</b> The building covers under 10% of the land
-                (e.g. a 15,000 sf building on a 5-acre site). The classic underbuilt play.
-                <em>My default unless you say otherwise.</em></p>
-            </div>
-            <div class="opt">
-              <p><b>B) Building value vs. total value.</b> The building is worth under 10% of the
-                parcel; basically, the value is all in the dirt.</p>
+                (e.g. a 15,000 sf building on a 5-acre site). This is the default screen now.</p>
             </div>
             <p style="margin-top:0.7rem">
-              Either way, the real question: are you after <strong>raw land, an underbuilt site with a
-              small building on it, or both?</strong>
+              That matches the target: <strong>raw land and underbuilt sites with a small building
+              on a big parcel.</strong> The value-ratio version can still be kept as a secondary
+              signal, but it should not define the first list.
             </p>
           </div>
 
           <div class="q key">
-            <span class="tag">Question 2</span>
-            <h3>Is fully vacant land in or out?</h3>
+            <span class="tag">Confirmed</span>
+            <h3>Keep fully vacant land in</h3>
             <p>
-              Vacant land is technically 0% coverage, so it clears the filter, and right now it's
-              about 96% of the list. Keep it in, leave it out, or make it a toggle? I'd lean toward
-              keeping both and tagging each row vacant or improved so you can sort.
+              Vacant land is 0% physical coverage, so it belongs in the first pass. The dashboard
+              should tag each candidate as <strong>vacant</strong> or <strong>improved</strong> so
+              you can sort or filter them without mixing two different kinds of opportunities.
             </p>
           </div>
         </div>
@@ -383,8 +382,8 @@
           <h3>Quick confirms (defaults in parentheses)</h3>
           <ol>
             <li><b>Property types.</b> Commercial, industrial, multifamily, and vacant or raw land
-              including rural acreage. (Single-family residential is off by default. Want builder lot
-              inventory in?)</li>
+              including rural acreage. Since raw land is in, single-family residential stays off by
+              default unless you want builder lot inventory included.</li>
             <li><b>Geography.</b> Whole county to start, or focus on certain submarkets or corridors
               first?</li>
             <li><b>What makes one a "good one"?</b> Once a parcel clears 5 acres and low coverage,
