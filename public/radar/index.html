@@ -242,8 +242,22 @@
       .q-quick { margin-top: 1rem; background: var(--surface-1); border: 1px solid var(--surface-2); border-radius: 14px; padding: 1.1rem 1.3rem; }
       .q-quick h3 { margin-bottom: 0.6rem; }
       .q-quick ol { margin: 0; padding-left: 1.2rem; }
-      .q-quick li { margin: 0.4rem 0; color: var(--ink-1); font-size: 0.95rem; }
+      .q-quick li { margin: 0.75rem 0; color: var(--ink-1); font-size: 0.95rem; }
       .q-quick li b { color: var(--ink-0); }
+      .q-prompt { display: block; }
+      .q-default {
+        display: block;
+        margin-top: 0.35rem;
+        padding: 0.65rem 0.8rem;
+        border-left: 2px solid var(--teal-strong);
+        border-radius: 0 10px 10px 0;
+        background: #fff;
+      }
+      .q-default em {
+        color: var(--teal-text);
+        font-style: normal;
+        font-weight: 700;
+      }
 
       /* ---------- footer ---------- */
       .footer { margin-top: clamp(3rem, 8vw, 5rem); padding-top: 1.5rem; border-top: 1px solid var(--surface-2); font-size: 0.85rem; color: var(--ink-2); }
@@ -441,7 +455,7 @@
           No black box. You can see exactly why each parcel scored the way it did, and tell me where
           it's off so I can tune it to you. Down the line, the ranking also gets checked against 20
           years of county records: which parcels like these actually got built on or outran their
-          area, so the weights come from history, not hunches.
+          area, so history can sharpen the weights.
         </div>
       </section>
 
@@ -457,32 +471,30 @@
         <div class="q-quick">
           <h3>Quick confirms</h3>
           <ol>
-            <li><b>Property types.</b> Which categories should the list cover?
-              <em>Default:</em> commercial, industrial, multifamily, and vacant or raw land including
-              rural acreage; single-family residential off. Land that builders are holding stays in
-              with its own tag and a toggle to hide it, since where they're banking land says a lot
-              about where growth is headed.</li>
-            <li><b>Geography.</b> Whole county, or zero in on certain submarkets or corridors first?
-              <em>Default:</em> whole county, with one-click filters for side of town, city vs.
-              unincorporated, and utility district. Filtering up front would hide hotspots you don't
-              already know about.</li>
-            <li><b>What makes one a "good one"?</b> Once a parcel clears 5 acres and low coverage,
-              what should push it up the list? <em>Default ranking:</em> road access and frontage,
-              flood position, momentum nearby (values and permits rising), price per acre vs.
-              neighbors, whether it can get water and sewer, and ownership (long-held, absentee, or
-              recently traded). <em>Still the answer I most want from you; whatever you mark up on
-              the first list replaces these assumptions.</em></li>
-            <li><b>Flood.</b> Should floodplain parcels just show a flag you judge yourself, or also
-              get marked down in the ranking? <em>Default:</em> both. The flood zone is always a
-              visible column, plus a penalty in the ranking you can switch off. Parcels in a floodway
-              (the channel itself, effectively unbuildable) get a red badge instead of quietly
-              disappearing.</li>
-            <li><b>How you'd use it.</b> A dashboard you open whenever you're sizing something up, a
-              short emailed summary, or both? <em>Default:</em> both, with a spreadsheet export
-              either way.</li>
-            <li><b>Update frequency.</b> How fresh does the data need to be?
-              <em>Default:</em> monthly to start, since appraisal data doesn't move faster than that;
-              weekly once the faster feeds (foreclosures, tax delinquency, permits) are wired in.</li>
+            <li>
+              <span class="q-prompt"><b>Property types.</b> Which categories should the list cover?</span>
+              <span class="q-default"><em>Default:</em> commercial, industrial, multifamily, and vacant or raw land including rural acreage; single-family residential off. Builder-held land stays in with its own tag and a toggle to hide it.</span>
+            </li>
+            <li>
+              <span class="q-prompt"><b>Geography.</b> Whole county, or zero in on certain submarkets or corridors first?</span>
+              <span class="q-default"><em>Default:</em> whole county, with one-click filters for side of town, city vs. unincorporated, and utility district.</span>
+            </li>
+            <li>
+              <span class="q-prompt"><b>What makes one a "good one"?</b> Once a parcel clears 5 acres and low coverage, what should push it up the list?</span>
+              <span class="q-default"><em>Default ranking:</em> road access and frontage, flood position, nearby momentum, price per acre vs. neighbors, utility-serviceability signals, and ownership. Marking up the first list replaces these assumptions.</span>
+            </li>
+            <li>
+              <span class="q-prompt"><b>Flood.</b> Should floodplain parcels just show a flag you judge yourself, or also get marked down in the ranking?</span>
+              <span class="q-default"><em>Default:</em> both. Flood zone is always visible, the ranking applies a penalty you can switch off, and floodway parcels get a red manual-review badge.</span>
+            </li>
+            <li>
+              <span class="q-prompt"><b>How you'd use it.</b> A dashboard you open whenever you're sizing something up, a short emailed summary, or both?</span>
+              <span class="q-default"><em>Default:</em> both, with a spreadsheet export either way.</span>
+            </li>
+            <li>
+              <span class="q-prompt"><b>Update frequency.</b> How fresh does the data need to be?</span>
+              <span class="q-default"><em>Default:</em> monthly to start; weekly once the faster feeds like foreclosures, tax delinquency, and permits are wired in.</span>
+            </li>
           </ol>
         </div>
       </section>
