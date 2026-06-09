@@ -188,15 +188,15 @@
       <p class="eyebrow">Harris County, TX · Commercial &amp; land</p>
       <h1>A commercial real estate opportunity radar for Harris County.</h1>
       <p class="lead">
-        The idea: pull the public record on all <strong>1.5 million</strong> parcels in Harris
-        County, score every one, and give you a dashboard that surfaces raw land and underbuilt
-        sites worth a look. Filter it whenever you want, or get a short summary each week. Every
-        parcel shows why it's there.
+        Pull the public record on all <strong>1.5 million</strong> parcels in Harris County, score
+        every one, and give you a dashboard that surfaces raw land and underbuilt sites worth a
+        look. Filter it whenever you want, or get a short summary each week. Every parcel shows why
+        it's there.
       </p>
 
-      <!-- THE IDEA -->
+      <!-- WHY THIS HELPS -->
       <section class="section">
-        <h2>The idea</h2>
+        <h2>Why this helps</h2>
         <p>
           A lot of what makes a parcel interesting is already public: what the land is worth next to
           the building on it, the lot size, the age of any structure, who owns it and since when,
@@ -215,7 +215,7 @@
       <section class="section">
         <h2>Your confirmed starting screen</h2>
         <p class="decision">
-          The first screen is now locked: <strong>raw or underbuilt land, 5 acres and up, with
+          The first filter is now locked: <strong>raw or underbuilt land, 5 acres and up, with
           physical building footprint under 10% of the lot.</strong> Coverage means the building's
           footprint, not its appraised value.
         </p>
@@ -241,7 +241,7 @@
           <h3>First-cut size of the search</h3>
           <p>
             The numbers below use the current appraisal roll and a low-improvement-value proxy until
-            the build loads HCAD's building-footprint data.
+            HarrisRadar loads HCAD's building-footprint data.
           </p>
 
           <div class="funnel">
@@ -260,7 +260,7 @@
           </div>
 
           <p class="foot-note">
-            *Proxy count, not the final physical-coverage count. The real build will calculate
+            *Proxy count, not the final physical-coverage count. HarrisRadar will calculate
             footprint coverage from HCAD building data and use the value-ratio read only as a
             fallback where footprint data is missing. Keep only commercial, industrial, multifamily,
             and land classes and this proxy set is about 8,150.
@@ -271,7 +271,7 @@
       <!-- WHAT YOU'D GET -->
       <section class="section">
         <h2>What you'd get</h2>
-        <p>A dashboard you can filter and sort, with a spreadsheet export and a map. Each row is one parcel. Roughly like this:</p>
+        <p>A dashboard you can filter and sort, with a spreadsheet export and a map. Each row is one parcel. The list would look roughly like this:</p>
         <div class="tablecard">
           <div class="table-scroll">
             <table>
@@ -297,7 +297,7 @@
               </tbody>
             </table>
           </div>
-          <div class="table-cap">Made-up rows, just to show the shape. The real list comes ranked from live data.</div>
+          <div class="table-cap">Example rows, just to show the shape. The actual list comes ranked from current public records.</div>
         </div>
         <h3 style="margin-top:1.7rem">What each parcel comes with</h3>
         <div class="fields">
@@ -306,7 +306,7 @@
           <div class="fblock"><span class="flabel">Value</span>Land value, building value, total market value, value per acre, and how the building value stacks up against the land.</div>
           <div class="fblock"><span class="flabel">The building</span>Size, year built, age, and footprint as a share of the lot (the coverage read).</div>
           <div class="fblock"><span class="flabel">Trend</span>Last year's value and the year-over-year change, plus how the surrounding area is moving.</div>
-          <div class="fblock"><span class="flabel">Risk &amp; signals</span>Flood zone (100- and 500-year). As I wire in the sources: nearby permit activity, tax delinquency, and foreclosure postings.</div>
+          <div class="fblock"><span class="flabel">Risk &amp; signals</span>Flood zone (100- and 500-year), nearby permit activity, tax delinquency, and foreclosure postings as those sources are added.</div>
           <div class="fblock"><span class="flabel">The score</span>A score from 0 to 100, with a plain breakdown of which factors pushed it up or down.</div>
         </div>
         <p class="foot-note" style="margin-top:0.9rem">
@@ -369,8 +369,8 @@
               first?</li>
             <li><b>What makes one a "good one"?</b> Once a parcel clears 5 acres and low coverage,
               what should push it up the list? Frontage, out of the floodplain, a recent sale, price
-              per acre, near new development? <em>Honestly this is the one I most need from you; it's
-              what the ranking gets built on.</em></li>
+              per acre, near new development? <em>This is the most useful answer; it's what the
+              ranking gets built on.</em></li>
             <li><b>Flood.</b> Penalize floodplain parcels, or just show it as a column you judge? (I can do both.)</li>
             <li><b>How you'd use it.</b> A dashboard you open and explore whenever you're sizing
               something up, a short summary emailed each week, or both? (I'm leaning both, with a
