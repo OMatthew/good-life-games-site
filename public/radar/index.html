@@ -18,14 +18,16 @@
       property="og:description"
       content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of raw and underbuilt land worth a look."
     />
+    <meta property="og:image" content="https://goodlifegames.io/radar-assets/logo-colored.png" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="HarrisRadar — Harris County CRE Opportunity Radar" />
     <meta
       name="twitter:description"
       content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of raw and underbuilt land worth a look."
     />
+    <meta name="twitter:image" content="https://goodlifegames.io/radar-assets/logo-colored.png" />
 
-    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/png" href="/radar-assets/logo-colored.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -74,6 +76,40 @@
         max-width: 820px;
         margin: 0 auto;
         padding: clamp(2.5rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2rem) 4rem;
+      }
+
+      .brand-lockup {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 1.35rem;
+      }
+
+      .brand-logo {
+        width: 2.8rem;
+        height: 2.8rem;
+        object-fit: contain;
+      }
+
+      .brand-name {
+        display: grid;
+        gap: 0.05rem;
+      }
+
+      .brand-name strong {
+        color: var(--ink-0);
+        font-size: 1.02rem;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .brand-name span {
+        color: var(--ink-2);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        line-height: 1;
+        text-transform: uppercase;
       }
 
       /* ---------- type ---------- */
@@ -227,7 +263,14 @@
   <body>
     <main class="wrap">
       <!-- HERO -->
-      <div class="badge"><span class="dot"></span> HarrisRadar · project outline</div>
+      <div class="brand-lockup" aria-label="HarrisRadar">
+        <img class="brand-logo" src="/radar-assets/logo-colored.png" alt="" />
+        <span class="brand-name">
+          <strong>HarrisRadar</strong>
+          <span>Opportunity radar</span>
+        </span>
+      </div>
+      <div class="badge"><span class="dot"></span> Project outline</div>
       <p class="eyebrow">Harris County, TX · Commercial &amp; land</p>
       <h1>A commercial real estate opportunity radar for Harris County.</h1>
       <p class="lead">
