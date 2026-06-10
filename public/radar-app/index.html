@@ -465,20 +465,96 @@
         max-width: none;
       }
 
-      .map-label {
-        position: absolute;
-        z-index: 500;
-        left: 1rem;
-        bottom: 1rem;
-        max-width: 22rem;
-        border: 1px solid rgba(255, 255, 255, 0.74);
-        border-radius: 8px;
-        padding: 0.55rem 0.7rem;
-        background: rgba(255, 255, 255, 0.78);
+      .map-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.9rem;
+        align-items: center;
+        border-top: 1px solid var(--surface-2);
+        padding: 0.65rem 1rem;
         color: var(--ink-1);
         font-size: 0.82rem;
         font-weight: 700;
-        backdrop-filter: blur(8px);
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .legend-dot {
+        width: 0.62rem;
+        height: 0.62rem;
+        border-radius: 999px;
+        background: var(--teal-0);
+      }
+
+      .legend-dot.unknown {
+        background: var(--amber-0);
+      }
+
+      .legend-help {
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+
+      .leaflet-control-container .leaflet-top,
+      .leaflet-control-container .leaflet-bottom {
+        position: absolute;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      .leaflet-top {
+        top: 10px;
+      }
+
+      .leaflet-left {
+        left: 10px;
+      }
+
+      .leaflet-control {
+        pointer-events: auto;
+      }
+
+      .leaflet-bar {
+        border: 1px solid rgba(15, 23, 42, 0.16);
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+        overflow: hidden;
+      }
+
+      .leaflet-bar a {
+        display: block;
+        width: 34px;
+        height: 34px;
+        border-bottom: 1px solid var(--surface-3);
+        background: rgba(255, 255, 255, 0.94);
+        color: var(--ink-0);
+        font: 800 1.15rem/34px var(--font-body);
+        text-align: center;
+        text-decoration: none;
+      }
+
+      .leaflet-bar a:last-child {
+        border-bottom: 0;
+      }
+
+      .leaflet-bar a:hover,
+      .leaflet-bar a:focus-visible {
+        background: var(--surface-2);
+      }
+
+      .leaflet-control-attribution {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        padding: 0.1rem 0.35rem;
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--ink-2);
+        font-size: 0.65rem;
       }
 
       .pin {
@@ -825,12 +901,12 @@
                 <h2>Parcel Map</h2>
                 <p>Approximate fixture locations, scaled to Harris County context.</p>
               </div>
-              <div class="map-wrap" id="map-wrap">
-                <div class="map-label">
-                  Green marks confirmed preview candidates. Amber marks rows that need footprint
-                  confirmation before Phase 1 status can be trusted.
-                </div>
+              <div class="map-legend" aria-label="Map legend">
+                <span class="legend-item"><span class="legend-dot"></span>Confirmed</span>
+                <span class="legend-item"><span class="legend-dot unknown"></span>Needs footprint confirmation</span>
+                <span class="legend-help">Drag the map. Use + / - to zoom.</span>
               </div>
+              <div class="map-wrap" id="map-wrap"></div>
             </div>
 
             <div class="panel list-panel">
