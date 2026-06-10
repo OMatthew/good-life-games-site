@@ -721,11 +721,11 @@
         <p class="eyebrow">Private fixture preview</p>
         <h1 id="auth-title">HarrisRadar</h1>
         <p>
-          Enter the preview password to open the synthetic dashboard. Browser password managers can
-          save and autofill this field.
+          Enter the HarrisRadar password to open the synthetic dashboard. Browser password managers
+          can save and autofill this field.
         </p>
         <form class="auth-form" id="auth-form" autocomplete="on">
-          <label for="radar-preview-password">Preview password</label>
+          <label for="radar-preview-password">HarrisRadar password</label>
           <div class="password-row">
             <input
               id="radar-preview-password"
@@ -857,9 +857,11 @@
     </div>
 
     <script>
-      const PASSWORD_HASH = '9719a1e7490ce5d34c0d4d1c6b99ce53c6251a135063d3a08e6ef7aedace7698';
-      const SESSION_KEY = 'harrisradar-preview-authenticated';
-      const LOCAL_KEY = 'harrisradar-preview-remembered';
+      const PASSWORD_HASH = '5631e13dae9f435bdff2521db94a3b9762572b303404d595adc1346d202807e1';
+      const SESSION_KEY = 'harrisradar-authenticated';
+      const LOCAL_KEY = 'harrisradar-authenticated-remembered';
+      const LEGACY_SESSION_KEYS = ['harrisradar-unlocked', 'harrisradar-preview-authenticated'];
+      const LEGACY_LOCAL_KEYS = ['harrisradar-preview-remembered'];
 
       const parcels = [
         {
@@ -1001,18 +1003,31 @@
         render();
       }
 
+      function isAuthenticated() {
+        return (
+          sessionStorage.getItem(SESSION_KEY) === 'true' ||
+          localStorage.getItem(LOCAL_KEY) === 'true' ||
+          LEGACY_SESSION_KEYS.some((key) => sessionStorage.getItem(key) === 'true') ||
+          LEGACY_LOCAL_KEYS.some((key) => localStorage.getItem(key) === 'true')
+        );
+      }
+
+      function rememberSession() {
+        sessionStorage.setItem(SESSION_KEY, 'true');
+      }
+
+      function rememberBrowser() {
+        localStorage.setItem(LOCAL_KEY, 'true');
+      }
+
       function lock() {
         sessionStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(LOCAL_KEY);
+        LEGACY_SESSION_KEYS.forEach((key) => sessionStorage.removeItem(key));
+        LEGACY_LOCAL_KEYS.forEach((key) => localStorage.removeItem(key));
         appShell.hidden = true;
         authScreen.hidden = false;
         authInput.value = '';
-        authInput.focus();
-      }
-
-      if (sessionStorage.getItem(SESSION_KEY) === 'true' || localStorage.getItem(LOCAL_KEY) === 'true') {
-        unlock();
-      } else {
         authInput.focus();
       }
 
@@ -1027,9 +1042,9 @@
         event.preventDefault();
         authError.textContent = '';
         if ((await sha256(authInput.value)) === PASSWORD_HASH) {
-          sessionStorage.setItem(SESSION_KEY, 'true');
+          rememberSession();
           if (rememberInput.checked) {
-            localStorage.setItem(LOCAL_KEY, 'true');
+            rememberBrowser();
           }
           unlock();
           return;
@@ -1227,6 +1242,13 @@
         renderMap(filtered);
         renderList(filtered);
         renderDetail(filtered);
+      }
+
+      if (isAuthenticated()) {
+        rememberSession();
+        unlock();
+      } else {
+        authInput.focus();
       }
     </script>
   </body>

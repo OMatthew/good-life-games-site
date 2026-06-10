@@ -298,13 +298,13 @@
       <div class="auth-panel">
         <div class="badge"><span class="dot"></span> Private project outline</div>
         <h1 id="auth-title">HarrisRadar</h1>
-        <p>Enter the password to view this Harris County parcel radar outline.</p>
-        <form class="auth-form" id="auth-form">
+        <p>Enter the HarrisRadar password to view the outline and dashboard preview.</p>
+        <form class="auth-form" id="auth-form" autocomplete="on">
           <label class="auth-label" for="auth-password">Password</label>
           <input
             class="auth-input"
             id="auth-password"
-            name="password"
+            name="radar-preview-password"
             type="password"
             autocomplete="current-password"
             required
@@ -544,7 +544,8 @@
     </main>
     <script>
       (() => {
-        const storageKey = 'harrisradar-unlocked';
+        const sessionKey = 'harrisradar-authenticated';
+        const legacySessionKey = 'harrisradar-unlocked';
         const passwordHash = '5631e13dae9f435bdff2521db94a3b9762572b303404d595adc1346d202807e1';
         const form = document.getElementById('auth-form');
         const input = document.getElementById('auth-password');
@@ -563,7 +564,16 @@
             .join('');
         };
 
-        if (sessionStorage.getItem(storageKey) === 'true') {
+        const rememberSession = () => {
+          sessionStorage.setItem(sessionKey, 'true');
+          sessionStorage.setItem(legacySessionKey, 'true');
+        };
+
+        if (
+          sessionStorage.getItem(sessionKey) === 'true' ||
+          sessionStorage.getItem(legacySessionKey) === 'true'
+        ) {
+          rememberSession();
           showPage();
           return;
         }
@@ -573,7 +583,7 @@
           error.textContent = '';
 
           if ((await hashText(input.value)) === passwordHash) {
-            sessionStorage.setItem(storageKey, 'true');
+            rememberSession();
             showPage();
           } else {
             input.value = '';
