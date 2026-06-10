@@ -636,18 +636,24 @@
         width: 100%;
         border: 0;
         border-top: 1px solid var(--surface-2);
+        border-left: 4px solid transparent;
         padding: 0.9rem 1rem;
         text-align: left;
         background: #fff;
+        transition: all 0.18s ease;
       }
 
       .parcel-row:first-child {
         border-top: 0;
       }
 
-      .parcel-row:hover,
+      .parcel-row:hover {
+        background: var(--surface-0);
+      }
+
       .parcel-row.active {
-        background: #f8fcfb;
+        background: var(--surface-2);
+        border-left: 4px solid var(--teal-0);
       }
 
       .parcel-main {
@@ -801,6 +807,53 @@
         color: var(--ink-2);
       }
 
+      .close-button {
+        position: absolute;
+        top: 1rem;
+        right: 1.2rem;
+        width: 28px;
+        height: 28px;
+        border: 1px solid var(--surface-3);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--ink-2);
+        font-size: 1.3rem;
+        font-weight: 400;
+        display: none; /* Controlled by JS */
+        place-items: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        padding: 0 0 2px 0;
+        line-height: 1;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
+      }
+
+      .close-button:hover,
+      .close-button:focus-visible {
+        background: var(--surface-2);
+        color: var(--ink-0);
+        border-color: var(--ink-2);
+      }
+
+      /* Sleek premium Leaflet tooltip */
+      .leaflet-tooltip-own,
+      .leaflet-tooltip {
+        background-color: rgba(22, 32, 29, 0.9) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 6px !important;
+        padding: 0.45rem 0.75rem !important;
+        font-family: var(--font-body) !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+        white-space: nowrap !important;
+      }
+
+      .leaflet-tooltip-top:before {
+        border-top-color: rgba(22, 32, 29, 0.9) !important;
+      }
+
       @media (max-width: 1120px) {
         .workspace {
           grid-template-columns: 260px minmax(0, 1fr);
@@ -952,9 +1005,10 @@
           </section>
 
           <section class="panel detail-panel" aria-live="polite">
-            <div class="panel-header">
+            <div class="panel-header" style="position: relative;">
               <h2>Property Detail</h2>
               <p>Explain why a row is or is not trusted by the preview screen.</p>
+              <button id="close-detail-btn" class="close-button" aria-label="Close detail panel" title="Deselect property">&times;</button>
             </div>
             <div class="detail-body" id="detail-body"></div>
           </section>
@@ -1082,7 +1136,7 @@
       ];
 
       const state = {
-        selectedId: parcels[0].account_id,
+        selectedId: null,
         filtered: parcels,
       };
 
@@ -1154,6 +1208,14 @@
         control.addEventListener('change', render);
       });
 
+      const closeDetailBtn = document.getElementById('close-detail-btn');
+      if (closeDetailBtn) {
+        closeDetailBtn.addEventListener('click', () => {
+          state.selectedId = null;
+          render();
+        });
+      }
+
       function getFilteredParcels() {
         const minAcres = Number(acreFilter.value);
         acreValue.textContent = formatNumber(minAcres, 1);
@@ -1202,19 +1264,32 @@
             : parcel.candidate_status === 'not_candidate'
               ? '#64748b'
               : '#0f766e';
+          
           const marker = L.circleMarker([parcel.latitude, parcel.longitude], {
-            radius: isSelected ? 10 : 7,
-            color: '#ffffff',
-            weight: 2,
+            radius: 7,
+            color: isSelected ? '#1d4ed8' : '#ffffff',
+            weight: isSelected ? 4 : 2,
             fillColor,
             fillOpacity: 0.95,
-          })
-            .bindTooltip(parcel.site_address, { direction: 'top', offset: [0, -8] })
-            .on('click', () => {
-              state.selectedId = parcel.account_id;
-              render();
-            })
-            .addTo(mapState.map);
+          });
+
+          const tooltipOptions = isSelected
+            ? { permanent: true, direction: 'top', offset: [0, -8] }
+            : { direction: 'top', offset: [0, -8] };
+            
+          marker.bindTooltip(parcel.site_address, tooltipOptions);
+          
+          marker.on('click', () => {
+            state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
+            render();
+          });
+          
+          marker.addTo(mapState.map);
+          
+          if (isSelected) {
+            marker.openTooltip();
+          }
+
           return marker;
         });
 
@@ -1252,7 +1327,7 @@
             </span>
           `;
           row.addEventListener('click', () => {
-            state.selectedId = parcel.account_id;
+            state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
             render();
           });
           list.append(row);
@@ -1261,9 +1336,27 @@
 
       function renderDetail(filtered) {
         const detail = document.getElementById('detail-body');
-        const selected =
-          filtered.find((parcel) => parcel.account_id === state.selectedId) || filtered[0] || parcels[0];
-        state.selectedId = selected.account_id;
+        const closeBtn = document.getElementById('close-detail-btn');
+        if (!state.selectedId) {
+          if (closeBtn) closeBtn.style.display = 'none';
+          detail.innerHTML = `
+            <div class="empty-state" style="padding: 1.5rem; text-align: center; color: var(--ink-2); font-weight: 500;">
+              Select a parcel from the preview map or list to inspect details.
+            </div>
+          `;
+          return;
+        }
+        const selected = filtered.find((parcel) => parcel.account_id === state.selectedId);
+        if (!selected) {
+          if (closeBtn) closeBtn.style.display = 'none';
+          detail.innerHTML = `
+            <div class="empty-state" style="padding: 1.5rem; text-align: center; color: var(--ink-2); font-weight: 500;">
+              Select a parcel from the preview map or list to inspect details.
+            </div>
+          `;
+          return;
+        }
+        if (closeBtn) closeBtn.style.display = 'grid';
         const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
         const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
         detail.innerHTML = `
@@ -1296,8 +1389,8 @@
       function render() {
         const filtered = getFilteredParcels();
         state.filtered = filtered;
-        if (!filtered.some((parcel) => parcel.account_id === state.selectedId) && filtered[0]) {
-          state.selectedId = filtered[0].account_id;
+        if (state.selectedId && !filtered.some((parcel) => parcel.account_id === state.selectedId)) {
+          state.selectedId = null;
         }
         renderMetrics(filtered);
         renderMap(filtered);
