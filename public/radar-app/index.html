@@ -432,6 +432,16 @@
         background: var(--surface-2);
       }
 
+      .map-wrap .leaflet-container {
+        width: 100%;
+        height: 100%;
+        background: var(--surface-2);
+      }
+
+      .map-wrap .leaflet-tile-container img {
+        max-width: none;
+      }
+
       .map-label {
         position: absolute;
         z-index: 500;
@@ -1037,16 +1047,19 @@
 
         if (!mapState.map) {
           mapState.map = L.map('map-wrap', {
+            attributionControl: true,
+            fadeAnimation: false,
             scrollWheelZoom: false,
+            zoomAnimation: false,
             zoomControl: true,
           }).setView([29.76, -95.42], 9);
 
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            keepBuffer: 6,
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap contributors',
+            updateWhenIdle: false,
+            attribution: 'Tiles &copy; Esri',
           }).addTo(mapState.map);
-
-          setTimeout(() => mapState.map.invalidateSize(), 0);
         }
 
         mapState.markers.forEach((marker) => marker.remove());
@@ -1077,6 +1090,12 @@
           const bounds = L.latLngBounds(mapState.markers.map((marker) => marker.getLatLng()));
           mapState.map.fitBounds(bounds, { padding: [34, 34], maxZoom: 11 });
         }
+
+        [0, 100, 400].forEach((delay) => {
+          setTimeout(() => {
+            mapState.map.invalidateSize();
+          }, delay);
+        });
       }
 
       function renderList(filtered) {
