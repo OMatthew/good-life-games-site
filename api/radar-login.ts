@@ -60,19 +60,20 @@ export async function POST(request: Request) {
   }
 
   const token = await createSessionToken();
-  const response = Response.redirect(new URL(nextPath, request.url), 303);
-  response.headers.set(
-    'Set-Cookie',
-    [
-      `${COOKIE_NAME}=${encodeURIComponent(token)}`,
-      'Path=/',
-      `Max-Age=${SESSION_TTL_SECONDS}`,
-      'HttpOnly',
-      'Secure',
-      'SameSite=Lax',
-    ].join('; '),
-  );
-  return response;
+  return new Response(null, {
+    status: 303,
+    headers: {
+      Location: new URL(nextPath, request.url).toString(),
+      'Set-Cookie': [
+        `${COOKIE_NAME}=${encodeURIComponent(token)}`,
+        'Path=/',
+        `Max-Age=${SESSION_TTL_SECONDS}`,
+        'HttpOnly',
+        'Secure',
+        'SameSite=Lax',
+      ].join('; '),
+    },
+  });
 }
 
 export function GET(request: Request) {

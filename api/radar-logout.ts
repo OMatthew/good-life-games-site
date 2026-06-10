@@ -9,17 +9,18 @@ function sanitizeNext(value: unknown) {
 export function GET(request: Request) {
   const url = new URL(request.url);
   const nextPath = sanitizeNext(url.searchParams.get('next'));
-  const response = Response.redirect(new URL(nextPath, request.url), 302);
-  response.headers.set(
-    'Set-Cookie',
-    [
-      `${COOKIE_NAME}=`,
-      'Path=/',
-      'Max-Age=0',
-      'HttpOnly',
-      'Secure',
-      'SameSite=Lax',
-    ].join('; '),
-  );
-  return response;
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: new URL(nextPath, request.url).toString(),
+      'Set-Cookie': [
+        `${COOKIE_NAME}=`,
+        'Path=/',
+        'Max-Age=0',
+        'HttpOnly',
+        'Secure',
+        'SameSite=Lax',
+      ].join('; '),
+    },
+  });
 }
