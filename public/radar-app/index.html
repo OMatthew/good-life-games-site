@@ -419,6 +419,7 @@
       }
 
       .metric {
+        position: relative;
         border: 1px solid var(--surface-3);
         border-radius: 8px;
         background: var(--surface-1);
@@ -426,13 +427,98 @@
         box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
       }
 
-      .metric span {
-        display: block;
+      .metric-label {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .metric-label span {
         color: var(--ink-2);
         font-size: 0.76rem;
         font-weight: 800;
         letter-spacing: 0.04em;
         text-transform: uppercase;
+      }
+
+      .info-button {
+        position: relative;
+        display: inline-grid;
+        flex: 0 0 auto;
+        place-items: center;
+        width: 1rem;
+        height: 1rem;
+        border: 1px solid var(--surface-3);
+        border-radius: 50%;
+        padding: 0;
+        color: var(--ink-2);
+        background: transparent;
+        font-size: 0.68rem;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .info-button:hover,
+      .info-button:focus,
+      .info-button:focus-visible {
+        border-color: var(--teal-0);
+        color: var(--teal-0);
+        outline: 0;
+      }
+
+      .info-button::after {
+        position: absolute;
+        bottom: calc(100% + 0.45rem);
+        left: 50%;
+        z-index: 20;
+        width: min(16rem, 70vw);
+        padding: 0.55rem 0.65rem;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        color: var(--ink-0);
+        background: var(--surface-1);
+        box-shadow: var(--shadow);
+        content: attr(aria-label);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        line-height: 1.35;
+        opacity: 0;
+        pointer-events: none;
+        text-align: left;
+        text-transform: none;
+        transform: translateX(-50%) translateY(0.2rem);
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      .metric:first-child .info-button::after {
+        left: 0;
+        transform: translateY(0.2rem);
+      }
+
+      .metric:last-child .info-button::after {
+        right: 0;
+        left: auto;
+        transform: translateY(0.2rem);
+      }
+
+      .info-button:hover::after,
+      .info-button:focus::after,
+      .info-button[data-open="true"]::after,
+      .info-button:focus-visible::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .metric:first-child .info-button:hover::after,
+      .metric:first-child .info-button:focus::after,
+      .metric:first-child .info-button[data-open="true"]::after,
+      .metric:first-child .info-button:focus-visible::after,
+      .metric:last-child .info-button:hover::after,
+      .metric:last-child .info-button:focus::after,
+      .metric:last-child .info-button[data-open="true"]::after,
+      .metric:last-child .info-button:focus-visible::after {
+        transform: translateY(0);
       }
 
       .metric strong {
@@ -452,9 +538,15 @@
         padding: 0.5rem 0.6rem;
       }
 
-      body[data-metric-density="compact"] .metric span {
+      body[data-metric-density="compact"] .metric-label span {
         font-size: 0.62rem;
         letter-spacing: 0.02em;
+      }
+
+      body[data-metric-density="compact"] .info-button {
+        width: 0.9rem;
+        height: 0.9rem;
+        font-size: 0.6rem;
       }
 
       body[data-metric-density="compact"] .metric strong {
@@ -1073,7 +1165,7 @@
           padding: 0.72rem 0.75rem;
         }
 
-        .metric span {
+        .metric-label span {
           font-size: 0.67rem;
         }
 
@@ -1088,7 +1180,7 @@
           box-shadow: none;
         }
 
-        body[data-metric-density="compact"] .metric span {
+        body[data-metric-density="compact"] .metric-label span {
           font-size: 0.58rem;
           letter-spacing: 0.02em;
         }
@@ -1160,11 +1252,55 @@
           <div class="source-pill" id="source-pill">Synthetic fixture data only</div>
         </section>
 
-        <section class="metrics" aria-label="Preview metrics">
-          <div class="metric"><span>Visible preview count</span><strong id="metric-count">0</strong></div>
-          <div class="metric"><span>Confirmed candidates</span><strong id="metric-confirmed">0</strong></div>
-          <div class="metric"><span>Candidate unknown</span><strong id="metric-unknown">0</strong></div>
-          <div class="metric"><span>Median acres</span><strong id="metric-acres">0.0</strong></div>
+        <section class="metrics" aria-label="Radar metrics">
+          <div class="metric">
+            <div class="metric-label">
+              <span>Visible parcels</span>
+              <button
+                class="info-button"
+                type="button"
+                aria-label="Rows currently visible after the active filters. This is the size of the list you are browsing right now."
+                title="Rows currently visible after the active filters. This is the size of the list you are browsing right now."
+              >i</button>
+            </div>
+            <strong id="metric-count">0</strong>
+          </div>
+          <div class="metric">
+            <div class="metric-label">
+              <span>Confirmed</span>
+              <button
+                class="info-button"
+                type="button"
+                aria-label="Parcels that passed the Phase 1 size, category, and low-coverage screen with enough footprint or vacancy evidence to trust the result."
+                title="Parcels that passed the Phase 1 size, category, and low-coverage screen with enough footprint or vacancy evidence to trust the result."
+              >i</button>
+            </div>
+            <strong id="metric-confirmed">0</strong>
+          </div>
+          <div class="metric">
+            <div class="metric-label">
+              <span>Needs check</span>
+              <button
+                class="info-button"
+                type="button"
+                aria-label="Parcels that pass the basic screen but still need footprint confirmation before treating them as confirmed candidates."
+                title="Parcels that pass the basic screen but still need footprint confirmation before treating them as confirmed candidates."
+              >i</button>
+            </div>
+            <strong id="metric-unknown">0</strong>
+          </div>
+          <div class="metric">
+            <div class="metric-label">
+              <span>Road-ready</span>
+              <button
+                class="info-button"
+                type="button"
+                aria-label="Visible parcels with frontage or within a quarter mile of a TxDOT major corridor. This is an access proxy, not driveway or frontage diligence."
+                title="Visible parcels with frontage or within a quarter mile of a TxDOT major corridor. This is an access proxy, not driveway or frontage diligence."
+              >i</button>
+            </div>
+            <strong id="metric-road-ready">0</strong>
+          </div>
         </section>
 
         <section class="workspace">
@@ -1393,6 +1529,7 @@
       const acreFilter = document.getElementById('acre-filter');
       const acreValue = document.getElementById('acre-value');
       const candidateOnly = document.getElementById('candidate-only');
+      const infoButtons = [...document.querySelectorAll('.info-button')];
 
       function resolvedTheme() {
         if (settings.theme === 'system') {
@@ -1413,8 +1550,27 @@
         settingsButton.setAttribute('aria-expanded', String(isOpen));
       }
 
+      function closeInfoButtons() {
+        infoButtons.forEach((button) => {
+          button.dataset.open = 'false';
+          button.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      infoButtons.forEach((button) => {
+        button.setAttribute('aria-expanded', 'false');
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const shouldOpen = button.dataset.open !== 'true';
+          closeInfoButtons();
+          button.dataset.open = String(shouldOpen);
+          button.setAttribute('aria-expanded', String(shouldOpen));
+        });
+      });
+
       settingsButton.addEventListener('click', (event) => {
         event.stopPropagation();
+        closeInfoButtons();
         setSettingsMenuOpen(settingsMenu.hidden);
       });
 
@@ -1423,10 +1579,14 @@
       });
 
       document.addEventListener('click', () => {
+        closeInfoButtons();
         setSettingsMenuOpen(false);
       });
 
       document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeInfoButtons();
+        }
         if (event.key === 'Escape' && !settingsMenu.hidden) {
           setSettingsMenuOpen(false);
           settingsButton.focus();
@@ -1485,11 +1645,8 @@
         return 'Outside mapped flood zones';
       }
 
-      function median(values) {
-        if (!values.length) return 0;
-        const sorted = [...values].sort((a, b) => a - b);
-        const mid = Math.floor(sorted.length / 2);
-        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      function isRoadReady(parcel) {
+        return parcel.road_access_bucket === 'frontage' || parcel.road_access_bucket === 'quarter_mile';
       }
 
       function unique(values) {
@@ -1604,7 +1761,7 @@
         document.getElementById('metric-count').textContent = filtered.length;
         document.getElementById('metric-confirmed').textContent = filtered.filter((parcel) => parcel.candidate_status === 'confirmed').length;
         document.getElementById('metric-unknown').textContent = filtered.filter((parcel) => parcel.candidate_status === 'unknown').length;
-        document.getElementById('metric-acres').textContent = formatNumber(median(filtered.map((parcel) => parcel.acres)), 1);
+        document.getElementById('metric-road-ready').textContent = filtered.filter(isRoadReady).length;
       }
 
       function renderMap(filtered) {
