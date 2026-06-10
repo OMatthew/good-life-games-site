@@ -4,68 +4,1230 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
+    <title>HarrisRadar Preview</title>
     <meta
-      http-equiv="refresh"
-      content="0; url=https://real-estate-dmeslfjcbeeeejryodmvvv.streamlit.app/"
+      name="description"
+      content="Private fixture-data preview for the HarrisRadar commercial real-estate opportunity dashboard."
     />
-    <title>Opening HarrisRadar Preview</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        color-scheme: light;
-        font-family: Manrope, "Segoe UI", sans-serif;
-        color: #1f2930;
-        background: #fffdf8;
+        --font-display: "Fraunces", Georgia, serif;
+        --font-body: "Manrope", "Segoe UI", sans-serif;
+        --surface-0: #f8faf9;
+        --surface-1: #ffffff;
+        --surface-2: #eef2f0;
+        --surface-3: #dbe4df;
+        --ink-0: #16201d;
+        --ink-1: #44534e;
+        --ink-2: #6c7c76;
+        --teal-0: #0f766e;
+        --teal-1: #14b8a6;
+        --teal-2: #d8f7f1;
+        --amber-0: #b45309;
+        --amber-1: #fef3c7;
+        --red-0: #991b1b;
+        --red-1: #fee2e2;
+        --blue-0: #1d4ed8;
+        --blue-1: #dbeafe;
+        --shadow: 0 24px 60px -42px rgba(15, 23, 42, 0.6);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
       }
 
       body {
-        min-height: 100vh;
         margin: 0;
+        min-width: 320px;
+        font-family: var(--font-body);
+        color: var(--ink-0);
+        background:
+          linear-gradient(115deg, rgba(216, 247, 241, 0.72), transparent 34%),
+          radial-gradient(circle at 92% 10%, rgba(254, 243, 199, 0.9), transparent 32%),
+          var(--surface-0);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .auth-screen {
+        min-height: 100vh;
         display: grid;
         place-items: center;
-        padding: 2rem;
+        padding: clamp(1.4rem, 5vw, 3rem);
       }
 
-      main {
-        width: min(100%, 32rem);
-        border: 1px solid #e5ddcc;
-        border-radius: 14px;
-        background: #fff;
-        padding: 1.5rem;
-        box-shadow: 0 12px 42px -30px rgba(31, 41, 48, 0.35);
+      .auth-card {
+        width: min(100%, 430px);
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: clamp(1.35rem, 5vw, 2rem);
+        box-shadow: var(--shadow);
       }
 
-      h1 {
-        margin: 0 0 0.6rem;
-        font-family: Georgia, serif;
-        font-size: clamp(1.7rem, 6vw, 2.2rem);
-        line-height: 1.15;
+      .eyebrow {
+        margin: 0 0 0.75rem;
+        color: var(--teal-0);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
       }
 
-      p {
-        margin: 0 0 1rem;
-        color: #495761;
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        line-height: 1.1;
+        margin: 0;
+      }
+
+      .auth-card h1 {
+        font-size: clamp(2.25rem, 10vw, 3.7rem);
+        margin-bottom: 0.85rem;
+      }
+
+      .auth-card p {
+        margin: 0 0 1.1rem;
+        color: var(--ink-1);
         line-height: 1.55;
       }
 
-      a {
-        color: #08787c;
+      .auth-form {
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      label {
+        color: var(--ink-1);
+        font-size: 0.84rem;
+        font-weight: 800;
+      }
+
+      .password-row {
+        position: relative;
+      }
+
+      .password-row input {
+        width: 100%;
+        min-height: 46px;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.72rem 3.1rem 0.72rem 0.82rem;
+        color: var(--ink-0);
+        background: #fff;
+      }
+
+      .password-row input:focus {
+        outline: 3px solid rgba(20, 184, 166, 0.18);
+        border-color: var(--teal-0);
+      }
+
+      .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 0.42rem;
+        width: 2.2rem;
+        height: 2.2rem;
+        transform: translateY(-50%);
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--ink-2);
+      }
+
+      .toggle-password:hover,
+      .toggle-password:focus-visible {
+        background: var(--surface-2);
+        color: var(--ink-0);
+      }
+
+      .remember-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: var(--ink-1);
+        font-size: 0.9rem;
+      }
+
+      .remember-row input {
+        width: 1rem;
+        height: 1rem;
+        accent-color: var(--teal-0);
+      }
+
+      .primary-button {
+        min-height: 46px;
+        border: 0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        color: #fff;
+        background: var(--teal-0);
+        font-weight: 800;
+      }
+
+      .primary-button:hover,
+      .primary-button:focus-visible {
+        background: #0a5f59;
+      }
+
+      .auth-error {
+        min-height: 1.25rem;
+        margin: 0;
+        color: var(--red-0);
+        font-size: 0.9rem;
+      }
+
+      .app-shell[hidden],
+      .auth-screen[hidden] {
+        display: none;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid rgba(219, 228, 223, 0.85);
+        background: rgba(248, 250, 249, 0.86);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar-inner {
+        width: min(1420px, 100%);
+        margin: 0 auto;
+        padding: 0.8rem clamp(1rem, 3vw, 1.8rem);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 0.05rem;
+      }
+
+      .brand strong {
+        font-size: 1.35rem;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+      }
+
+      .brand span {
+        color: var(--ink-2);
+        font-size: 0.78rem;
         font-weight: 700;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+      }
+
+      .text-button,
+      .icon-link {
+        min-height: 36px;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink-1);
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .text-button {
+        padding: 0.45rem 0.72rem;
+      }
+
+      .icon-link {
+        width: 36px;
+        display: grid;
+        place-items: center;
+      }
+
+      .dashboard {
+        width: min(1420px, 100%);
+        margin: 0 auto;
+        padding: clamp(1rem, 3vw, 1.8rem);
+      }
+
+      .hero-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: end;
+        margin-bottom: 1rem;
+      }
+
+      .hero-row h1 {
+        font-size: clamp(2rem, 5vw, 4.1rem);
+        letter-spacing: -0.03em;
+      }
+
+      .hero-row p {
+        max-width: 62ch;
+        margin: 0.55rem 0 0;
+        color: var(--ink-1);
+      }
+
+      .source-pill {
+        border: 1px solid var(--surface-3);
+        border-radius: 999px;
+        padding: 0.5rem 0.8rem;
+        background: #fff;
+        color: var(--ink-2);
+        font-size: 0.82rem;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .metric {
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        background: var(--surface-1);
+        padding: 0.95rem 1rem;
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+      }
+
+      .metric span {
+        display: block;
+        color: var(--ink-2);
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 0.25rem;
+        font-family: var(--font-display);
+        font-size: clamp(1.7rem, 4vw, 2.3rem);
+        line-height: 1;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 280px minmax(360px, 1fr) minmax(330px, 0.78fr);
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .panel {
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 12px 42px -36px rgba(15, 23, 42, 0.55);
+      }
+
+      .panel-header {
+        padding: 1rem 1rem 0.75rem;
+        border-bottom: 1px solid var(--surface-2);
+      }
+
+      .panel-header h2,
+      .panel-header h3 {
+        font-size: 1.1rem;
+      }
+
+      .panel-header p {
+        margin: 0.28rem 0 0;
+        color: var(--ink-2);
+        font-size: 0.86rem;
+      }
+
+      .filters {
+        position: sticky;
+        top: 5.1rem;
+      }
+
+      .filter-body {
+        display: grid;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .filter-group {
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      select,
+      input[type="range"] {
+        width: 100%;
+      }
+
+      select {
+        min-height: 40px;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.45rem 0.65rem;
+        background: #fff;
+        color: var(--ink-0);
+      }
+
+      .check-row {
+        display: flex;
+        gap: 0.55rem;
+        align-items: center;
+        color: var(--ink-1);
+        font-size: 0.92rem;
+      }
+
+      .check-row input {
+        accent-color: var(--teal-0);
+      }
+
+      .map-panel {
+        min-height: 356px;
+        overflow: hidden;
+      }
+
+      .map-wrap {
+        position: relative;
+        height: 356px;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.36) 1px, transparent 1px),
+          linear-gradient(rgba(255, 255, 255, 0.36) 1px, transparent 1px),
+          linear-gradient(145deg, #d8f7f1, #fef3c7);
+        background-size: 52px 52px, 52px 52px, auto;
+      }
+
+      .map-label {
+        position: absolute;
+        left: 1rem;
+        bottom: 1rem;
+        max-width: 22rem;
+        border: 1px solid rgba(255, 255, 255, 0.74);
+        border-radius: 8px;
+        padding: 0.55rem 0.7rem;
+        background: rgba(255, 255, 255, 0.78);
+        color: var(--ink-1);
+        font-size: 0.82rem;
+        font-weight: 700;
+        backdrop-filter: blur(8px);
+      }
+
+      .pin {
+        position: absolute;
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #fff;
+        border-radius: 999px;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.35);
+      }
+
+      .pin.confirmed {
+        background: var(--teal-0);
+      }
+
+      .pin.unknown {
+        background: var(--amber-0);
+      }
+
+      .pin.not_candidate {
+        background: #64748b;
+      }
+
+      .pin.active {
+        width: 1.35rem;
+        height: 1.35rem;
+        outline: 3px solid rgba(20, 184, 166, 0.28);
+      }
+
+      .list-panel {
+        margin-top: 1rem;
+        overflow: hidden;
+      }
+
+      .parcel-list {
+        display: grid;
+        max-height: 430px;
+        overflow: auto;
+      }
+
+      .parcel-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.8rem;
+        width: 100%;
+        border: 0;
+        border-top: 1px solid var(--surface-2);
+        padding: 0.9rem 1rem;
+        text-align: left;
+        background: #fff;
+      }
+
+      .parcel-row:first-child {
+        border-top: 0;
+      }
+
+      .parcel-row:hover,
+      .parcel-row.active {
+        background: #f8fcfb;
+      }
+
+      .parcel-main {
+        min-width: 0;
+      }
+
+      .parcel-address {
+        display: block;
+        color: var(--ink-0);
+        font-weight: 900;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .parcel-meta {
+        display: block;
+        margin-top: 0.22rem;
+        color: var(--ink-2);
+        font-size: 0.84rem;
+      }
+
+      .parcel-stats {
+        text-align: right;
+        color: var(--ink-1);
+        font-size: 0.86rem;
+        white-space: nowrap;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 1.5rem;
+        border-radius: 999px;
+        padding: 0.15rem 0.52rem;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+
+      .badge.confirmed {
+        color: #075c51;
+        background: var(--teal-2);
+      }
+
+      .badge.unknown {
+        color: #8a4b04;
+        background: var(--amber-1);
+      }
+
+      .badge.not_candidate {
+        color: #475569;
+        background: #e2e8f0;
+      }
+
+      .detail-panel {
+        position: sticky;
+        top: 5.1rem;
+      }
+
+      .detail-body {
+        padding: 1rem;
+      }
+
+      .detail-title {
+        margin-bottom: 0.25rem;
+        font-size: 1.35rem;
+      }
+
+      .detail-owner {
+        margin: 0 0 1rem;
+        color: var(--ink-2);
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin: 1rem 0;
+      }
+
+      .stat {
+        border: 1px solid var(--surface-2);
+        border-radius: 8px;
+        padding: 0.7rem;
+        background: #fff;
+      }
+
+      .stat span {
+        display: block;
+        color: var(--ink-2);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 0.15rem;
+        color: var(--ink-0);
+      }
+
+      .note-box {
+        border-left: 3px solid var(--teal-1);
+        border-radius: 0 8px 8px 0;
+        background: var(--teal-2);
+        padding: 0.75rem 0.85rem;
+        color: #075c51;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .future-grid {
+        display: grid;
+        gap: 0.55rem;
+        margin-top: 1rem;
+      }
+
+      .future-item {
+        border: 1px dashed var(--surface-3);
+        border-radius: 8px;
+        padding: 0.65rem 0.75rem;
+        color: var(--ink-1);
+        background: var(--surface-0);
+        font-size: 0.88rem;
+      }
+
+      .action-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 1rem;
+      }
+
+      .action-links a {
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.5rem 0.65rem;
+        color: var(--teal-0);
+        background: #fff;
+        text-decoration: none;
+        font-size: 0.86rem;
+        font-weight: 900;
+      }
+
+      .empty-state {
+        padding: 1rem;
+        color: var(--ink-2);
+      }
+
+      @media (max-width: 1120px) {
+        .workspace {
+          grid-template-columns: 260px minmax(0, 1fr);
+        }
+
+        .detail-panel {
+          grid-column: 1 / -1;
+          position: static;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar-inner,
+        .hero-row,
+        .workspace {
+          display: block;
+        }
+
+        .top-actions {
+          margin-top: 0.75rem;
+        }
+
+        .source-pill {
+          display: inline-flex;
+          margin-top: 0.85rem;
+        }
+
+        .metrics {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .filters {
+          position: static;
+          margin-bottom: 1rem;
+        }
+
+        .detail-panel {
+          margin-top: 1rem;
+        }
+
+        .map-wrap {
+          height: 300px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .metrics,
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .parcel-row {
+          grid-template-columns: 1fr;
+        }
+
+        .parcel-stats {
+          text-align: left;
+        }
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Opening HarrisRadar preview</h1>
-      <p>
-        Redirecting to the private Streamlit dashboard preview. It uses synthetic sample data only.
-      </p>
-      <p>
-        If you are not redirected automatically,
-        <a href="https://real-estate-dmeslfjcbeeeejryodmvvv.streamlit.app/">open the preview app</a>.
-      </p>
-    </main>
+    <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title">
+      <div class="auth-card">
+        <p class="eyebrow">Private fixture preview</p>
+        <h1 id="auth-title">HarrisRadar</h1>
+        <p>
+          Enter the preview password to open the synthetic dashboard. Browser password managers can
+          save and autofill this field.
+        </p>
+        <form class="auth-form" id="auth-form" autocomplete="on">
+          <label for="radar-preview-password">Preview password</label>
+          <div class="password-row">
+            <input
+              id="radar-preview-password"
+              name="radar-preview-password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+            <button
+              class="toggle-password"
+              type="button"
+              id="toggle-password"
+              aria-label="Show password"
+              title="Show password"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" stroke-width="2" />
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </button>
+          </div>
+          <label class="remember-row" for="remember-browser">
+            <input id="remember-browser" name="remember-browser" type="checkbox" />
+            Remember this browser
+          </label>
+          <button class="primary-button" type="submit">Open dashboard preview</button>
+          <p class="auth-error" id="auth-error" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <div class="app-shell" id="app-shell" hidden>
+      <header class="topbar">
+        <div class="topbar-inner">
+          <div class="brand">
+            <strong>HarrisRadar</strong>
+            <span>Fixture-only commercial real-estate preview</span>
+          </div>
+          <div class="top-actions">
+            <a class="icon-link" href="/radar" aria-label="View plan" title="View plan">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M8 7h8M8 11h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </a>
+            <button class="text-button" id="lock-button" type="button">Lock</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="hero-row" aria-labelledby="dashboard-title">
+          <div>
+            <p class="eyebrow">Harris County, TX</p>
+            <h1 id="dashboard-title">Opportunity Radar Preview</h1>
+            <p>
+              First draft dashboard over five synthetic parcels. This is for UI/workflow feedback,
+              not real parcel-content feedback or scoring decisions.
+            </p>
+          </div>
+          <div class="source-pill">Synthetic fixture data only</div>
+        </section>
+
+        <section class="metrics" aria-label="Preview metrics">
+          <div class="metric"><span>Visible preview count</span><strong id="metric-count">0</strong></div>
+          <div class="metric"><span>Confirmed candidates</span><strong id="metric-confirmed">0</strong></div>
+          <div class="metric"><span>Candidate unknown</span><strong id="metric-unknown">0</strong></div>
+          <div class="metric"><span>Median acres</span><strong id="metric-acres">0.0</strong></div>
+        </section>
+
+        <section class="workspace">
+          <aside class="panel filters" aria-label="Preview filters">
+            <div class="panel-header">
+              <h2>Filters</h2>
+              <p>Preview controls only. Real ranking weights are not enabled.</p>
+            </div>
+            <div class="filter-body">
+              <label class="check-row" for="candidate-only">
+                <input id="candidate-only" type="checkbox" />
+                Confirmed candidates only
+              </label>
+              <div class="filter-group">
+                <label for="category-filter">Property category</label>
+                <select id="category-filter"></select>
+              </div>
+              <div class="filter-group">
+                <label for="status-filter">Candidate status</label>
+                <select id="status-filter"></select>
+              </div>
+              <div class="filter-group">
+                <label for="acre-filter">Minimum acres: <span id="acre-value">0</span></label>
+                <input id="acre-filter" type="range" min="0" max="25" step="0.5" value="0" />
+              </div>
+            </div>
+          </aside>
+
+          <section>
+            <div class="panel map-panel">
+              <div class="panel-header">
+                <h2>Parcel Map</h2>
+                <p>Approximate fixture locations, scaled to Harris County context.</p>
+              </div>
+              <div class="map-wrap" id="map-wrap">
+                <div class="map-label">
+                  Green marks confirmed preview candidates. Amber marks rows that need footprint
+                  confirmation before Phase 1 status can be trusted.
+                </div>
+              </div>
+            </div>
+
+            <div class="panel list-panel">
+              <div class="panel-header">
+                <h2>Candidate Preview</h2>
+                <p>Click a row to update the detail panel.</p>
+              </div>
+              <div class="parcel-list" id="parcel-list"></div>
+            </div>
+          </section>
+
+          <section class="panel detail-panel" aria-live="polite">
+            <div class="panel-header">
+              <h2>Property Detail</h2>
+              <p>Explain why a row is or is not trusted by the preview screen.</p>
+            </div>
+            <div class="detail-body" id="detail-body"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
     <script>
-      window.location.replace('https://real-estate-dmeslfjcbeeeejryodmvvv.streamlit.app/');
+      const PASSWORD_HASH = '9719a1e7490ce5d34c0d4d1c6b99ce53c6251a135063d3a08e6ef7aedace7698';
+      const SESSION_KEY = 'harrisradar-preview-authenticated';
+      const LOCAL_KEY = 'harrisradar-preview-remembered';
+
+      const parcels = [
+        {
+          account_id: '0010020000003',
+          owner_name: 'BAYOU HOLDINGS LLC',
+          site_address: '1000 SAMPLE INDUSTRIAL RD, HOUSTON',
+          state_class: 'F1',
+          prop_category: 'commercial',
+          roll_year: 2025,
+          acres: 6.2,
+          land_sqft: 270072,
+          land_value: 2200000,
+          impr_value: 120000,
+          total_market_val: 2320000,
+          coverage_ratio: 0.03147308865783939,
+          coverage_source: 'physical',
+          coverage_status: 'improved',
+          is_stack_anchor: true,
+          is_phase1_candidate: true,
+          candidate_status: 'confirmed',
+          candidate_status_reason: 'Meets the preview Phase 1 screen with physical or vacant coverage.',
+          longitude: -95.416,
+          latitude: 29.784,
+        },
+        {
+          account_id: '0445550000001',
+          owner_name: 'NORTHWEST LAND PARTNERS LP',
+          site_address: '0 SAMPLE FARM TO MARKET RD, HOUSTON',
+          state_class: 'C1',
+          prop_category: 'land_vacant',
+          roll_year: 2025,
+          acres: 12.4,
+          land_sqft: 0,
+          land_value: 1800000,
+          impr_value: 0,
+          total_market_val: 1800000,
+          coverage_ratio: 0,
+          coverage_source: 'none',
+          coverage_status: 'vacant',
+          is_stack_anchor: true,
+          is_phase1_candidate: true,
+          candidate_status: 'confirmed',
+          candidate_status_reason: 'Meets the preview Phase 1 screen with physical or vacant coverage.',
+          longitude: -95.572,
+          latitude: 29.918,
+        },
+        {
+          account_id: '0777770000010',
+          owner_name: 'SOUTHEAST FLEX OWNER LLC',
+          site_address: '7500 SAMPLE BELTWAY, PASADENA',
+          state_class: 'F2',
+          prop_category: 'industrial',
+          roll_year: 2025,
+          acres: 8.5,
+          land_sqft: 370260,
+          land_value: 3100000,
+          impr_value: 250000,
+          total_market_val: 3350000,
+          coverage_ratio: 0.07462686567164178,
+          coverage_source: 'value_proxy',
+          coverage_status: 'improved_footprint_unknown',
+          is_stack_anchor: true,
+          is_phase1_candidate: false,
+          candidate_status: 'unknown',
+          candidate_status_reason: 'Needs HCAD bulk footprint data before the hard Phase 1 screen can be confirmed.',
+          longitude: -95.192,
+          latitude: 29.658,
+        },
+        {
+          account_id: '0888880000002',
+          owner_name: 'WEST HARRIS RANCH LTD',
+          site_address: '500 SAMPLE RANCH RD, KATY',
+          state_class: 'E1',
+          prop_category: 'land_rural_ag',
+          roll_year: 2025,
+          acres: 18.2,
+          land_sqft: 792792,
+          land_value: 4200000,
+          impr_value: 320000,
+          total_market_val: 4520000,
+          coverage_ratio: 0.007820462365916912,
+          coverage_source: 'physical',
+          coverage_status: 'improved',
+          is_stack_anchor: true,
+          is_phase1_candidate: true,
+          candidate_status: 'confirmed',
+          candidate_status_reason: 'Meets the preview Phase 1 screen with physical or vacant coverage.',
+          longitude: -95.808,
+          latitude: 29.792,
+        },
+        {
+          account_id: '0999990000101',
+          owner_name: 'STACKED SAMPLE OWNER',
+          site_address: '101 SAMPLE STACKED DR, HOUSTON',
+          state_class: 'B1',
+          prop_category: 'multifamily',
+          roll_year: 2025,
+          acres: 7.1,
+          land_sqft: 309276,
+          land_value: 5000000,
+          impr_value: 200000,
+          total_market_val: 5200000,
+          coverage_ratio: 0.038461538461538464,
+          coverage_source: 'value_proxy',
+          coverage_status: 'improved_footprint_unknown',
+          is_stack_anchor: false,
+          is_phase1_candidate: false,
+          candidate_status: 'not_candidate',
+          candidate_status_reason: 'Does not meet the Phase 1 size/category/coverage screen.',
+          longitude: -95.346,
+          latitude: 29.724,
+        },
+      ];
+
+      const state = {
+        selectedId: parcels[0].account_id,
+        filtered: parcels,
+      };
+
+      const authScreen = document.getElementById('auth-screen');
+      const appShell = document.getElementById('app-shell');
+      const authForm = document.getElementById('auth-form');
+      const authInput = document.getElementById('radar-preview-password');
+      const authError = document.getElementById('auth-error');
+      const rememberInput = document.getElementById('remember-browser');
+      const togglePassword = document.getElementById('toggle-password');
+
+      async function sha256(text) {
+        const bytes = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest('SHA-256', bytes);
+        return Array.from(new Uint8Array(digest))
+          .map((byte) => byte.toString(16).padStart(2, '0'))
+          .join('');
+      }
+
+      function unlock() {
+        authScreen.hidden = true;
+        appShell.hidden = false;
+        render();
+      }
+
+      function lock() {
+        sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(LOCAL_KEY);
+        appShell.hidden = true;
+        authScreen.hidden = false;
+        authInput.value = '';
+        authInput.focus();
+      }
+
+      if (sessionStorage.getItem(SESSION_KEY) === 'true' || localStorage.getItem(LOCAL_KEY) === 'true') {
+        unlock();
+      } else {
+        authInput.focus();
+      }
+
+      togglePassword.addEventListener('click', () => {
+        const show = authInput.type === 'password';
+        authInput.type = show ? 'text' : 'password';
+        togglePassword.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        togglePassword.setAttribute('title', show ? 'Hide password' : 'Show password');
+      });
+
+      authForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        authError.textContent = '';
+        if ((await sha256(authInput.value)) === PASSWORD_HASH) {
+          sessionStorage.setItem(SESSION_KEY, 'true');
+          if (rememberInput.checked) {
+            localStorage.setItem(LOCAL_KEY, 'true');
+          }
+          unlock();
+          return;
+        }
+        authInput.value = '';
+        authInput.focus();
+        authError.textContent = 'That password did not work.';
+      });
+
+      document.getElementById('lock-button').addEventListener('click', lock);
+
+      const categoryFilter = document.getElementById('category-filter');
+      const statusFilter = document.getElementById('status-filter');
+      const acreFilter = document.getElementById('acre-filter');
+      const acreValue = document.getElementById('acre-value');
+      const candidateOnly = document.getElementById('candidate-only');
+
+      function titleCase(value) {
+        return String(value).replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+
+      function formatMoney(value) {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          maximumFractionDigits: 0,
+        }).format(value || 0);
+      }
+
+      function formatNumber(value, digits = 0) {
+        return new Intl.NumberFormat('en-US', {
+          maximumFractionDigits: digits,
+          minimumFractionDigits: digits,
+        }).format(value || 0);
+      }
+
+      function pct(value) {
+        return `${formatNumber((value || 0) * 100, 1)}%`;
+      }
+
+      function median(values) {
+        if (!values.length) return 0;
+        const sorted = [...values].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      }
+
+      function unique(values) {
+        return [...new Set(values)].sort();
+      }
+
+      function setOptions(select, options, allLabel) {
+        select.innerHTML = '';
+        const all = document.createElement('option');
+        all.value = 'all';
+        all.textContent = allLabel;
+        select.append(all);
+        options.forEach((option) => {
+          const el = document.createElement('option');
+          el.value = option;
+          el.textContent = titleCase(option);
+          select.append(el);
+        });
+      }
+
+      setOptions(categoryFilter, unique(parcels.map((parcel) => parcel.prop_category)), 'All categories');
+      setOptions(statusFilter, unique(parcels.map((parcel) => parcel.candidate_status)), 'Confirmed + unknown');
+      statusFilter.value = 'all';
+
+      [categoryFilter, statusFilter, acreFilter, candidateOnly].forEach((control) => {
+        control.addEventListener('input', render);
+        control.addEventListener('change', render);
+      });
+
+      function getFilteredParcels() {
+        const minAcres = Number(acreFilter.value);
+        acreValue.textContent = formatNumber(minAcres, 1);
+        return parcels.filter((parcel) => {
+          if (candidateOnly.checked && parcel.candidate_status !== 'confirmed') return false;
+          if (categoryFilter.value !== 'all' && parcel.prop_category !== categoryFilter.value) return false;
+          if (statusFilter.value === 'all' && parcel.candidate_status === 'not_candidate') return false;
+          if (statusFilter.value !== 'all' && parcel.candidate_status !== statusFilter.value) return false;
+          if (parcel.acres < minAcres) return false;
+          return true;
+        });
+      }
+
+      function mapPosition(parcel) {
+        const minLon = -95.9;
+        const maxLon = -95.05;
+        const minLat = 29.55;
+        const maxLat = 30.0;
+        const x = ((parcel.longitude - minLon) / (maxLon - minLon)) * 84 + 8;
+        const y = 92 - ((parcel.latitude - minLat) / (maxLat - minLat)) * 78;
+        return { x, y };
+      }
+
+      function renderMetrics(filtered) {
+        document.getElementById('metric-count').textContent = filtered.length;
+        document.getElementById('metric-confirmed').textContent = filtered.filter((parcel) => parcel.candidate_status === 'confirmed').length;
+        document.getElementById('metric-unknown').textContent = filtered.filter((parcel) => parcel.candidate_status === 'unknown').length;
+        document.getElementById('metric-acres').textContent = formatNumber(median(filtered.map((parcel) => parcel.acres)), 1);
+      }
+
+      function renderMap(filtered) {
+        const map = document.getElementById('map-wrap');
+        map.querySelectorAll('.pin').forEach((pin) => pin.remove());
+        filtered.forEach((parcel) => {
+          const pin = document.createElement('button');
+          const pos = mapPosition(parcel);
+          pin.className = `pin ${parcel.candidate_status}${parcel.account_id === state.selectedId ? ' active' : ''}`;
+          pin.style.left = `${pos.x}%`;
+          pin.style.top = `${pos.y}%`;
+          pin.type = 'button';
+          pin.title = parcel.site_address;
+          pin.setAttribute('aria-label', parcel.site_address);
+          pin.addEventListener('click', () => {
+            state.selectedId = parcel.account_id;
+            render();
+          });
+          map.append(pin);
+        });
+      }
+
+      function renderList(filtered) {
+        const list = document.getElementById('parcel-list');
+        if (!filtered.length) {
+          list.innerHTML = '<div class="empty-state">No preview rows match the current filters.</div>';
+          return;
+        }
+        list.innerHTML = '';
+        filtered.forEach((parcel) => {
+          const row = document.createElement('button');
+          row.type = 'button';
+          row.className = `parcel-row${parcel.account_id === state.selectedId ? ' active' : ''}`;
+          row.innerHTML = `
+            <span class="parcel-main">
+              <span class="parcel-address">${parcel.site_address}</span>
+              <span class="parcel-meta">${parcel.account_id} · ${titleCase(parcel.prop_category)} · ${parcel.owner_name}</span>
+            </span>
+            <span class="parcel-stats">
+              <span class="badge ${parcel.candidate_status}">${titleCase(parcel.candidate_status)}</span><br />
+              ${formatNumber(parcel.acres, 1)} ac · ${pct(parcel.coverage_ratio)}
+            </span>
+          `;
+          row.addEventListener('click', () => {
+            state.selectedId = parcel.account_id;
+            render();
+          });
+          list.append(row);
+        });
+      }
+
+      function renderDetail(filtered) {
+        const detail = document.getElementById('detail-body');
+        const selected =
+          filtered.find((parcel) => parcel.account_id === state.selectedId) || filtered[0] || parcels[0];
+        state.selectedId = selected.account_id;
+        const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
+        const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
+        detail.innerHTML = `
+          <span class="badge ${selected.candidate_status}">${titleCase(selected.candidate_status)}</span>
+          <h3 class="detail-title">${selected.site_address}</h3>
+          <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+          <div class="note-box">${selected.candidate_status_reason}</div>
+          <div class="stat-grid">
+            <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
+            <div class="stat"><span>Coverage</span><strong>${pct(selected.coverage_ratio)}</strong></div>
+            <div class="stat"><span>Category</span><strong>${titleCase(selected.prop_category)}</strong></div>
+            <div class="stat"><span>State class</span><strong>${selected.state_class}</strong></div>
+            <div class="stat"><span>Land value</span><strong>${formatMoney(selected.land_value)}</strong></div>
+            <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
+            <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
+            <div class="stat"><span>Coverage source</span><strong>${titleCase(selected.coverage_source)}</strong></div>
+          </div>
+          <div class="future-grid">
+            <div class="future-item">Scoring is not enabled in this preview.</div>
+            <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
+            <div class="future-item">Rows marked unknown need HCAD bulk footprint confirmation before Phase 1 status is trusted.</div>
+          </div>
+          <div class="action-links">
+            <a href="${gmapsUrl}" target="_blank" rel="noreferrer">Open in Google Maps</a>
+            <a href="${hcadUrl}" target="_blank" rel="noreferrer">Open HCAD profile</a>
+          </div>
+        `;
+      }
+
+      function render() {
+        const filtered = getFilteredParcels();
+        state.filtered = filtered;
+        if (!filtered.some((parcel) => parcel.account_id === state.selectedId) && filtered[0]) {
+          state.selectedId = filtered[0].account_id;
+        }
+        renderMetrics(filtered);
+        renderMap(filtered);
+        renderList(filtered);
+        renderDetail(filtered);
+      }
     </script>
   </body>
 </html>
