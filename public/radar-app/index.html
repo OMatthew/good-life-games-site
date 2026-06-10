@@ -444,19 +444,22 @@
       }
 
       body[data-metric-density="compact"] .metrics {
-        gap: 0.55rem;
+        gap: 0.4rem;
+        margin-bottom: 0.7rem;
       }
 
       body[data-metric-density="compact"] .metric {
-        padding: 0.7rem 0.75rem;
+        padding: 0.5rem 0.6rem;
       }
 
       body[data-metric-density="compact"] .metric span {
-        font-size: 0.68rem;
+        font-size: 0.62rem;
+        letter-spacing: 0.02em;
       }
 
       body[data-metric-density="compact"] .metric strong {
-        font-size: clamp(1.45rem, 4vw, 1.9rem);
+        margin-top: 0.12rem;
+        font-size: clamp(1.3rem, 3.2vw, 1.65rem);
       }
 
       .workspace {
@@ -697,6 +700,22 @@
         background: var(--surface-2);
       }
 
+      body[data-theme="dark"] .leaflet-bar {
+        border-color: var(--surface-3);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      body[data-theme="dark"] .leaflet-bar a {
+        border-bottom-color: var(--surface-3);
+        background: var(--surface-1);
+        color: var(--ink-0);
+      }
+
+      body[data-theme="dark"] .leaflet-bar a:hover,
+      body[data-theme="dark"] .leaflet-bar a:focus-visible {
+        background: var(--surface-2);
+      }
+
       .leaflet-control-attribution {
         position: absolute;
         right: 0;
@@ -835,6 +854,21 @@
       .badge.not_candidate {
         color: #475569;
         background: #e2e8f0;
+      }
+
+      body[data-theme="dark"] .badge.confirmed {
+        color: #99f6e4;
+        background: #134e4a;
+      }
+
+      body[data-theme="dark"] .badge.unknown {
+        color: #fde68a;
+        background: #713f12;
+      }
+
+      body[data-theme="dark"] .badge.not_candidate {
+        color: #cbd5e1;
+        background: #334155;
       }
 
       .detail-panel {
@@ -1048,16 +1082,20 @@
         }
 
         body[data-metric-density="compact"] .metric {
-          padding: 0.55rem 0.6rem;
+          border-color: transparent;
+          padding: 0.3rem 0.35rem;
+          background: transparent;
+          box-shadow: none;
         }
 
         body[data-metric-density="compact"] .metric span {
-          font-size: 0.62rem;
+          font-size: 0.58rem;
           letter-spacing: 0.02em;
         }
 
         body[data-metric-density="compact"] .metric strong {
-          font-size: 1.35rem;
+          margin-top: 0.05rem;
+          font-size: 1.12rem;
         }
 
         .parcel-row {
