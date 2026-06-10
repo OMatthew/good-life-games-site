@@ -26,6 +26,20 @@ npm run build
 npm run preview
 ```
 
+## HarrisRadar Preview Auth
+
+`/radar`, `/radar-app`, and nested preview routes are protected in production by Vercel Routing Middleware. The shared password is checked server-side by `/api/radar-login`, which sets an HttpOnly signed cookie.
+
+Required Vercel environment variable:
+
+- `RADAR_ACCESS_PASSWORD`: shared password for the HarrisRadar preview
+
+Optional Vercel environment variable:
+
+- `RADAR_AUTH_SECRET`: signing secret for the auth cookie. If omitted, `RADAR_ACCESS_PASSWORD` is used for signing too.
+
+Local `npm run preview` serves the static files only and does not run Vercel middleware. Use `vercel dev` when the server-side auth flow needs local verification.
+
 ## Notes
 
 - Contact email currently points to `matthew@goodlifegames.io`.
