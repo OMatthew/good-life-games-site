@@ -160,6 +160,35 @@
         color: var(--teal-dark); margin: 0 0 1rem;
       }
 
+      .preview-cta {
+        margin-top: 1.65rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.9rem 1rem;
+      }
+
+      .preview-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.85rem;
+        border-radius: 999px;
+        padding: 0.72rem 1.15rem;
+        background: var(--teal-dark);
+        color: #fff;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 10px 24px -18px rgba(9, 123, 128, 0.55);
+      }
+
+      .preview-note {
+        max-width: 28rem;
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--ink-2);
+      }
+
       .section { margin-top: clamp(2.75rem, 7vw, 4.5rem); }
       .section > p { max-width: 62ch; }
 
@@ -297,6 +326,13 @@
         look. Filter it whenever you want, or get a short summary each week. Every parcel shows why
         it's there.
       </p>
+      <div class="preview-cta" aria-label="Private dashboard preview">
+        <a class="preview-button" href="/radar-app">Open private dashboard preview</a>
+        <p class="preview-note">
+          Early UI preview using synthetic sample data only. Real parcel ingest and scoring are not
+          live yet.
+        </p>
+      </div>
 
       <!-- WHY THIS HELPS -->
       <section class="section">
