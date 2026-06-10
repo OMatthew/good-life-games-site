@@ -852,21 +852,81 @@
         overflow: hidden;
       }
 
+      .list-tools {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(8.5rem, 0.55fr) auto;
+        gap: 0.6rem;
+        align-items: end;
+        border-top: 1px solid var(--surface-2);
+        padding: 0.8rem 1rem;
+      }
+
+      .list-field {
+        display: grid;
+        gap: 0.35rem;
+      }
+
+      .list-field span {
+        color: var(--ink-2);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .list-field input,
+      .list-field select {
+        width: 100%;
+        min-height: 38px;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.55rem 0.65rem;
+        color: var(--ink-0);
+        background: var(--surface-1);
+      }
+
+      .list-field input:focus,
+      .list-field select:focus {
+        outline: 3px solid rgba(20, 184, 166, 0.18);
+        border-color: var(--teal-0);
+      }
+
+      .list-top-button,
+      .secondary-button {
+        min-height: 38px;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.55rem 0.75rem;
+        color: var(--ink-1);
+        background: var(--surface-1);
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .list-top-button:hover,
+      .list-top-button:focus-visible,
+      .secondary-button:hover,
+      .secondary-button:focus-visible {
+        border-color: var(--teal-0);
+        color: var(--teal-0);
+        outline: 0;
+      }
+
       .parcel-list {
         display: grid;
-        max-height: 430px;
+        max-height: 520px;
         overflow: auto;
       }
 
       .parcel-row {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 0.8rem;
         width: 100%;
         border: 0;
         border-top: 1px solid var(--surface-2);
         border-left: 4px solid transparent;
-        padding: 0.9rem 1rem;
+        padding: 0.8rem 1rem;
         text-align: left;
         background: #fff;
         transition: all 0.18s ease;
@@ -897,6 +957,23 @@
         min-width: 0;
       }
 
+      .parcel-kicker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.55rem;
+        align-items: center;
+        margin-bottom: 0.22rem;
+        color: var(--ink-2);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .parcel-rank {
+        color: var(--teal-0);
+      }
+
       .parcel-address {
         display: block;
         color: var(--ink-0);
@@ -911,9 +988,50 @@
         margin-top: 0.22rem;
         color: var(--ink-2);
         font-size: 0.84rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      .parcel-stats {
+      .parcel-signals {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.55rem;
+      }
+
+      .signal-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 1.45rem;
+        border: 1px solid var(--surface-3);
+        border-radius: 999px;
+        padding: 0.16rem 0.5rem;
+        color: var(--ink-1);
+        background: var(--surface-0);
+        font-size: 0.72rem;
+        font-weight: 800;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .signal-chip.good {
+        border-color: rgba(15, 118, 110, 0.25);
+        color: var(--teal-0);
+        background: var(--teal-2);
+      }
+
+      .signal-chip.warn {
+        border-color: rgba(180, 83, 9, 0.28);
+        color: var(--amber-0);
+        background: var(--amber-1);
+      }
+
+      .parcel-side {
+        display: grid;
+        justify-items: end;
+        align-content: start;
+        gap: 0.4rem;
         text-align: right;
         color: var(--ink-1);
         font-size: 0.86rem;
@@ -961,6 +1079,22 @@
       body[data-theme="dark"] .badge.not_candidate {
         color: #cbd5e1;
         background: #334155;
+      }
+
+      .list-footer {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--surface-2);
+        padding: 0.75rem 1rem;
+        color: var(--ink-2);
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .list-footer[hidden] {
+        display: none;
       }
 
       .detail-panel {
@@ -1190,12 +1324,16 @@
           font-size: 1.12rem;
         }
 
-        .parcel-row {
-          grid-template-columns: 1fr;
+        .list-tools {
+          grid-template-columns: minmax(0, 1fr) auto;
         }
 
-        .parcel-stats {
-          text-align: left;
+        .list-field:first-child {
+          grid-column: 1 / -1;
+        }
+
+        .list-top-button {
+          justify-self: stretch;
         }
       }
     </style>
@@ -1348,7 +1486,28 @@
                 <h2>Candidate Preview</h2>
                 <p id="list-note">Click a row to update the detail panel.</p>
               </div>
+              <div class="list-tools" aria-label="Candidate list controls">
+                <label class="list-field" for="list-search">
+                  <span>Find</span>
+                  <input id="list-search" type="search" placeholder="Owner, account, city" autocomplete="off" />
+                </label>
+                <label class="list-field" for="list-sort">
+                  <span>Sort</span>
+                  <select id="list-sort">
+                    <option value="rank">Rank</option>
+                    <option value="score">Score</option>
+                    <option value="road">Road access</option>
+                    <option value="acres">Acres</option>
+                    <option value="coverage">Lowest coverage</option>
+                  </select>
+                </label>
+                <button id="list-top" class="list-top-button" type="button">Top</button>
+              </div>
               <div class="parcel-list" id="parcel-list"></div>
+              <div class="list-footer">
+                <span id="list-count">Showing 0 of 0</span>
+                <button id="list-more" class="secondary-button" type="button">Show more</button>
+              </div>
             </div>
           </section>
 
@@ -1500,6 +1659,9 @@
       const state = {
         selectedId: null,
         filtered: fallbackParcels,
+        listLimit: 100,
+        listQuery: '',
+        listSort: 'rank',
       };
 
       const settings = {
@@ -1529,6 +1691,11 @@
       const acreFilter = document.getElementById('acre-filter');
       const acreValue = document.getElementById('acre-value');
       const candidateOnly = document.getElementById('candidate-only');
+      const listSearch = document.getElementById('list-search');
+      const listSort = document.getElementById('list-sort');
+      const listTop = document.getElementById('list-top');
+      const listMore = document.getElementById('list-more');
+      const listCount = document.getElementById('list-count');
       const infoButtons = [...document.querySelectorAll('.info-button')];
 
       function resolvedTheme() {
@@ -1615,6 +1782,15 @@
         return String(value).replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
       }
 
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
       function formatMoney(value) {
         return new Intl.NumberFormat('en-US', {
           style: 'currency',
@@ -1647,6 +1823,57 @@
 
       function isRoadReady(parcel) {
         return parcel.road_access_bucket === 'frontage' || parcel.road_access_bucket === 'quarter_mile';
+      }
+
+      function roadAccessRank(parcel) {
+        const order = {
+          frontage: 0,
+          quarter_mile: 1,
+          mile: 2,
+          far: 3,
+        };
+        return order[parcel.road_access_bucket] ?? 4;
+      }
+
+      function compactRoadLabel(parcel) {
+        if (!parcel.road_access_bucket) return 'Access unknown';
+        if (parcel.road_access_bucket === 'frontage') return 'Frontage';
+        if (parcel.road_access_bucket === 'quarter_mile') return '1/4 mi road';
+        if (parcel.road_access_bucket === 'mile') return '1 mi road';
+        return 'Far from major road';
+      }
+
+      function compactFloodLabel(parcel) {
+        if (parcel.in_floodway) return 'Floodway';
+        if (parcel.in_100yr_flood) return '100-yr flood';
+        if (parcel.in_500yr_flood) return '500-yr flood';
+        return 'Outside flood';
+      }
+
+      function listSearchText(parcel) {
+        return [
+          parcel.account_id,
+          parcel.owner_name,
+          parcel.site_address,
+          parcel.prop_category,
+          parcel.nearest_major_road,
+          parcel.city_name,
+          parcel.mud_name,
+        ].filter(Boolean).join(' ').toLowerCase();
+      }
+
+      function sortListParcels(rows) {
+        const sorted = [...rows];
+        const score = (parcel) => Number(parcel.opportunity_score) || 0;
+        const rank = (parcel) => Number(parcel.score_rank) || Number.MAX_SAFE_INTEGER;
+        sorted.sort((a, b) => {
+          if (state.listSort === 'score') return score(b) - score(a) || rank(a) - rank(b);
+          if (state.listSort === 'road') return roadAccessRank(a) - roadAccessRank(b) || rank(a) - rank(b);
+          if (state.listSort === 'acres') return b.acres - a.acres || rank(a) - rank(b);
+          if (state.listSort === 'coverage') return a.coverage_ratio - b.coverage_ratio || rank(a) - rank(b);
+          return rank(a) - rank(b);
+        });
+        return sorted;
       }
 
       function unique(values) {
@@ -1731,9 +1958,40 @@
         configureFilters();
       }
 
+      function resetListLimit() {
+        state.listLimit = 100;
+      }
+
       [categoryFilter, statusFilter, acreFilter, candidateOnly].forEach((control) => {
-        control.addEventListener('input', render);
-        control.addEventListener('change', render);
+        control.addEventListener('input', () => {
+          resetListLimit();
+          render();
+        });
+        control.addEventListener('change', () => {
+          resetListLimit();
+          render();
+        });
+      });
+
+      listSearch.addEventListener('input', () => {
+        state.listQuery = listSearch.value;
+        resetListLimit();
+        render();
+      });
+
+      listSort.addEventListener('change', () => {
+        state.listSort = listSort.value;
+        resetListLimit();
+        render();
+      });
+
+      listTop.addEventListener('click', () => {
+        document.getElementById('parcel-list').scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      listMore.addEventListener('click', () => {
+        state.listLimit += 100;
+        render();
       });
 
       const closeDetailBtn = document.getElementById('close-detail-btn');
@@ -1835,25 +2093,46 @@
 
       function renderList(filtered) {
         const list = document.getElementById('parcel-list');
-        if (!filtered.length) {
+        const query = state.listQuery.trim().toLowerCase();
+        const searched = query
+          ? filtered.filter((parcel) => listSearchText(parcel).includes(query))
+          : filtered;
+        const sorted = sortListParcels(searched);
+        const visible = sorted.slice(0, state.listLimit);
+
+        listCount.textContent = `Showing ${Math.min(visible.length, sorted.length)} of ${sorted.length}`;
+        listMore.hidden = visible.length >= sorted.length;
+
+        if (!sorted.length) {
           list.innerHTML = '<div class="empty-state">No preview rows match the current filters.</div>';
           return;
         }
         list.innerHTML = '';
-        filtered.forEach((parcel) => {
+        visible.forEach((parcel) => {
           const row = document.createElement('button');
           row.type = 'button';
           row.className = `parcel-row${parcel.account_id === state.selectedId ? ' active' : ''}`;
-          const rankText = parcel.score_rank ? `#${parcel.score_rank} · ` : '';
-          const scoreText = hasScore(parcel) ? ` · Score ${formatNumber(parcel.opportunity_score, 1)}` : '';
+          const rankText = parcel.score_rank ? `#${parcel.score_rank}` : 'Unranked';
+          const scoreText = hasScore(parcel) ? `Score ${formatNumber(parcel.opportunity_score, 1)}` : 'No score';
+          const roadClass = isRoadReady(parcel) ? 'good' : '';
+          const floodClass = parcel.in_floodway || parcel.in_100yr_flood ? 'warn' : 'good';
           row.innerHTML = `
             <span class="parcel-main">
-              <span class="parcel-address">${parcel.site_address}</span>
-              <span class="parcel-meta">${rankText}${parcel.account_id} · ${titleCase(parcel.prop_category)} · ${parcel.owner_name}${scoreText}</span>
+              <span class="parcel-kicker">
+                <span class="parcel-rank">${escapeHtml(rankText)}</span>
+                <span>${escapeHtml(scoreText)}</span>
+              </span>
+              <span class="parcel-address">${escapeHtml(parcel.site_address)}</span>
+              <span class="parcel-meta">${escapeHtml(parcel.owner_name)} · ${escapeHtml(titleCase(parcel.prop_category))} · ${escapeHtml(parcel.account_id)}</span>
+              <span class="parcel-signals">
+                <span class="signal-chip ${roadClass}">${escapeHtml(compactRoadLabel(parcel))}</span>
+                <span class="signal-chip ${floodClass}">${escapeHtml(compactFloodLabel(parcel))}</span>
+                <span class="signal-chip">${formatNumber(parcel.acres, 1)} ac</span>
+                <span class="signal-chip">${pct(parcel.coverage_ratio)} cover</span>
+              </span>
             </span>
-            <span class="parcel-stats">
-              <span class="badge ${parcel.candidate_status}">${titleCase(parcel.candidate_status)}</span><br />
-              ${formatNumber(parcel.acres, 1)} ac · ${pct(parcel.coverage_ratio)}
+            <span class="parcel-side">
+              <span class="badge ${escapeHtml(parcel.candidate_status)}">${escapeHtml(titleCase(parcel.candidate_status))}</span>
             </span>
           `;
           row.addEventListener('click', () => {
