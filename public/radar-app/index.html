@@ -1114,7 +1114,7 @@
         <div class="topbar-inner">
           <div class="brand">
             <strong>HarrisRadar</strong>
-            <span>Fixture-only commercial real-estate preview</span>
+            <span id="brand-subtitle">Fixture-only commercial real-estate preview</span>
           </div>
           <div class="top-actions">
             <div class="settings-wrap">
@@ -1152,12 +1152,12 @@
           <div>
             <p class="eyebrow">Harris County, TX</p>
             <h1 id="dashboard-title">Opportunity Radar Preview</h1>
-            <p>
+            <p id="dashboard-description">
               First draft dashboard over five synthetic parcels. This is for UI/workflow feedback,
               not real parcel-content feedback or scoring decisions.
             </p>
           </div>
-          <div class="source-pill">Synthetic fixture data only</div>
+          <div class="source-pill" id="source-pill">Synthetic fixture data only</div>
         </section>
 
         <section class="metrics" aria-label="Preview metrics">
@@ -1171,7 +1171,7 @@
           <aside class="panel filters" aria-label="Preview filters">
             <div class="panel-header">
               <h2>Filters</h2>
-              <p>Preview controls only. Real ranking weights are not enabled.</p>
+              <p id="filters-note">Preview controls only. Real ranking weights are not enabled.</p>
             </div>
             <div class="filter-body">
               <label class="check-row" for="candidate-only">
@@ -1197,7 +1197,7 @@
             <div class="panel map-panel">
               <div class="panel-header">
                 <h2>Parcel Map</h2>
-                <p>Approximate fixture locations, scaled to Harris County context.</p>
+                <p id="map-note">Approximate fixture locations, scaled to Harris County context.</p>
               </div>
               <div class="map-legend" aria-label="Map legend">
                 <span class="legend-item"><span class="legend-dot"></span>Confirmed</span>
@@ -1210,7 +1210,7 @@
             <div class="panel list-panel">
               <div class="panel-header">
                 <h2>Candidate Preview</h2>
-                <p>Click a row to update the detail panel.</p>
+                <p id="list-note">Click a row to update the detail panel.</p>
               </div>
               <div class="parcel-list" id="parcel-list"></div>
             </div>
@@ -1219,7 +1219,7 @@
           <section class="panel detail-panel" aria-live="polite">
             <div class="panel-header" style="position: relative;">
               <h2>Property Detail</h2>
-              <p>Explain why a row is or is not trusted by the preview screen.</p>
+              <p id="detail-note">Explain why a row is or is not trusted by the preview screen.</p>
               <button id="close-detail-btn" class="close-button" aria-label="Close detail panel" title="Deselect property">&times;</button>
             </div>
             <div class="detail-body" id="detail-body"></div>
@@ -1234,7 +1234,18 @@
       crossorigin=""
     ></script>
     <script>
-      const parcels = [
+      const fallbackMetadata = {
+        title: 'Opportunity Radar Preview',
+        subtitle: 'Fixture-only commercial real-estate preview',
+        description: 'First draft dashboard over five synthetic parcels. This is for UI/workflow feedback, not real parcel-content feedback or scoring decisions.',
+        source_label: 'Synthetic fixture data only',
+        filter_note: 'Preview controls only. Real ranking weights are not enabled.',
+        map_note: 'Approximate fixture locations, scaled to Harris County context.',
+        list_note: 'Click a row to update the detail panel.',
+        detail_note: 'Explain why a row is or is not trusted by the preview screen.',
+      };
+
+      const fallbackParcels = [
         {
           account_id: '0010020000003',
           owner_name: 'BAYOU HOLDINGS LLC',
@@ -1347,9 +1358,12 @@
         },
       ];
 
+      let dataMetadata = fallbackMetadata;
+      let parcels = fallbackParcels;
+
       const state = {
         selectedId: null,
-        filtered: parcels,
+        filtered: fallbackParcels,
       };
 
       const settings = {
@@ -1362,6 +1376,14 @@
         markers: [],
       };
 
+      const brandSubtitle = document.getElementById('brand-subtitle');
+      const dashboardTitle = document.getElementById('dashboard-title');
+      const dashboardDescription = document.getElementById('dashboard-description');
+      const sourcePill = document.getElementById('source-pill');
+      const filtersNote = document.getElementById('filters-note');
+      const mapNote = document.getElementById('map-note');
+      const listNote = document.getElementById('list-note');
+      const detailNote = document.getElementById('detail-note');
       const settingsButton = document.getElementById('settings-button');
       const settingsMenu = document.getElementById('settings-menu');
       const themeSetting = document.getElementById('theme-setting');
@@ -1452,6 +1474,17 @@
         return `${formatNumber((value || 0) * 100, 1)}%`;
       }
 
+      function hasScore(parcel) {
+        return parcel.opportunity_score !== undefined && parcel.opportunity_score !== null;
+      }
+
+      function floodLabel(parcel) {
+        if (parcel.in_floodway) return 'FLOODWAY';
+        if (parcel.in_100yr_flood) return '100-yr flood zone';
+        if (parcel.in_500yr_flood) return '500-yr flood zone';
+        return 'Outside mapped flood zones';
+      }
+
       function median(values) {
         if (!values.length) return 0;
         const sorted = [...values].sort((a, b) => a - b);
@@ -1477,9 +1510,69 @@
         });
       }
 
-      setOptions(categoryFilter, unique(parcels.map((parcel) => parcel.prop_category)), 'All categories');
-      setOptions(statusFilter, unique(parcels.map((parcel) => parcel.candidate_status)), 'Confirmed + unknown');
-      statusFilter.value = 'all';
+      function normalizeParcel(parcel) {
+        return {
+          ...parcel,
+          account_id: String(parcel.account_id || parcel.hcad_num || parcel.account || ''),
+          owner_name: parcel.owner_name || parcel.owner || 'Unknown owner',
+          site_address: parcel.site_address || parcel.address || 'Address unavailable',
+          prop_category: parcel.prop_category || parcel.category || 'unknown',
+          candidate_status: parcel.candidate_status || 'unknown',
+          candidate_status_reason: parcel.candidate_status_reason || 'Scored row from the exported snapshot.',
+          coverage_status: parcel.coverage_status || parcel.type || 'unknown',
+          coverage_source: parcel.coverage_source || 'unknown',
+          state_class: parcel.state_class || 'N/A',
+          acres: Number(parcel.acres) || 0,
+          coverage_ratio: Number(parcel.coverage_ratio) || 0,
+          land_value: Number(parcel.land_value) || 0,
+          impr_value: Number(parcel.impr_value) || 0,
+          total_market_val: Number(parcel.total_market_val) || 0,
+          latitude: Number(parcel.latitude),
+          longitude: Number(parcel.longitude),
+        };
+      }
+
+      function applyDataMetadata() {
+        brandSubtitle.textContent = dataMetadata.subtitle || fallbackMetadata.subtitle;
+        dashboardTitle.textContent = dataMetadata.title || fallbackMetadata.title;
+        dashboardDescription.textContent = dataMetadata.description || fallbackMetadata.description;
+        sourcePill.textContent = dataMetadata.source_label || fallbackMetadata.source_label;
+        filtersNote.textContent = dataMetadata.filter_note || fallbackMetadata.filter_note;
+        mapNote.textContent = dataMetadata.map_note || fallbackMetadata.map_note;
+        listNote.textContent = dataMetadata.list_note || fallbackMetadata.list_note;
+        detailNote.textContent = dataMetadata.detail_note || fallbackMetadata.detail_note;
+      }
+
+      function configureFilters() {
+        const categoryValue = categoryFilter.value;
+        const statusValue = statusFilter.value;
+        setOptions(categoryFilter, unique(parcels.map((parcel) => parcel.prop_category)), 'All categories');
+        setOptions(statusFilter, unique(parcels.map((parcel) => parcel.candidate_status)), 'Confirmed + unknown');
+        categoryFilter.value = [...categoryFilter.options].some((option) => option.value === categoryValue) ? categoryValue : 'all';
+        statusFilter.value = [...statusFilter.options].some((option) => option.value === statusValue) ? statusValue : 'all';
+      }
+
+      async function loadDataset() {
+        try {
+          const response = await fetch('./parcels.json', { cache: 'no-store' });
+          if (!response.ok) throw new Error(`snapshot not available: ${response.status}`);
+          const payload = await response.json();
+          if (!Array.isArray(payload.parcels) || payload.parcels.length === 0) {
+            throw new Error('snapshot has no parcel rows');
+          }
+          parcels = payload.parcels.map(normalizeParcel).filter((parcel) => Number.isFinite(parcel.latitude) && Number.isFinite(parcel.longitude));
+          if (!parcels.length) throw new Error('snapshot has no mappable parcel rows');
+          dataMetadata = { ...fallbackMetadata, ...(payload.metadata || {}) };
+        } catch (error) {
+          parcels = fallbackParcels.map(normalizeParcel);
+          dataMetadata = fallbackMetadata;
+          console.info('Using inline radar fixture data.', error);
+        }
+        state.selectedId = null;
+        state.filtered = parcels;
+        applyDataMetadata();
+        configureFilters();
+      }
 
       [categoryFilter, statusFilter, acreFilter, candidateOnly].forEach((control) => {
         control.addEventListener('input', render);
@@ -1594,10 +1687,12 @@
           const row = document.createElement('button');
           row.type = 'button';
           row.className = `parcel-row${parcel.account_id === state.selectedId ? ' active' : ''}`;
+          const rankText = parcel.score_rank ? `#${parcel.score_rank} · ` : '';
+          const scoreText = hasScore(parcel) ? ` · Score ${formatNumber(parcel.opportunity_score, 1)}` : '';
           row.innerHTML = `
             <span class="parcel-main">
               <span class="parcel-address">${parcel.site_address}</span>
-              <span class="parcel-meta">${parcel.account_id} · ${titleCase(parcel.prop_category)} · ${parcel.owner_name}</span>
+              <span class="parcel-meta">${rankText}${parcel.account_id} · ${titleCase(parcel.prop_category)} · ${parcel.owner_name}${scoreText}</span>
             </span>
             <span class="parcel-stats">
               <span class="badge ${parcel.candidate_status}">${titleCase(parcel.candidate_status)}</span><br />
@@ -1637,12 +1732,27 @@
         if (closeBtn) closeBtn.style.display = 'grid';
         const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
         const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
+        const scoreStats = hasScore(selected) ? `
+            <div class="stat"><span>Rank</span><strong>#${selected.score_rank || 'N/A'}</strong></div>
+            <div class="stat"><span>Score</span><strong>${formatNumber(selected.opportunity_score, 1)}</strong></div>
+            <div class="stat"><span>Score ex-flood</span><strong>${selected.opportunity_score_ex_flood === undefined || selected.opportunity_score_ex_flood === null ? 'N/A' : formatNumber(selected.opportunity_score_ex_flood, 1)}</strong></div>
+        ` : '';
+        const overlayDetails = hasScore(selected) ? `
+            <div class="future-item">Flood: ${floodLabel(selected)}${selected.floodway_manual_review ? ' — manual review required' : ''}</div>
+            <div class="future-item">Road access: ${selected.road_access_bucket ? `${titleCase(selected.road_access_bucket)}${selected.nearest_major_road_ft ? ` · ${formatNumber(selected.nearest_major_road_ft, 0)} ft to ${selected.nearest_major_road || 'major road'}` : ''}` : 'Not available'}</div>
+            <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
+        ` : `
+            <div class="future-item">Scoring is not enabled in this preview.</div>
+            <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
+            <div class="future-item">Rows marked unknown need HCAD bulk footprint confirmation before Phase 1 status is trusted.</div>
+        `;
         detail.innerHTML = `
           <span class="badge ${selected.candidate_status}">${titleCase(selected.candidate_status)}</span>
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
           <div class="note-box">${selected.candidate_status_reason}</div>
           <div class="stat-grid">
+            ${scoreStats}
             <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
             <div class="stat"><span>Coverage</span><strong>${pct(selected.coverage_ratio)}</strong></div>
             <div class="stat"><span>Category</span><strong>${titleCase(selected.prop_category)}</strong></div>
@@ -1653,9 +1763,7 @@
             <div class="stat"><span>Coverage source</span><strong>${titleCase(selected.coverage_source)}</strong></div>
           </div>
           <div class="future-grid">
-            <div class="future-item">Scoring is not enabled in this preview.</div>
-            <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
-            <div class="future-item">Rows marked unknown need HCAD bulk footprint confirmation before Phase 1 status is trusted.</div>
+            ${overlayDetails}
           </div>
           <div class="action-links">
             <a href="${gmapsUrl}" target="_blank" rel="noreferrer">Open in Google Maps</a>
@@ -1676,8 +1784,13 @@
         renderDetail(filtered);
       }
 
-      applySettings();
-      render();
+      async function init() {
+        applySettings();
+        await loadDataset();
+        render();
+      }
+
+      init();
     </script>
   </body>
 </html>

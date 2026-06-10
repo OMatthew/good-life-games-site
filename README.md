@@ -40,6 +40,21 @@ Optional Vercel environment variable:
 
 Local `npm run preview` serves the static files only and does not run Vercel middleware. Use `vercel dev` when the server-side auth flow needs local verification.
 
+## HarrisRadar Data Snapshot
+
+`/radar-app/index.html` loads `public/radar-app/parcels.json` when that file is
+present. Generate it from the real-estate repo after `mart.parcel_score` is
+built:
+
+```bash
+cd ../real-estate
+DATABASE_URL=... make export-radar-app
+cp output/radar_app_parcels.json ../good-life-games-site/public/radar-app/parcels.json
+```
+
+If `parcels.json` is absent, the page falls back to its inline synthetic
+fixture rows.
+
 ## Notes
 
 - Contact email currently points to `matthew@goodlifegames.io`.
