@@ -45,6 +45,27 @@
         --shadow: 0 24px 60px -42px rgba(15, 23, 42, 0.6);
       }
 
+      body[data-theme="dark"] {
+        color-scheme: dark;
+        --surface-0: #111916;
+        --surface-1: #18231f;
+        --surface-2: #20302b;
+        --surface-3: #31443d;
+        --ink-0: #f4faf7;
+        --ink-1: #c4d2cc;
+        --ink-2: #8fa29a;
+        --teal-0: #5eead4;
+        --teal-1: #2dd4bf;
+        --teal-2: #123f39;
+        --amber-0: #fbbf24;
+        --amber-1: #422f12;
+        --red-0: #fecaca;
+        --red-1: #4a1717;
+        --blue-0: #93c5fd;
+        --blue-1: #172554;
+        --shadow: 0 24px 60px -42px rgba(0, 0, 0, 0.9);
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -64,6 +85,10 @@
           var(--surface-0);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+      }
+
+      body[data-theme="dark"] {
+        background: var(--surface-0);
       }
 
       button,
@@ -224,6 +249,11 @@
         backdrop-filter: blur(14px);
       }
 
+      body[data-theme="dark"] .topbar {
+        border-bottom-color: rgba(49, 68, 61, 0.9);
+        background: rgba(17, 25, 22, 0.88);
+      }
+
       .topbar-inner {
         width: min(1420px, 100%);
         margin: 0 auto;
@@ -259,7 +289,8 @@
       }
 
       .text-button,
-      .icon-link {
+      .icon-link,
+      .settings-button {
         min-height: 36px;
         border: 1px solid var(--surface-3);
         border-radius: 8px;
@@ -269,16 +300,79 @@
         font-weight: 800;
       }
 
+      body[data-theme="dark"] .text-button,
+      body[data-theme="dark"] .icon-link,
+      body[data-theme="dark"] .settings-button {
+        background: var(--surface-1);
+      }
+
       .text-button {
         display: inline-flex;
         align-items: center;
         padding: 0.45rem 0.72rem;
       }
 
-      .icon-link {
+      .icon-link,
+      .settings-button {
         width: 36px;
         display: grid;
         place-items: center;
+      }
+
+      .settings-wrap {
+        position: relative;
+      }
+
+      .settings-button {
+        padding: 0;
+      }
+
+      .settings-button:hover,
+      .settings-button:focus-visible,
+      .text-button:hover,
+      .text-button:focus-visible,
+      .icon-link:hover,
+      .icon-link:focus-visible {
+        border-color: var(--ink-2);
+        color: var(--ink-0);
+        outline: none;
+      }
+
+      .settings-menu {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        z-index: 40;
+        display: grid;
+        width: min(18rem, calc(100vw - 2rem));
+        gap: 0.9rem;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.95rem;
+        background: var(--surface-1);
+        box-shadow: var(--shadow);
+      }
+
+      .settings-menu[hidden] {
+        display: none;
+      }
+
+      .settings-title {
+        margin: 0;
+        color: var(--ink-0);
+        font-size: 0.88rem;
+        font-weight: 900;
+      }
+
+      .settings-field {
+        display: grid;
+        gap: 0.42rem;
+      }
+
+      .settings-field label {
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
       }
 
       .dashboard {
@@ -349,6 +443,22 @@
         line-height: 1;
       }
 
+      body[data-metric-density="compact"] .metrics {
+        gap: 0.55rem;
+      }
+
+      body[data-metric-density="compact"] .metric {
+        padding: 0.7rem 0.75rem;
+      }
+
+      body[data-metric-density="compact"] .metric span {
+        font-size: 0.68rem;
+      }
+
+      body[data-metric-density="compact"] .metric strong {
+        font-size: clamp(1.45rem, 4vw, 1.9rem);
+      }
+
       .workspace {
         display: grid;
         grid-template-columns: 280px minmax(360px, 1fr) minmax(330px, 0.78fr);
@@ -361,6 +471,10 @@
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.96);
         box-shadow: 0 12px 42px -36px rgba(15, 23, 42, 0.55);
+      }
+
+      body[data-theme="dark"] .panel {
+        background: rgba(24, 35, 31, 0.96);
       }
 
       .panel-header {
@@ -407,6 +521,10 @@
         padding: 0.45rem 0.65rem;
         background: #fff;
         color: var(--ink-0);
+      }
+
+      body[data-theme="dark"] select {
+        background: var(--surface-1);
       }
 
       .check-row {
@@ -647,6 +765,14 @@
         border-top: 0;
       }
 
+      body[data-theme="dark"] .parcel-row,
+      body[data-theme="dark"] .stat,
+      body[data-theme="dark"] .action-links a,
+      body[data-theme="dark"] .close-button,
+      body[data-theme="dark"] .metric {
+        background: var(--surface-1);
+      }
+
       .parcel-row:hover {
         background: var(--surface-0);
       }
@@ -769,6 +895,10 @@
         line-height: 1.5;
       }
 
+      body[data-theme="dark"] .note-box {
+        color: #b7fff3;
+      }
+
       .future-grid {
         display: grid;
         gap: 0.55rem;
@@ -874,6 +1004,7 @@
 
         .top-actions {
           margin-top: 0.75rem;
+          justify-content: flex-end;
         }
 
         .source-pill {
@@ -900,9 +1031,33 @@
       }
 
       @media (max-width: 480px) {
-        .metrics,
         .stat-grid {
           grid-template-columns: 1fr;
+        }
+
+        .metric {
+          padding: 0.72rem 0.75rem;
+        }
+
+        .metric span {
+          font-size: 0.67rem;
+        }
+
+        .metric strong {
+          font-size: 1.55rem;
+        }
+
+        body[data-metric-density="compact"] .metric {
+          padding: 0.55rem 0.6rem;
+        }
+
+        body[data-metric-density="compact"] .metric span {
+          font-size: 0.62rem;
+          letter-spacing: 0.02em;
+        }
+
+        body[data-metric-density="compact"] .metric strong {
+          font-size: 1.35rem;
         }
 
         .parcel-row {
@@ -924,13 +1079,32 @@
             <span>Fixture-only commercial real-estate preview</span>
           </div>
           <div class="top-actions">
-            <a class="icon-link" href="/radar" aria-label="View plan" title="View plan">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M4 19.5V4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M8 7h8M8 11h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
-            </a>
-            <a class="text-button" href="/api/radar-logout?next=/radar-login/">Lock</a>
+            <div class="settings-wrap">
+              <button class="settings-button" id="settings-button" type="button" aria-label="Open settings" aria-expanded="false" aria-controls="settings-menu" title="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="2" />
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.04.04a2.05 2.05 0 0 1-2.9 2.9l-.04-.04A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6l-.03.05a2.05 2.05 0 0 1-3.54-2.05l.02-.05a1.7 1.7 0 0 0-.86-1.47 1.7 1.7 0 0 0-1.09-.2l-.05.02a2.05 2.05 0 0 1-2.05-3.54l.05-.03a1.7 1.7 0 0 0 0-2.02l-.05-.03a2.05 2.05 0 0 1 2.05-3.54l.05.02a1.7 1.7 0 0 0 1.95-1.13l-.02-.05A2.05 2.05 0 0 1 13.97 4l.03.05a1.7 1.7 0 0 0 2.02.5l.04-.04a2.05 2.05 0 0 1 2.9 2.9l-.04.04A1.7 1.7 0 0 0 19.4 9c.2.36.52.64.9.78l.06.02a2.05 2.05 0 0 1 0 4.1l-.06.02c-.38.14-.7.42-.9.78Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <div class="settings-menu" id="settings-menu" hidden>
+                <p class="settings-title">Settings</p>
+                <div class="settings-field">
+                  <label for="theme-setting">Theme</label>
+                  <select id="theme-setting">
+                    <option value="system">System</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </div>
+                <div class="settings-field">
+                  <label for="metric-density-setting">Metric cards</label>
+                  <select id="metric-density-setting">
+                    <option value="comfortable">Comfortable</option>
+                    <option value="compact">Compact</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -1140,16 +1314,82 @@
         filtered: parcels,
       };
 
+      const settings = {
+        theme: localStorage.getItem('radar-theme') || 'system',
+        metricDensity: localStorage.getItem('radar-metric-density') || 'comfortable',
+      };
+
       const mapState = {
         map: null,
         markers: [],
       };
 
+      const settingsButton = document.getElementById('settings-button');
+      const settingsMenu = document.getElementById('settings-menu');
+      const themeSetting = document.getElementById('theme-setting');
+      const metricDensitySetting = document.getElementById('metric-density-setting');
       const categoryFilter = document.getElementById('category-filter');
       const statusFilter = document.getElementById('status-filter');
       const acreFilter = document.getElementById('acre-filter');
       const acreValue = document.getElementById('acre-value');
       const candidateOnly = document.getElementById('candidate-only');
+
+      function resolvedTheme() {
+        if (settings.theme === 'system') {
+          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        return settings.theme;
+      }
+
+      function applySettings() {
+        document.body.dataset.theme = resolvedTheme();
+        document.body.dataset.metricDensity = settings.metricDensity;
+        themeSetting.value = settings.theme;
+        metricDensitySetting.value = settings.metricDensity;
+      }
+
+      function setSettingsMenuOpen(isOpen) {
+        settingsMenu.hidden = !isOpen;
+        settingsButton.setAttribute('aria-expanded', String(isOpen));
+      }
+
+      settingsButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setSettingsMenuOpen(settingsMenu.hidden);
+      });
+
+      settingsMenu.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
+
+      document.addEventListener('click', () => {
+        setSettingsMenuOpen(false);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !settingsMenu.hidden) {
+          setSettingsMenuOpen(false);
+          settingsButton.focus();
+        }
+      });
+
+      themeSetting.addEventListener('change', () => {
+        settings.theme = themeSetting.value;
+        localStorage.setItem('radar-theme', settings.theme);
+        applySettings();
+      });
+
+      metricDensitySetting.addEventListener('change', () => {
+        settings.metricDensity = metricDensitySetting.value;
+        localStorage.setItem('radar-metric-density', settings.metricDensity);
+        applySettings();
+      });
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (settings.theme === 'system') {
+          applySettings();
+        }
+      });
 
       function titleCase(value) {
         return String(value).replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
@@ -1398,6 +1638,7 @@
         renderDetail(filtered);
       }
 
+      applySettings();
       render();
     </script>
   </body>
