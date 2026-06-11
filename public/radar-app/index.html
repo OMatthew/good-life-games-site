@@ -819,6 +819,11 @@
         font-weight: 900;
       }
 
+      .filter-reset {
+        width: 100%;
+        justify-content: center;
+      }
+
       select,
       input[type="range"] {
         width: 100%;
@@ -1785,6 +1790,7 @@
                 <input id="hide-100yr-flood" type="checkbox" />
                 Hide 100-year flood
               </label>
+              <button class="secondary-button filter-reset" id="reset-filters" type="button">Reset filters</button>
             </div>
           </aside>
 
@@ -2027,6 +2033,7 @@
       const hideUnbuyable = document.getElementById('hide-unbuyable');
       const hideFloodway = document.getElementById('hide-floodway');
       const hide100yrFlood = document.getElementById('hide-100yr-flood');
+      const resetFilters = document.getElementById('reset-filters');
       const listSearch = document.getElementById('list-search');
       const listSort = document.getElementById('list-sort');
       const listTop = document.getElementById('list-top');
@@ -2448,6 +2455,21 @@
         state.listLimit = initialListLimit;
       }
 
+      function resetFiltersToDefaults() {
+        categoryFilter.value = 'all';
+        statusFilter.value = 'screened';
+        acreFilter.value = '5';
+        totalMarketFilter.value = totalMarketFilter.max;
+        landAcreFilter.value = landAcreFilter.max;
+        coverageFilter.value = coverageFilter.max;
+        roadFilter.value = 'any';
+        hideUnbuyable.checked = false;
+        hideFloodway.checked = false;
+        hide100yrFlood.checked = false;
+        resetListLimit();
+        render();
+      }
+
       [
         categoryFilter,
         statusFilter,
@@ -2469,6 +2491,8 @@
           render();
         });
       });
+
+      resetFilters.addEventListener('click', resetFiltersToDefaults);
 
       listSearch.addEventListener('input', () => {
         state.listQuery = listSearch.value;
