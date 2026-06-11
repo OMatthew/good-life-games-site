@@ -1758,11 +1758,11 @@
               </div>
               <div class="filter-group">
                 <label for="total-market-filter">Max total market value: <span id="total-market-value" class="filter-value">$10M+</span></label>
-                <input id="total-market-filter" type="range" min="0" max="10000000" step="250000" value="10000000" />
+                <input id="total-market-filter" type="range" min="0" max="10000000" step="50000" value="10000000" />
               </div>
               <div class="filter-group">
                 <label for="land-acre-filter">Max land $/acre: <span id="land-acre-value" class="filter-value">$500k+/ac</span></label>
-                <input id="land-acre-filter" type="range" min="0" max="500000" step="10000" value="500000" />
+                <input id="land-acre-filter" type="range" min="0" max="500000" step="5000" value="500000" />
               </div>
               <div class="filter-group">
                 <label for="coverage-filter">Max coverage: <span id="coverage-value" class="filter-value">10.0%</span></label>
@@ -2317,18 +2317,18 @@
         return !reason || /^Scored row\b/.test(reason);
       }
 
-      function whyThisRow(parcel) {
+      function candidateScreenSummary(parcel) {
         const parts = [];
         if (parcel.candidate_status === 'unknown') {
-          parts.push('Ranked because it passes the size/category screen, but coverage needs confirmation.');
+          parts.push('Included in the candidate set because it meets the 5+ acre CRE size/category screen. Coverage still needs confirmation before outreach.');
         } else if (parcel.coverage_status === 'vacant') {
-          parts.push('Ranked because it passed the 5+ acre CRE screen and appears vacant.');
+          parts.push('Included in the candidate set because it meets the 5+ acre CRE screen and appears vacant.');
         } else if (parcel.coverage_source === 'physical' && parcel.coverage_ratio < 0.10) {
-          parts.push('Ranked because it passed the 5+ acre CRE screen with physical coverage below 10%.');
+          parts.push('Included in the candidate set because it meets the 5+ acre CRE screen with physical coverage below 10%.');
         } else if (parcel.candidate_status === 'not_candidate') {
-          parts.push('Not currently ranked because it does not meet the screen.');
+          parts.push('Shown because the status filter includes unscored parcels. It does not currently meet the candidate screen.');
         } else {
-          parts.push('Ranked because it passed the exported candidate screen.');
+          parts.push('Included in the candidate set because it passed the exported screen.');
         }
         if (parcel.is_likely_unbuyable) {
           parts.push('Owner flag needs review before outreach.');
@@ -2341,7 +2341,7 @@
 
       function detailReason(parcel) {
         return genericScoredReason(parcel.candidate_status_reason)
-          ? whyThisRow(parcel)
+          ? candidateScreenSummary(parcel)
           : parcel.candidate_status_reason;
       }
 
@@ -2707,13 +2707,13 @@
         ` : `
             <div class="future-item">Scoring is not enabled in this preview.</div>
             <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
-            <div class="future-item">Rows marked needs confirmation need HCAD bulk footprint confirmation before Phase 1 status is trusted.</div>
+            <div class="future-item">Parcels marked needs confirmation need coverage confirmation before candidate status is trusted.</div>
         `;
         detail.innerHTML = `
           <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-          <div class="note-box"><strong>Why this row is here</strong><span>${escapeHtml(reason)}</span></div>
+          <div class="note-box"><strong>Candidate screen</strong><span>${escapeHtml(reason)}</span></div>
           <div class="stat-grid">
             ${scoreStats}
             <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
