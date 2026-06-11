@@ -105,6 +105,14 @@
         border-color: var(--teal-0);
       }
 
+      .password-row {
+        position: relative;
+      }
+
+      .password-row input {
+        padding-right: 3.1rem;
+      }
+
       button {
         min-height: 46px;
         border: 0;
@@ -120,6 +128,38 @@
       button:hover,
       button:focus-visible {
         background: #0a5f59;
+      }
+
+      .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 0.42rem;
+        display: inline-grid;
+        place-items: center;
+        width: 2.2rem;
+        height: 2.2rem;
+        min-height: 0;
+        transform: translateY(-50%);
+        border: 0;
+        border-radius: 6px;
+        padding: 0;
+        color: var(--ink-2);
+        background: transparent;
+      }
+
+      .toggle-password:hover,
+      .toggle-password:focus-visible {
+        color: var(--ink-0);
+        background: rgba(219, 228, 223, 0.72);
+      }
+
+      .toggle-password svg {
+        width: 1.15rem;
+        height: 1.15rem;
+      }
+
+      .toggle-password .icon-hidden {
+        display: none;
       }
 
       .error {
@@ -144,13 +184,33 @@
       <form method="post" action="/api/radar-login" autocomplete="on">
         <input id="next-path" name="next" type="hidden" value="/radar-app/" />
         <label for="radar-password">HarrisRadar password</label>
-        <input
-          id="radar-password"
-          name="password"
-          type="password"
-          autocomplete="current-password"
-          required
-        />
+        <div class="password-row">
+          <input
+            id="radar-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button
+            class="toggle-password"
+            id="toggle-password"
+            type="button"
+            aria-label="Show password"
+            aria-pressed="false"
+            title="Show password"
+          >
+            <svg class="show-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+              <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.8" />
+            </svg>
+            <svg class="hide-icon icon-hidden" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m3 3 18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M10.6 5.7A9.8 9.8 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16.3 16.3 0 0 1-2.7 3.5M7.1 7.4C4.2 9.1 2.5 12 2.5 12s3.5 6.5 9.5 6.5c1.8 0 3.4-.6 4.7-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M10 9.1a3.2 3.2 0 0 1 4.1 4.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
         <button type="submit">Open HarrisRadar</button>
         <p class="error" id="login-error" aria-live="polite"></p>
       </form>
@@ -170,6 +230,22 @@
       } else if (error === 'config') {
         errorEl.textContent = 'Server-side access is not configured yet.';
       }
+
+      const passwordInput = document.getElementById('radar-password');
+      const togglePassword = document.getElementById('toggle-password');
+      const showIcon = togglePassword.querySelector('.show-icon');
+      const hideIcon = togglePassword.querySelector('.hide-icon');
+
+      togglePassword.addEventListener('click', () => {
+        const isVisible = passwordInput.type === 'text';
+        passwordInput.type = isVisible ? 'password' : 'text';
+        togglePassword.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+        togglePassword.setAttribute('aria-pressed', String(!isVisible));
+        togglePassword.title = isVisible ? 'Show password' : 'Hide password';
+        showIcon.classList.toggle('icon-hidden', !isVisible);
+        hideIcon.classList.toggle('icon-hidden', isVisible);
+        passwordInput.focus();
+      });
     </script>
   </body>
 </html>
