@@ -7,7 +7,7 @@
     <title>Harris County CRE Opportunity Radar</title>
     <meta
       name="description"
-      content="An early outline of a tool that reads the public record on every Harris County parcel and surfaces a short, ranked list of raw and underbuilt land."
+      content="A private tool that reads the public record on every Harris County parcel and surfaces a short, ranked list of raw and underbuilt land."
     />
 
     <!-- Open Graph / link unfurl -->
@@ -16,14 +16,14 @@
     <meta property="og:title" content="Opportunity Radar — Harris County CRE" />
     <meta
       property="og:description"
-      content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of raw and underbuilt land worth a look."
+      content="A private tool that scores Harris County commercial and land parcels and surfaces a short list of raw and underbuilt land worth a look."
     />
     <meta property="og:image" content="https://goodlifegames.io/radar-assets/logo-colored.png" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Opportunity Radar — Harris County CRE" />
     <meta
       name="twitter:description"
-      content="An early outline: a tool that scores every Harris County parcel and surfaces a short list of raw and underbuilt land worth a look."
+      content="A private tool that scores Harris County commercial and land parcels and surfaces a short list of raw and underbuilt land worth a look."
     />
     <meta name="twitter:image" content="https://goodlifegames.io/radar-assets/logo-colored.png" />
 
@@ -179,9 +179,10 @@
       .tier .num { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.3rem, 3.5vw, 1.7rem); color: var(--teal-dark); white-space: nowrap; }
       .tier .lbl { color: var(--ink-1); font-size: 0.97rem; }
       .tier.t1 { width: 100%; }
-      .tier.t2 { width: 88%; }
-      .tier.t3 { width: 70%; background: linear-gradient(180deg, #fff, var(--teal-soft) 320%); border-color: #bfe9e8; }
-      .tier.t3 .num { color: var(--teal-text); }
+      .tier.t2 { width: 90%; }
+      .tier.t3 { width: 76%; }
+      .tier.t4 { width: 62%; background: linear-gradient(180deg, #fff, var(--teal-soft) 320%); border-color: #bfe9e8; }
+      .tier.t4 .num { color: var(--teal-text); }
       @media (max-width: 560px) { .tier { width: 100% !important; flex-direction: column; gap: 0.15rem; } }
 
       .split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.6rem; }
@@ -271,20 +272,19 @@
           <span>Harris County</span>
         </span>
       </div>
-      <div class="badge"><span class="dot"></span> Project outline</div>
+      <div class="badge"><span class="dot"></span> Private early version &middot; live, using real data</div>
       <p class="eyebrow">Harris County, TX · Commercial &amp; land</p>
       <h1>A commercial real estate opportunity radar for Harris County.</h1>
       <p class="lead">
-        Pull the public record on all <strong>1.5 million</strong> parcels in Harris County, score
-        every one, and give you a dashboard that surfaces raw land and underbuilt sites worth a
-        look. Filter it whenever you want, or get a short summary each week. Every parcel shows why
-        it's there.
+        Read the public record on all <strong>1.5 million</strong> parcels in Harris County, keep the
+        commercial and land ones, and rank the raw and underbuilt sites worth a look. Filter it
+        whenever you want, or get a short summary each month. Every parcel shows why it's there.
       </p>
       <div class="preview-cta" aria-label="Private dashboard preview">
-        <a class="preview-button" href="/radar-app/">Open private dashboard preview</a>
+        <a class="preview-button" href="/radar-app/">Open the private dashboard</a>
         <p class="preview-note">
-          Early UI preview using synthetic sample data only. Real parcel ingest and scoring are not
-          live yet.
+          A private, early version, already running on real Harris County data. The list and scores
+          are live; the ranking is still being tuned.
         </p>
       </div>
 
@@ -299,9 +299,9 @@
           through.
         </p>
         <p>
-          Opportunity Radar pulls all of that into one place and scores every parcel. It won't tell you
-          what to buy; that's your call. What it does is narrow 1.5 million parcels down to the few
-          dozen worth a closer look.
+          Opportunity Radar pulls all of that into one place and scores every commercial and land
+          parcel. It won't tell you what to buy; that's your call. What it does is narrow 1.5 million
+          parcels down to the few dozen worth a closer look.
         </p>
       </section>
 
@@ -309,33 +309,33 @@
       <section class="section">
         <h2>Your initial parcel criteria</h2>
         <p class="decision">
-          The first filter is now locked: <strong>raw or underbuilt land, 5 acres and up, with
-          physical building footprint under 10% of the lot.</strong> Coverage means the building's
-          footprint, not its appraised value.
+          Your starting filter is set: <strong>raw or underbuilt land, 5 acres and up, with the
+          building covering less than 10% of the lot.</strong> Coverage here means actual building
+          footprint, not appraised value.
         </p>
 
         <p>
-          That creates two working buckets. Vacant land stays in as 0% physical coverage. Improved
-          land stays in when the existing building has a small footprint relative to the lot. Every
-          row should be tagged so you can sort or filter the two opportunity types separately.
+          That gives two kinds of opportunity. Vacant land comes in at 0% coverage. Improved land
+          comes in when the building on it is small next to the lot. Each one is tagged, so you can
+          sort or filter the two types separately.
         </p>
 
         <div class="split">
           <div class="card hi">
             <div class="num">Vacant</div>
-            <div class="lbl">raw land at 0% physical coverage</div>
+            <div class="lbl">raw land, nothing built on it</div>
           </div>
           <div class="card">
             <div class="num amber">Improved</div>
-            <div class="lbl">small building footprint on a big lot</div>
+            <div class="lbl">a small building on a big lot</div>
           </div>
         </div>
 
         <div class="supporting-counts">
-          <h3>First-cut size of the search</h3>
+          <h3>How the search narrows</h3>
           <p>
-            The numbers below use the current appraisal roll and a low-improvement-value proxy until
-            Opportunity Radar loads HCAD's building-footprint data.
+            These are live counts from the current appraisal roll, using real building-footprint
+            data, not an estimate.
           </p>
 
           <div class="funnel">
@@ -344,20 +344,23 @@
               <span class="lbl">every parcel in Harris County</span>
             </div>
             <div class="tier t2">
-              <span class="num">25,683</span>
-              <span class="lbl">are 5 acres or larger</span>
+              <span class="num">212,361</span>
+              <span class="lbl">are commercial, industrial, multifamily, or land &mdash; the rest are homes, condos, and tax-exempt parcels</span>
             </div>
             <div class="tier t3">
-              <span class="num">13,374</span>
-              <span class="lbl">&hellip;also clear the current low-improvement proxy*</span>
+              <span class="num">14,928</span>
+              <span class="lbl">&hellip;of those, are 5 acres or larger</span>
+            </div>
+            <div class="tier t4">
+              <span class="num">~7,900</span>
+              <span class="lbl">&hellip;also have buildings covering less than 10% of the lot
+                <br /><strong style="color: var(--teal-text);">(this is the current shortlist)</strong></span>
             </div>
           </div>
 
           <p class="foot-note">
-            *Proxy count, not the final physical-coverage count. Opportunity Radar will calculate
-            footprint coverage from HCAD building data and use the value-ratio read only as a
-            fallback where footprint data is missing. Keep only commercial, industrial, multifamily,
-            and land classes and this proxy set is about 8,150.
+            Those ~7,900 split into roughly 5,800 fully vacant tracts and 2,100 with a small building
+            on a big lot. The dashboard ranks them so the strongest rise to the top.
           </p>
         </div>
       </section>
@@ -400,7 +403,7 @@
           <div class="fblock"><span class="flabel">The parcel</span>Exact site address, HCAD account number, legal description, lot size in acres, and a pin on the map.</div>
           <div class="fblock"><span class="flabel">Ownership</span>Current owner and mailing address, how long they've held it, and any recent change of hands.</div>
           <div class="fblock"><span class="flabel">Value</span>Land value, building value, total market value, value per acre, and how the building value stacks up against the land.</div>
-          <div class="fblock"><span class="flabel">The building</span>Size, year built, age, and footprint as a share of the lot (the coverage read).</div>
+          <div class="fblock"><span class="flabel">The building</span>Size, year built, age, and footprint as a share of the lot (that's the coverage figure).</div>
           <div class="fblock"><span class="flabel">Trend</span>Last year's value and the year-over-year change, plus how the surrounding area is moving.</div>
           <div class="fblock"><span class="flabel">Risk &amp; signals</span>Flood zone (100- and 500-year), nearby permit activity, tax delinquency, and foreclosure postings as those sources are added.</div>
           <div class="fblock"><span class="flabel">The score</span>A score from 0 to 100, with a plain breakdown of which factors pushed it up or down.</div>
@@ -436,7 +439,7 @@
             <div>
               <h3>Give you a dashboard</h3>
               <p>A ranked, filterable list you can dig into anytime: narrow by area, size, flood, or
-                price. Plus an optional weekly summary of what's new. You add what the data can't see:
+                price. Plus an optional monthly summary of what's new. You add what the data can't see:
                 title issues, real access, what the block is actually like.</p>
             </div>
           </div>
@@ -444,46 +447,42 @@
         <div class="pull">
           No black box. You can see exactly why each parcel scored the way it did, and tell me where
           it's off so I can tune it to you. Down the line, the ranking also gets checked against 20
-          years of county records: which parcels like these actually got built on or outran their
-          area, so history can sharpen the weights.
+          years of county history: which parcels like these actually got built on or outran their
+          area, so the past can sharpen the ranking.
         </div>
       </section>
 
-      <!-- QUESTIONS -->
+      <!-- WHAT I NEED -->
       <section class="section">
-        <h2>What I still need from you</h2>
+        <h2>What I need from you now</h2>
         <p>
-          The main scope question is answered. The remaining inputs mainly tune the ranking once the
-          raw and underbuilt land filter is in place. I've set a default for each one, so a one-line
-          "defaults are fine" unblocks everything; override whichever you care about.
+          The screen and the first ranking are built and running on real data. What I don't have
+          yet is your judgment. The score's ingredients are still my educated guesses, and the fastest
+          way to sharpen them is the three things below.
         </p>
 
         <div class="q-quick">
-          <h3>Quick confirms</h3>
+          <h3>Three asks</h3>
           <ol>
             <li>
-              <span class="q-prompt"><b>Property types.</b> Which categories should the list cover?</span>
-              <span class="q-default"><em>Default:</em> commercial, industrial, multifamily, and vacant or raw land including rural acreage; single-family residential off. Builder-held land stays in with its own tag and a toggle to hide it.</span>
+              <span class="q-prompt"><b>Mark up the first list.</b> I'll send a short spreadsheet of the
+                top of the ranking.</span>
+              <span class="q-default"><em>How:</em> tag your best ten and worst ten, with a few words on
+                why each. Your words replace my guesses about what should push a parcel up or down.</span>
             </li>
             <li>
-              <span class="q-prompt"><b>Geography.</b> Whole county, or zero in on certain submarkets or corridors first?</span>
-              <span class="q-default"><em>Default:</em> whole county, with one-click filters for side of town, city vs. unincorporated, and utility district.</span>
+              <span class="q-prompt"><b>Give me a few deals you already know the answer to.</b> Three to
+                five you'd call winners, and a couple you'd call duds.</span>
+              <span class="q-default"><em>Why:</em> I'll look up where my score ranks them. If it ranks
+                your winners high and your duds low, it's on track. Where it doesn't, the gap shows me
+                exactly what to fix. This is the most useful thing you can give me.</span>
             </li>
             <li>
-              <span class="q-prompt"><b>What makes one a "good one"?</b> Once a parcel clears 5 acres and low coverage, what should push it up the list?</span>
-              <span class="q-default"><em>Default ranking:</em> road access and frontage, flood position, nearby momentum, price per acre vs. neighbors, utility-serviceability signals, and ownership. Marking up the first list replaces these assumptions.</span>
-            </li>
-            <li>
-              <span class="q-prompt"><b>Flood.</b> Should floodplain parcels just show a flag you judge yourself, or also get marked down in the ranking?</span>
-              <span class="q-default"><em>Default:</em> both. Flood zone is always visible, the ranking applies a penalty you can switch off, and floodway parcels get a red manual-review badge.</span>
-            </li>
-            <li>
-              <span class="q-prompt"><b>How you'd use it.</b> A dashboard you open whenever you're sizing something up, a short emailed summary, or both?</span>
-              <span class="q-default"><em>Default:</em> both, with a spreadsheet export either way.</span>
-            </li>
-            <li>
-              <span class="q-prompt"><b>Update frequency.</b> How fresh does the data need to be?</span>
-              <span class="q-default"><em>Default:</em> monthly to start; weekly once the faster feeds like foreclosures, tax delinquency, and permits are wired in.</span>
+              <span class="q-prompt"><b>Your automatic "no" list.</b> The owners, parcel shapes, or
+                pockets of the county you'd never touch.</span>
+              <span class="q-default"><em>Why:</em> each one becomes a filter. I've already taught it to
+                set aside HOA common areas, cemeteries, pipeline strips, and government land &mdash;
+                yours extend that.</span>
             </li>
           </ol>
         </div>
@@ -491,8 +490,9 @@
 
       <footer class="footer">
         <p>
-          Built on public Harris County and FEMA records. This is an early outline, not a live tool
-          yet. Parcel counts are from the live appraisal roll, June 2026.
+          Built on public Harris County and FEMA data. This is an early, private version. The data
+          and scoring are real and running; the ranking is still being tuned. Parcel counts are from
+          the live appraisal roll, June 2026.
         </p>
       </footer>
     </main>
