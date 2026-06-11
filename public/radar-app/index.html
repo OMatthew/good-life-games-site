@@ -1978,6 +1978,16 @@
           candidate_status: 'confirmed',
           candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
           owner_since: '2001-05-14',
+          same_owner_assemblage: {
+            assemblage_id: 'same_owner:0010020000003',
+            status: 'confirmed',
+            parcel_count: 3,
+            combined_acres: 14.2,
+            coverage_source: 'physical',
+            coverage_ratio: 0.032,
+            likely_unbuyable_owner: false,
+            member_accounts: ['0010020000003', '0010020000004', '0010020000005'],
+          },
           longitude: -95.416,
           latitude: 29.784,
         },
@@ -2424,6 +2434,8 @@
           parcel.city_name,
           parcel.mud_name,
           parcel.owner_class,
+          parcel.same_owner_assemblage?.assemblage_id,
+          ...(parcel.same_owner_assemblage?.member_accounts || []),
         ].filter(Boolean).join(' ').toLowerCase();
       }
 
@@ -2496,6 +2508,48 @@
           : parcel.candidate_status_reason;
       }
 
+      function normalizeAssemblageContext(value) {
+        if (!value || typeof value !== 'object') return null;
+        const accounts = Array.isArray(value.member_accounts)
+          ? value.member_accounts.map((account) => String(account))
+          : [];
+        const parcelCount = Number(value.parcel_count);
+        const combinedAcres = Number(value.combined_acres);
+        return {
+          assemblage_id: String(value.assemblage_id || ''),
+          status: value.status || '',
+          parcel_count: Number.isFinite(parcelCount) ? parcelCount : accounts.length,
+          combined_acres: Number.isFinite(combinedAcres) ? combinedAcres : null,
+          coverage_source: value.coverage_source || '',
+          coverage_ratio: value.coverage_ratio === null || value.coverage_ratio === undefined ? null : Number(value.coverage_ratio),
+          likely_unbuyable_owner: Boolean(value.likely_unbuyable_owner),
+          member_accounts: accounts,
+        };
+      }
+
+      function assemblageContextHtml(parcel) {
+        const group = parcel.same_owner_assemblage;
+        if (!group) return '';
+        const acres = group.combined_acres === null ? 'acreage unknown' : `${formatNumber(group.combined_acres, 1)} total acres`;
+        const status = group.status ? candidateStatusLabel(group.status) : 'Review context';
+        const memberPreview = group.member_accounts.slice(0, 5).join(', ');
+        const remaining = Math.max(0, group.member_accounts.length - 5);
+        const memberText = memberPreview
+          ? `${memberPreview}${remaining ? `, +${remaining} more` : ''}`
+          : 'member accounts unavailable';
+        const coverageText = Number.isFinite(group.coverage_ratio)
+          ? `${pct(group.coverage_ratio)} coverage`
+          : `${titleCase(group.coverage_source || 'unknown')} coverage`;
+        const ownerFlag = group.likely_unbuyable_owner ? ' Owner flag applies to the group.' : '';
+        return `
+          <div class="note-box" style="margin-top: 0.75rem;">
+            <strong>Same-owner adjacent group</strong>
+            <span>This parcel is part of a same-owner adjacent group: ${escapeHtml(String(group.parcel_count))} parcels, ${escapeHtml(acres)}. ${escapeHtml(status)} · ${escapeHtml(coverageText)}.${escapeHtml(ownerFlag)}</span>
+            <span>Members: ${escapeHtml(memberText)}</span>
+          </div>
+        `;
+      }
+
       function unique(values) {
         return [...new Set(values)].sort();
       }
@@ -2543,6 +2597,7 @@
           coverage_source: parcel.coverage_source || 'unknown',
           owner_class: parcel.owner_class || '',
           is_likely_unbuyable: Boolean(parcel.is_likely_unbuyable),
+          same_owner_assemblage: normalizeAssemblageContext(parcel.same_owner_assemblage),
           state_class: parcel.state_class || 'N/A',
           acres: Number(parcel.acres) || 0,
           coverage_ratio: Number(parcel.coverage_ratio) || 0,
@@ -2901,6 +2956,7 @@
         const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
         const selectedLandPerAcre = landValuePerAcre(selected);
         const reason = detailReason(selected);
+        const assemblageBox = assemblageContextHtml(selected);
         const scoreStats = hasScore(selected) ? `
             <div class="stat"><span>Rank</span><strong>#${selected.score_rank || 'N/A'}</strong></div>
             <div class="stat"><span>Score</span><strong>${formatNumber(selected.opportunity_score, 1)}</strong></div>
@@ -2922,6 +2978,7 @@
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
           <div class="note-box"><strong>Why it qualifies</strong><span>${escapeHtml(reason)}</span></div>
+          ${assemblageBox}
           <div class="stat-grid">
             ${scoreStats}
             <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
