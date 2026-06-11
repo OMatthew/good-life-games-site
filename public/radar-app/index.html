@@ -981,6 +981,14 @@
         left: 10px;
       }
 
+      .leaflet-right {
+        right: 10px;
+      }
+
+      .leaflet-bottom {
+        bottom: 10px;
+      }
+
       .leaflet-control {
         pointer-events: auto;
       }
@@ -1027,6 +1035,78 @@
       body[data-theme="dark"] .leaflet-bar a:hover,
       body[data-theme="dark"] .leaflet-bar a:focus-visible {
         background: var(--surface-2);
+      }
+
+      .leaflet-control-layers {
+        border: 1px solid rgba(15, 23, 42, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+        color: var(--ink-0);
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      .leaflet-control-layers-toggle {
+        position: relative;
+        display: block;
+        width: 34px;
+        height: 34px;
+      }
+
+      .leaflet-control-layers-toggle::before,
+      .leaflet-control-layers-toggle::after {
+        content: "";
+        position: absolute;
+        left: 9px;
+        width: 16px;
+        height: 10px;
+        border: 2px solid var(--ink-0);
+        border-radius: 3px;
+        transform: rotate(-16deg);
+      }
+
+      .leaflet-control-layers-toggle::before {
+        top: 8px;
+      }
+
+      .leaflet-control-layers-toggle::after {
+        top: 14px;
+        background: rgba(255, 255, 255, 0.84);
+      }
+
+      .leaflet-control-layers-list {
+        padding: 0.55rem 0.65rem;
+      }
+
+      .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-list {
+        display: none;
+      }
+
+      .leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+        display: none;
+      }
+
+      .leaflet-control-layers label {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+        white-space: nowrap;
+      }
+
+      body[data-theme="dark"] .leaflet-control-layers {
+        border-color: var(--surface-3);
+        background: var(--surface-1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      body[data-theme="dark"] .leaflet-control-layers-toggle::before,
+      body[data-theme="dark"] .leaflet-control-layers-toggle::after {
+        border-color: var(--ink-0);
+      }
+
+      body[data-theme="dark"] .leaflet-control-layers-toggle::after {
+        background: var(--surface-1);
       }
 
       .leaflet-control-attribution {
@@ -2602,7 +2682,7 @@
               Satellite: satelliteLayer,
             },
             null,
-            { collapsed: false, position: 'topright' },
+            { collapsed: true, position: 'topright' },
           ).addTo(mapState.map);
         }
 
