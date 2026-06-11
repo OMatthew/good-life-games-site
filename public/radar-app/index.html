@@ -1644,7 +1644,7 @@
                 First draft dashboard over five synthetic parcels. This is for UI/workflow feedback,
                 not real parcel-content feedback or scoring decisions.
               </p>
-              <button class="help-button" id="ranking-help-button" type="button" aria-expanded="false" aria-controls="ranking-modal" title="How screening and ranking work">
+              <button class="help-button" id="ranking-help-button" type="button" aria-expanded="false" aria-controls="ranking-modal" title="How parcel selection and ranking work">
                 <span class="help-mark" aria-hidden="true">?</span>
                 How ranking works
               </button>
@@ -1657,15 +1657,15 @@
           <section class="ranking-modal" role="dialog" aria-modal="true" aria-labelledby="ranking-modal-title" aria-describedby="ranking-modal-summary">
             <div class="modal-header">
               <div>
-                <h2 id="ranking-modal-title">How screening and ranking work</h2>
-                <p id="ranking-modal-summary">The list first removes obvious non-candidates, then ranks the remaining parcels by access, flood position, market signals, price, district signals, and ownership.</p>
+                <h2 id="ranking-modal-title">How parcels are selected and ranked</h2>
+                <p id="ranking-modal-summary">The app first keeps parcels that match the basic acreage, category, and coverage rules, then ranks them by access, flood position, market signals, price, district signals, and ownership.</p>
               </div>
               <button class="modal-close" id="ranking-modal-close" type="button" aria-label="Close ranking explanation">&times;</button>
             </div>
             <div class="modal-body">
               <div class="explainer-section">
-                <h3>Screen first</h3>
-                <p>In the real scored snapshot, a parcel is ranked only if it is at least 5 acres, is in a commercial or land category, and is the one row used for that site when HCAD splits a property across multiple accounts. Confirmed rows are vacant or have physical building coverage below 10%. Needs confirmation rows look like they may pass, but HCAD shows improvement evidence without a reliable building footprint, so coverage should be checked before treating them as confirmed.</p>
+                <h3>Qualify parcels first</h3>
+                <p>A parcel can be ranked when it is at least 5 acres, is categorized as commercial or land, and represents one distinct site. If county data splits one site across several accounts, the app shows one representative account. Confirmed parcels are vacant or have building footprint coverage below 10%. Needs confirmation means value or building records suggest improvements, but footprint data is missing or unclear, so coverage needs manual review.</p>
               </div>
               <div class="explainer-section">
                 <h3>Score formula</h3>
@@ -1698,7 +1698,7 @@
               <button
                 class="info-button"
                 type="button"
-                aria-label="Rows currently visible after the active filters. This is the size of the list you are browsing right now."
+                aria-label="Parcels currently visible after the active filters. This is the size of the list and map you are browsing right now."
               >i</button>
             </div>
             <strong id="metric-count">0</strong>
@@ -1709,7 +1709,7 @@
               <button
                 class="info-button"
                 type="button"
-                aria-label="Parcels that passed the Phase 1 size, category, and low-coverage screen with enough footprint or vacancy evidence to trust the result."
+                aria-label="Parcels that are at least 5 acres, are categorized as commercial or land, and are either vacant or have building footprint coverage below 10%."
               >i</button>
             </div>
             <strong id="metric-confirmed">0</strong>
@@ -1720,7 +1720,7 @@
               <button
                 class="info-button"
                 type="button"
-                aria-label="Parcels that pass the size and CRE screen but need physical building footprint confirmation before treating them as confirmed candidates."
+                aria-label="Parcels that are at least 5 acres and categorized as commercial or land, but need building footprint coverage confirmation before outreach."
               >i</button>
             </div>
             <strong id="metric-unknown">0</strong>
@@ -1811,7 +1811,7 @@
             <div class="panel list-panel">
               <div class="panel-header">
                 <h2>Candidate Preview</h2>
-                <p id="list-note">Click a row to update the detail panel.</p>
+                <p id="list-note">Click a parcel to update the detail panel.</p>
               </div>
               <div class="list-tools" aria-label="Candidate list controls">
                 <label class="list-field" for="list-search">
@@ -1846,7 +1846,7 @@
           <section class="panel detail-panel" aria-live="polite">
             <div class="panel-header" style="position: relative;">
               <h2>Property Detail</h2>
-              <p id="detail-note">Explain why a row is or is not trusted by the preview screen.</p>
+              <p id="detail-note">Shows why this parcel qualifies or what still needs confirmation.</p>
               <button id="close-detail-btn" class="close-button" aria-label="Close detail panel" title="Deselect property">&times;</button>
             </div>
             <div class="detail-body" id="detail-body"></div>
@@ -1868,8 +1868,8 @@
         source_label: 'Sample parcel data',
         filter_note: 'Preview controls only. Real ranking weights are not enabled.',
         map_note: 'Approximate fixture locations, scaled to Harris County context.',
-        list_note: 'Click a row to update the detail panel.',
-        detail_note: 'Explain why a row is or is not trusted by the preview screen.',
+        list_note: 'Click a parcel to update the detail panel.',
+        detail_note: 'Shows why this parcel qualifies or what still needs confirmation.',
       };
 
       const fallbackParcels = [
@@ -1891,7 +1891,7 @@
           is_stack_anchor: true,
           is_phase1_candidate: true,
           candidate_status: 'confirmed',
-          candidate_status_reason: 'Meets the preview Phase 1 screen with physical or vacant coverage.',
+          candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
           longitude: -95.416,
           latitude: 29.784,
         },
@@ -1913,7 +1913,7 @@
           is_stack_anchor: true,
           is_phase1_candidate: true,
           candidate_status: 'confirmed',
-          candidate_status_reason: 'Meets the preview Phase 1 screen with physical or vacant coverage.',
+          candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
           longitude: -95.572,
           latitude: 29.918,
         },
@@ -1935,7 +1935,7 @@
           is_stack_anchor: true,
           is_phase1_candidate: false,
           candidate_status: 'unknown',
-          candidate_status_reason: 'Needs HCAD bulk footprint data before the hard Phase 1 screen can be confirmed.',
+          candidate_status_reason: 'At least 5 acres and commercial or land category, but building coverage needs confirmation.',
           longitude: -95.192,
           latitude: 29.658,
         },
@@ -1957,7 +1957,7 @@
           is_stack_anchor: true,
           is_phase1_candidate: true,
           candidate_status: 'confirmed',
-          candidate_status_reason: 'Meets the preview Phase 1 screen with physical or vacant coverage.',
+          candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
           longitude: -95.808,
           latitude: 29.792,
         },
@@ -1979,7 +1979,7 @@
           is_stack_anchor: false,
           is_phase1_candidate: false,
           candidate_status: 'not_candidate',
-          candidate_status_reason: 'Does not meet the Phase 1 size/category/coverage screen.',
+          candidate_status_reason: 'Does not meet the current acreage, category, and coverage rules.',
           longitude: -95.346,
           latitude: 29.724,
         },
@@ -2321,21 +2321,21 @@
       }
 
       function genericScoredReason(reason) {
-        return !reason || /^Scored row\b/.test(reason);
+        return !reason || /^Current scoring output\b/.test(reason);
       }
 
       function candidateScreenSummary(parcel) {
         const parts = [];
         if (parcel.candidate_status === 'unknown') {
-          parts.push('Included in the candidate set because it meets the 5+ acre CRE size/category screen. Coverage still needs confirmation before outreach.');
+          parts.push('This parcel is at least 5 acres and categorized as commercial or land, but building coverage needs confirmation before outreach.');
         } else if (parcel.coverage_status === 'vacant') {
-          parts.push('Included in the candidate set because it meets the 5+ acre CRE screen and appears vacant.');
+          parts.push('This parcel qualifies because it is at least 5 acres, is categorized as commercial or land, and appears vacant.');
         } else if (parcel.coverage_source === 'physical' && parcel.coverage_ratio < 0.10) {
-          parts.push('Included in the candidate set because it meets the 5+ acre CRE screen with physical coverage below 10%.');
+          parts.push('This parcel qualifies because it is at least 5 acres, is categorized as commercial or land, and building footprint coverage is below 10%.');
         } else if (parcel.candidate_status === 'not_candidate') {
-          parts.push('Shown because the status filter includes unscored parcels. It does not currently meet the candidate screen.');
+          parts.push('Shown because the status filter includes parcels that are not currently ranked. It does not meet the current acreage, category, and coverage rules.');
         } else {
-          parts.push('Included in the candidate set because it passed the exported screen.');
+          parts.push('This parcel qualifies under the current acreage, category, and coverage rules.');
         }
         if (parcel.is_likely_unbuyable) {
           parts.push('Owner flag needs review before outreach.');
@@ -2393,7 +2393,7 @@
           site_address: parcel.site_address || parcel.address || 'Address unavailable',
           prop_category: parcel.prop_category || parcel.category || 'unknown',
           candidate_status: parcel.candidate_status || 'unknown',
-          candidate_status_reason: parcel.candidate_status_reason || 'Scored row from the exported snapshot.',
+          candidate_status_reason: parcel.candidate_status_reason || 'Current scoring output.',
           coverage_status: parcel.coverage_status || parcel.type || 'unknown',
           coverage_source: parcel.coverage_source || 'unknown',
           owner_class: parcel.owner_class || '',
@@ -2648,7 +2648,7 @@
         listMore.hidden = visible.length >= sorted.length;
 
         if (!sorted.length) {
-          list.innerHTML = '<div class="empty-state">No preview rows match the current filters.</div>';
+          list.innerHTML = '<div class="empty-state">No parcels match the current filters.</div>';
           return;
         }
         list.innerHTML = '';
@@ -2729,15 +2729,15 @@
             <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
         ` : `
-            <div class="future-item">Scoring is not enabled in this preview.</div>
+            <div class="future-item">Scoring is not available in this sample.</div>
             <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
-            <div class="future-item">Parcels marked needs confirmation need coverage confirmation before candidate status is trusted.</div>
+            <div class="future-item">Parcels marked needs confirmation need building coverage confirmation before outreach.</div>
         `;
         detail.innerHTML = `
           <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-          <div class="note-box"><strong>Candidate screen</strong><span>${escapeHtml(reason)}</span></div>
+          <div class="note-box"><strong>Why it qualifies</strong><span>${escapeHtml(reason)}</span></div>
           <div class="stat-grid">
             ${scoreStats}
             <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
