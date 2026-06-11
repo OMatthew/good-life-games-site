@@ -2005,6 +2005,7 @@
       const mapState = {
         map: null,
         markers: [],
+        filteredSignature: '',
       };
 
       const brandSubtitle = document.getElementById('brand-subtitle');
@@ -2567,6 +2568,9 @@
 
       function renderMap(filtered) {
         if (!window.L) return;
+        const filteredSignature = filtered.map((parcel) => parcel.account_id).join('|');
+        const shouldFitBounds = filteredSignature !== mapState.filteredSignature;
+        mapState.filteredSignature = filteredSignature;
 
         if (!mapState.map) {
           mapState.map = L.map('map-wrap', {
@@ -2577,12 +2581,29 @@
             zoomControl: true,
           }).setView([29.76, -95.42], 9);
 
-          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+          const roadLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
             keepBuffer: 6,
             maxZoom: 19,
             updateWhenIdle: false,
             attribution: 'Tiles &copy; Esri',
-          }).addTo(mapState.map);
+          });
+
+          const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            keepBuffer: 6,
+            maxZoom: 19,
+            updateWhenIdle: false,
+            attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+          });
+
+          roadLayer.addTo(mapState.map);
+          L.control.layers(
+            {
+              'Road map': roadLayer,
+              Satellite: satelliteLayer,
+            },
+            null,
+            { collapsed: false, position: 'topright' },
+          ).addTo(mapState.map);
         }
 
         mapState.markers.forEach((marker) => marker.remove());
@@ -2622,7 +2643,7 @@
           return marker;
         });
 
-        if (mapState.markers.length) {
+        if (shouldFitBounds && mapState.markers.length) {
           const bounds = L.latLngBounds(mapState.markers.map((marker) => marker.getLatLng()));
           mapState.map.fitBounds(bounds, { padding: [34, 34], maxZoom: 11 });
         }
