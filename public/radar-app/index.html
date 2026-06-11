@@ -77,6 +77,7 @@
       body {
         margin: 0;
         min-width: 320px;
+        overflow-x: hidden;
         font-family: var(--font-body);
         color: var(--ink-0);
         background:
@@ -810,6 +811,12 @@
       .filter-group {
         display: grid;
         gap: 0.45rem;
+        min-width: 0;
+      }
+
+      .filter-value {
+        color: var(--ink-0);
+        font-weight: 900;
       }
 
       select,
@@ -849,6 +856,7 @@
 
       .map-wrap {
         position: relative;
+        overflow: hidden;
         height: 356px;
         background: var(--surface-2);
       }
@@ -1376,6 +1384,15 @@
         line-height: 1.5;
       }
 
+      .note-box strong,
+      .note-box span {
+        display: block;
+      }
+
+      .note-box strong {
+        margin-bottom: 0.15rem;
+      }
+
       body[data-theme="dark"] .note-box {
         color: #b7fff3;
       }
@@ -1739,6 +1756,35 @@
                 <label for="acre-filter">Minimum acres: <span id="acre-value">5.0</span></label>
                 <input id="acre-filter" type="range" min="0" max="25" step="0.5" value="5" />
               </div>
+              <div class="filter-group">
+                <label for="total-market-filter">Max total market value: <span id="total-market-value" class="filter-value">$10M+</span></label>
+                <input id="total-market-filter" type="range" min="0" max="10000000" step="250000" value="10000000" />
+              </div>
+              <div class="filter-group">
+                <label for="land-acre-filter">Max land $/acre: <span id="land-acre-value" class="filter-value">$500k+/ac</span></label>
+                <input id="land-acre-filter" type="range" min="0" max="500000" step="10000" value="500000" />
+              </div>
+              <div class="filter-group">
+                <label for="coverage-filter">Max coverage: <span id="coverage-value" class="filter-value">10.0%</span></label>
+                <input id="coverage-filter" type="range" min="0" max="0.1" step="0.005" value="0.1" />
+              </div>
+              <div class="filter-group">
+                <label for="road-filter">Road access</label>
+                <select id="road-filter">
+                  <option value="any">Any</option>
+                  <option value="frontage">Frontage only</option>
+                  <option value="quarter_mile">Within 1/4 mile</option>
+                  <option value="mile">Within 1 mile</option>
+                </select>
+              </div>
+              <label class="check-row" for="hide-floodway">
+                <input id="hide-floodway" type="checkbox" />
+                Hide floodway
+              </label>
+              <label class="check-row" for="hide-100yr-flood">
+                <input id="hide-100yr-flood" type="checkbox" />
+                Hide 100-year flood
+              </label>
             </div>
           </aside>
 
@@ -1770,7 +1816,9 @@
                   <span>Sort</span>
                   <select id="list-sort">
                     <option value="rank">Rank</option>
-                    <option value="score">Score</option>
+                    <option value="score">Score high to low</option>
+                    <option value="land_per_acre">Land $/acre low to high</option>
+                    <option value="total_market">Total market value low to high</option>
                     <option value="road">Road access</option>
                     <option value="acres">Acres</option>
                     <option value="coverage">Lowest coverage</option>
@@ -1969,7 +2017,16 @@
       const statusFilter = document.getElementById('status-filter');
       const acreFilter = document.getElementById('acre-filter');
       const acreValue = document.getElementById('acre-value');
+      const totalMarketFilter = document.getElementById('total-market-filter');
+      const totalMarketValue = document.getElementById('total-market-value');
+      const landAcreFilter = document.getElementById('land-acre-filter');
+      const landAcreValue = document.getElementById('land-acre-value');
+      const coverageFilter = document.getElementById('coverage-filter');
+      const coverageValue = document.getElementById('coverage-value');
+      const roadFilter = document.getElementById('road-filter');
       const hideUnbuyable = document.getElementById('hide-unbuyable');
+      const hideFloodway = document.getElementById('hide-floodway');
+      const hide100yrFlood = document.getElementById('hide-100yr-flood');
       const listSearch = document.getElementById('list-search');
       const listSort = document.getElementById('list-sort');
       const listTop = document.getElementById('list-top');
@@ -2118,6 +2175,17 @@
         }).format(value || 0);
       }
 
+      function compactMoney(value) {
+        if (value >= 1000000) {
+          const millions = value / 1000000;
+          return `$${millions % 1 === 0 ? formatNumber(millions, 0) : formatNumber(millions, 1)}M`;
+        }
+        if (value >= 1000) {
+          return `$${formatNumber(value / 1000, 0)}k`;
+        }
+        return formatMoney(value);
+      }
+
       function formatNumber(value, digits = 0) {
         return new Intl.NumberFormat('en-US', {
           maximumFractionDigits: digits,
@@ -2127,6 +2195,31 @@
 
       function pct(value) {
         return `${formatNumber((value || 0) * 100, 1)}%`;
+      }
+
+      function hasUsableValue(value) {
+        return Number.isFinite(Number(value)) && Number(value) > 0;
+      }
+
+      function landValuePerAcre(parcel) {
+        if (!hasUsableValue(parcel.land_value) || !hasUsableValue(parcel.acres)) return null;
+        return parcel.land_value / parcel.acres;
+      }
+
+      function formatLandPerAcre(value) {
+        return `${compactMoney(value)}/ac`;
+      }
+
+      function formatMaxTotalMarket(value) {
+        return Number(value) >= 10000000 ? '$10M+' : compactMoney(Number(value));
+      }
+
+      function formatMaxLandPerAcre(value) {
+        return Number(value) >= 500000 ? '$500k+/ac' : formatLandPerAcre(Number(value));
+      }
+
+      function formatCoverageCap(value) {
+        return pct(Number(value));
       }
 
       function hasScore(parcel) {
@@ -2152,6 +2245,18 @@
           far: 3,
         };
         return order[parcel.road_access_bucket] ?? 4;
+      }
+
+      function passesRoadFilter(parcel, value) {
+        if (value === 'any') return true;
+        if (value === 'frontage') return parcel.road_access_bucket === 'frontage';
+        if (value === 'quarter_mile') {
+          return parcel.road_access_bucket === 'frontage' || parcel.road_access_bucket === 'quarter_mile';
+        }
+        if (value === 'mile') {
+          return ['frontage', 'quarter_mile', 'mile'].includes(parcel.road_access_bucket);
+        }
+        return true;
       }
 
       function compactRoadLabel(parcel) {
@@ -2186,14 +2291,58 @@
         const sorted = [...rows];
         const score = (parcel) => Number(parcel.opportunity_score) || 0;
         const rank = (parcel) => Number(parcel.score_rank) || Number.MAX_SAFE_INTEGER;
+        const valueAsc = (field) => (a, b) => {
+          const aValue = field(a);
+          const bValue = field(b);
+          const aMissing = !hasUsableValue(aValue);
+          const bMissing = !hasUsableValue(bValue);
+          if (aMissing && bMissing) return rank(a) - rank(b);
+          if (aMissing) return 1;
+          if (bMissing) return -1;
+          return aValue - bValue || rank(a) - rank(b);
+        };
         sorted.sort((a, b) => {
           if (state.listSort === 'score') return score(b) - score(a) || rank(a) - rank(b);
+          if (state.listSort === 'land_per_acre') return valueAsc(landValuePerAcre)(a, b);
+          if (state.listSort === 'total_market') return valueAsc((parcel) => parcel.total_market_val)(a, b);
           if (state.listSort === 'road') return roadAccessRank(a) - roadAccessRank(b) || rank(a) - rank(b);
           if (state.listSort === 'acres') return b.acres - a.acres || rank(a) - rank(b);
           if (state.listSort === 'coverage') return a.coverage_ratio - b.coverage_ratio || rank(a) - rank(b);
           return rank(a) - rank(b);
         });
         return sorted;
+      }
+
+      function genericScoredReason(reason) {
+        return !reason || /^Scored row\b/.test(reason);
+      }
+
+      function whyThisRow(parcel) {
+        const parts = [];
+        if (parcel.candidate_status === 'unknown') {
+          parts.push('Ranked because it passes the size/category screen, but coverage needs confirmation.');
+        } else if (parcel.coverage_status === 'vacant') {
+          parts.push('Ranked because it passed the 5+ acre CRE screen and appears vacant.');
+        } else if (parcel.coverage_source === 'physical' && parcel.coverage_ratio < 0.10) {
+          parts.push('Ranked because it passed the 5+ acre CRE screen with physical coverage below 10%.');
+        } else if (parcel.candidate_status === 'not_candidate') {
+          parts.push('Not currently ranked because it does not meet the screen.');
+        } else {
+          parts.push('Ranked because it passed the exported candidate screen.');
+        }
+        if (parcel.is_likely_unbuyable) {
+          parts.push('Owner flag needs review before outreach.');
+        }
+        if (parcel.floodway_manual_review || parcel.in_floodway) {
+          parts.push('Floodway requires manual review.');
+        }
+        return parts.join(' ');
+      }
+
+      function detailReason(parcel) {
+        return genericScoredReason(parcel.candidate_status_reason)
+          ? whyThisRow(parcel)
+          : parcel.candidate_status_reason;
       }
 
       function unique(values) {
@@ -2299,7 +2448,18 @@
         state.listLimit = initialListLimit;
       }
 
-      [categoryFilter, statusFilter, acreFilter, hideUnbuyable].forEach((control) => {
+      [
+        categoryFilter,
+        statusFilter,
+        acreFilter,
+        totalMarketFilter,
+        landAcreFilter,
+        coverageFilter,
+        roadFilter,
+        hideUnbuyable,
+        hideFloodway,
+        hide100yrFlood,
+      ].forEach((control) => {
         control.addEventListener('input', () => {
           resetListLimit();
           render();
@@ -2347,14 +2507,29 @@
 
       function getFilteredParcels() {
         const minAcres = Number(acreFilter.value);
+        const maxTotalMarket = Number(totalMarketFilter.value);
+        const totalMarketCapActive = maxTotalMarket < Number(totalMarketFilter.max);
+        const maxLandPerAcre = Number(landAcreFilter.value);
+        const landPerAcreCapActive = maxLandPerAcre < Number(landAcreFilter.max);
+        const maxCoverage = Number(coverageFilter.value);
         acreValue.textContent = formatNumber(minAcres, 1);
+        totalMarketValue.textContent = formatMaxTotalMarket(maxTotalMarket);
+        landAcreValue.textContent = formatMaxLandPerAcre(maxLandPerAcre);
+        coverageValue.textContent = formatCoverageCap(maxCoverage);
         return parcels.filter((parcel) => {
+          const perAcre = landValuePerAcre(parcel);
           if (hideUnbuyable.checked && parcel.is_likely_unbuyable) return false;
+          if (hideFloodway.checked && parcel.in_floodway) return false;
+          if (hide100yrFlood.checked && parcel.in_100yr_flood) return false;
           if (categoryFilter.value !== 'all' && parcel.prop_category !== categoryFilter.value) return false;
           if (statusFilter.value === 'screened' && parcel.candidate_status === 'not_candidate') return false;
           if (statusFilter.value === 'confirmed' && parcel.candidate_status !== 'confirmed') return false;
           if (statusFilter.value === 'unknown' && parcel.candidate_status !== 'unknown') return false;
+          if (!passesRoadFilter(parcel, roadFilter.value)) return false;
           if (parcel.acres < minAcres) return false;
+          if (parcel.coverage_ratio > maxCoverage) return false;
+          if (totalMarketCapActive && (!hasUsableValue(parcel.total_market_val) || parcel.total_market_val > maxTotalMarket)) return false;
+          if (landPerAcreCapActive && (!hasUsableValue(perAcre) || perAcre > maxLandPerAcre)) return false;
           return true;
         });
       }
@@ -2517,6 +2692,8 @@
         if (closeBtn) closeBtn.style.display = 'grid';
         const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
         const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
+        const selectedLandPerAcre = landValuePerAcre(selected);
+        const reason = detailReason(selected);
         const scoreStats = hasScore(selected) ? `
             <div class="stat"><span>Rank</span><strong>#${selected.score_rank || 'N/A'}</strong></div>
             <div class="stat"><span>Score</span><strong>${formatNumber(selected.opportunity_score, 1)}</strong></div>
@@ -2536,7 +2713,7 @@
           <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-          <div class="note-box">${selected.candidate_status_reason}</div>
+          <div class="note-box"><strong>Why this row is here</strong><span>${escapeHtml(reason)}</span></div>
           <div class="stat-grid">
             ${scoreStats}
             <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
@@ -2544,6 +2721,7 @@
             <div class="stat"><span>Category</span><strong>${titleCase(selected.prop_category)}</strong></div>
             <div class="stat"><span>State class</span><strong>${selected.state_class}</strong></div>
             <div class="stat"><span>Land value</span><strong>${formatMoney(selected.land_value)}</strong></div>
+            <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
             <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
             <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
             <div class="stat"><span>Coverage source</span><strong>${titleCase(selected.coverage_source)}</strong></div>
