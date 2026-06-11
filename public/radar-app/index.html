@@ -1854,6 +1854,10 @@
                 <input id="coverage-filter" type="range" min="0" max="0.1" step="0.005" value="0.1" />
               </div>
               <div class="filter-group">
+                <label for="owner-years-filter">Minimum years held: <span id="owner-years-value" class="filter-value">Any</span></label>
+                <input id="owner-years-filter" type="range" min="0" max="40" step="1" value="0" />
+              </div>
+              <div class="filter-group">
                 <label for="road-filter">Road access</label>
                 <select id="road-filter">
                   <option value="any">Any</option>
@@ -1905,6 +1909,7 @@
                     <option value="score">Score high to low</option>
                     <option value="land_per_acre">Land $/acre low to high</option>
                     <option value="total_market">Total market value low to high</option>
+                    <option value="owner_years">Longest-held owner</option>
                     <option value="road">Road access</option>
                     <option value="acres">Acres</option>
                     <option value="coverage">Lowest coverage</option>
@@ -1972,6 +1977,7 @@
           is_phase1_candidate: true,
           candidate_status: 'confirmed',
           candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
+          owner_since: '2001-05-14',
           longitude: -95.416,
           latitude: 29.784,
         },
@@ -1994,6 +2000,7 @@
           is_phase1_candidate: true,
           candidate_status: 'confirmed',
           candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
+          owner_since: '1994-10-03',
           longitude: -95.572,
           latitude: 29.918,
         },
@@ -2016,6 +2023,7 @@
           is_phase1_candidate: false,
           candidate_status: 'unknown',
           candidate_status_reason: 'At least 5 acres and commercial or land category, but building coverage needs confirmation.',
+          owner_since: '2022-08-19',
           longitude: -95.192,
           latitude: 29.658,
         },
@@ -2038,6 +2046,7 @@
           is_phase1_candidate: true,
           candidate_status: 'confirmed',
           candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
+          owner_since: '1987-02-24',
           longitude: -95.808,
           latitude: 29.792,
         },
@@ -2060,6 +2069,7 @@
           is_phase1_candidate: false,
           candidate_status: 'not_candidate',
           candidate_status_reason: 'Does not meet the current acreage, category, and coverage rules.',
+          owner_since: null,
           longitude: -95.346,
           latitude: 29.724,
         },
@@ -2110,6 +2120,8 @@
       const landAcreValue = document.getElementById('land-acre-value');
       const coverageFilter = document.getElementById('coverage-filter');
       const coverageValue = document.getElementById('coverage-value');
+      const ownerYearsFilter = document.getElementById('owner-years-filter');
+      const ownerYearsValue = document.getElementById('owner-years-value');
       const roadFilter = document.getElementById('road-filter');
       const hideUnbuyable = document.getElementById('hide-unbuyable');
       const hideFloodway = document.getElementById('hide-floodway');
@@ -2310,6 +2322,46 @@
         return pct(Number(value));
       }
 
+      function parseOwnerSince(value) {
+        if (!value) return null;
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return null;
+        return date;
+      }
+
+      function ownerYearsHeld(parcel) {
+        const ownerSince = parseOwnerSince(parcel.owner_since);
+        if (!ownerSince) return null;
+        const now = new Date();
+        const years = (now - ownerSince) / (365.25 * 24 * 60 * 60 * 1000);
+        return years >= 0 ? years : null;
+      }
+
+      function formatOwnerYearsCap(value) {
+        const years = Number(value);
+        if (years <= 0) return 'Any';
+        if (years >= Number(ownerYearsFilter.max)) return `${years}+ years`;
+        return `${years} year${years === 1 ? '' : 's'}`;
+      }
+
+      function ownerSinceLabel(parcel) {
+        const ownerSince = parseOwnerSince(parcel.owner_since);
+        if (!ownerSince) return 'Unknown';
+        return ownerSince.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      }
+
+      function ownerYearsLabel(parcel) {
+        const years = ownerYearsHeld(parcel);
+        if (years === null) return 'Held unknown';
+        const rounded = Math.floor(years);
+        if (rounded < 1) return 'Held <1 yr';
+        return `Held ${rounded} yr${rounded === 1 ? '' : 's'}`;
+      }
+
       function hasScore(parcel) {
         return parcel.opportunity_score !== undefined && parcel.opportunity_score !== null;
       }
@@ -2389,10 +2441,21 @@
           if (bMissing) return -1;
           return aValue - bValue || rank(a) - rank(b);
         };
+        const valueDesc = (field) => (a, b) => {
+          const aValue = field(a);
+          const bValue = field(b);
+          const aMissing = !hasUsableValue(aValue);
+          const bMissing = !hasUsableValue(bValue);
+          if (aMissing && bMissing) return rank(a) - rank(b);
+          if (aMissing) return 1;
+          if (bMissing) return -1;
+          return bValue - aValue || rank(a) - rank(b);
+        };
         sorted.sort((a, b) => {
           if (state.listSort === 'score') return score(b) - score(a) || rank(a) - rank(b);
           if (state.listSort === 'land_per_acre') return valueAsc(landValuePerAcre)(a, b);
           if (state.listSort === 'total_market') return valueAsc((parcel) => parcel.total_market_val)(a, b);
+          if (state.listSort === 'owner_years') return valueDesc(ownerYearsHeld)(a, b);
           if (state.listSort === 'road') return roadAccessRank(a) - roadAccessRank(b) || rank(a) - rank(b);
           if (state.listSort === 'acres') return b.acres - a.acres || rank(a) - rank(b);
           if (state.listSort === 'coverage') return a.coverage_ratio - b.coverage_ratio || rank(a) - rank(b);
@@ -2471,6 +2534,7 @@
           ...parcel,
           account_id: String(parcel.account_id || parcel.hcad_num || parcel.account || ''),
           owner_name: parcel.owner_name || parcel.owner || 'Unknown owner',
+          owner_since: parcel.owner_since || parcel.new_own_dt || null,
           site_address: parcel.site_address || parcel.address || 'Address unavailable',
           prop_category: parcel.prop_category || parcel.category || 'unknown',
           candidate_status: parcel.candidate_status || 'unknown',
@@ -2508,6 +2572,12 @@
         setCandidateStatusOptions(statusFilter);
         categoryFilter.value = [...categoryFilter.options].some((option) => option.value === categoryValue) ? categoryValue : 'all';
         statusFilter.value = [...statusFilter.options].some((option) => option.value === statusValue) ? statusValue : 'screened';
+        const hasOwnerDates = parcels.some((parcel) => Boolean(parcel.owner_since));
+        ownerYearsFilter.disabled = !hasOwnerDates;
+        if (!hasOwnerDates) {
+          ownerYearsFilter.value = ownerYearsFilter.min;
+          ownerYearsValue.textContent = 'Not in export';
+        }
       }
 
       async function loadDataset() {
@@ -2543,6 +2613,7 @@
         totalMarketFilter.value = totalMarketFilter.max;
         landAcreFilter.value = landAcreFilter.max;
         coverageFilter.value = coverageFilter.max;
+        ownerYearsFilter.value = ownerYearsFilter.min;
         roadFilter.value = 'any';
         hideUnbuyable.checked = false;
         hideFloodway.checked = false;
@@ -2558,6 +2629,7 @@
         totalMarketFilter,
         landAcreFilter,
         coverageFilter,
+        ownerYearsFilter,
         roadFilter,
         hideUnbuyable,
         hideFloodway,
@@ -2617,12 +2689,17 @@
         const maxLandPerAcre = Number(landAcreFilter.value);
         const landPerAcreCapActive = maxLandPerAcre < Number(landAcreFilter.max);
         const maxCoverage = Number(coverageFilter.value);
+        const minOwnerYears = ownerYearsFilter.disabled ? 0 : Number(ownerYearsFilter.value);
         acreValue.textContent = formatNumber(minAcres, 1);
         totalMarketValue.textContent = formatMaxTotalMarket(maxTotalMarket);
         landAcreValue.textContent = formatMaxLandPerAcre(maxLandPerAcre);
         coverageValue.textContent = formatCoverageCap(maxCoverage);
+        ownerYearsValue.textContent = ownerYearsFilter.disabled
+          ? 'Not in export'
+          : formatOwnerYearsCap(minOwnerYears);
         return parcels.filter((parcel) => {
           const perAcre = landValuePerAcre(parcel);
+          const yearsHeld = ownerYearsHeld(parcel);
           if (hideUnbuyable.checked && parcel.is_likely_unbuyable) return false;
           if (hideFloodway.checked && parcel.in_floodway) return false;
           if (hide100yrFlood.checked && parcel.in_100yr_flood) return false;
@@ -2633,6 +2710,7 @@
           if (!passesRoadFilter(parcel, roadFilter.value)) return false;
           if (parcel.acres < minAcres) return false;
           if (parcel.coverage_ratio > maxCoverage) return false;
+          if (minOwnerYears > 0 && (yearsHeld === null || yearsHeld < minOwnerYears)) return false;
           if (totalMarketCapActive && (!hasUsableValue(parcel.total_market_val) || parcel.total_market_val > maxTotalMarket)) return false;
           if (landPerAcreCapActive && (!hasUsableValue(perAcre) || perAcre > maxLandPerAcre)) return false;
           return true;
@@ -2764,6 +2842,9 @@
           const ownerFlag = parcel.is_likely_unbuyable
             ? `<span class="signal-chip owner-warn">Owner flag</span>`
             : '';
+          const ownerYearsChip = parcel.owner_since
+            ? `<span class="signal-chip">${escapeHtml(ownerYearsLabel(parcel))}</span>`
+            : '';
           row.innerHTML = `
             <span class="parcel-main">
               <span class="parcel-kicker">
@@ -2777,6 +2858,7 @@
                 <span class="signal-chip ${floodClass}">${escapeHtml(compactFloodLabel(parcel))}</span>
                 <span class="signal-chip">${formatNumber(parcel.acres, 1)} ac</span>
                 <span class="signal-chip">${pct(parcel.coverage_ratio)} cover</span>
+                ${ownerYearsChip}
                 ${ownerFlag}
               </span>
             </span>
@@ -2829,9 +2911,10 @@
             <div class="future-item">Road access: ${selected.road_access_bucket ? `${titleCase(selected.road_access_bucket)}${selected.nearest_major_road_ft ? ` · ${formatNumber(selected.nearest_major_road_ft, 0)} ft to ${selected.nearest_major_road || 'major road'}` : ''}` : 'Not available'}</div>
             <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
+            <div class="future-item">Ownership: ${ownerSinceLabel(selected)} · ${ownerYearsLabel(selected)}</div>
         ` : `
             <div class="future-item">Scoring is not available in this sample.</div>
-            <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
+            <div class="future-item">Flood, MUD, access, and permit overlays are future data layers.</div>
             <div class="future-item">Parcels marked needs confirmation need building coverage confirmation before outreach.</div>
         `;
         detail.innerHTML = `
@@ -2849,6 +2932,8 @@
             <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
             <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
             <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
+            <div class="stat"><span>Owner since</span><strong>${ownerSinceLabel(selected)}</strong></div>
+            <div class="stat"><span>Years held</span><strong>${ownerYearsLabel(selected).replace('Held ', '')}</strong></div>
             <div class="stat"><span>Coverage source</span><strong>${titleCase(selected.coverage_source)}</strong></div>
           </div>
           <div class="future-grid">
