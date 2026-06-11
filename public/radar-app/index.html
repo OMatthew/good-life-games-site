@@ -435,6 +435,53 @@
         color: var(--ink-1);
       }
 
+      .hero-description-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+        max-width: 76ch;
+        margin-top: 0.55rem;
+      }
+
+      .hero-description-row p {
+        flex: 1 1 34rem;
+        margin: 0;
+      }
+
+      .help-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 34px;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        padding: 0.38rem 0.62rem;
+        background: var(--surface-1);
+        color: var(--ink-1);
+        font-size: 0.78rem;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .help-button:hover,
+      .help-button:focus-visible {
+        border-color: var(--teal-0);
+        color: var(--teal-0);
+        outline: 0;
+      }
+
+      .help-button .help-mark {
+        display: inline-grid;
+        place-items: center;
+        width: 1.12rem;
+        height: 1.12rem;
+        border: 1px solid currentColor;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        line-height: 1;
+      }
+
       .source-pill {
         border: 1px solid var(--surface-3);
         border-radius: 999px;
@@ -444,6 +491,132 @@
         font-size: 0.82rem;
         font-weight: 800;
         white-space: nowrap;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        display: grid;
+        place-items: start center;
+        overflow: auto;
+        padding: clamp(1rem, 4vw, 3rem);
+        background: rgba(15, 23, 42, 0.48);
+      }
+
+      .modal-backdrop[hidden] {
+        display: none;
+      }
+
+      .ranking-modal {
+        width: min(760px, 100%);
+        max-height: min(820px, calc(100vh - 2rem));
+        overflow: auto;
+        border: 1px solid var(--surface-3);
+        border-radius: 8px;
+        background: var(--surface-1);
+        box-shadow: var(--shadow);
+      }
+
+      .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        gap: 1rem;
+        align-items: start;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--surface-2);
+        padding: 1rem 1rem 0.85rem;
+        background: var(--surface-1);
+      }
+
+      .modal-header h2 {
+        font-size: 1.35rem;
+      }
+
+      .modal-header p {
+        margin: 0.28rem 0 0;
+        color: var(--ink-2);
+        font-size: 0.86rem;
+      }
+
+      .modal-close {
+        flex: 0 0 auto;
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid var(--surface-3);
+        border-radius: 999px;
+        background: var(--surface-1);
+        color: var(--ink-2);
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+
+      .modal-close:hover,
+      .modal-close:focus-visible {
+        border-color: var(--ink-2);
+        color: var(--ink-0);
+        outline: 0;
+      }
+
+      .modal-body {
+        display: grid;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .explainer-section {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .explainer-section h3 {
+        color: var(--ink-0);
+        font-size: 1rem;
+      }
+
+      .explainer-section p,
+      .explainer-section li {
+        color: var(--ink-1);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
+      .explainer-section p,
+      .explainer-section ul {
+        margin: 0;
+      }
+
+      .explainer-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem;
+      }
+
+      .explainer-chip {
+        border: 1px solid var(--surface-2);
+        border-radius: 8px;
+        padding: 0.62rem 0.7rem;
+        background: var(--surface-0);
+        color: var(--ink-1);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+
+      .formula-box {
+        border-left: 3px solid var(--teal-0);
+        border-radius: 0 8px 8px 0;
+        padding: 0.75rem 0.85rem;
+        background: var(--teal-2);
+        color: #075c51;
+        font-size: 0.86rem;
+        font-weight: 800;
+        line-height: 1.55;
+      }
+
+      body[data-theme="dark"] .formula-box {
+        color: #b7fff3;
       }
 
       .metrics {
@@ -1320,6 +1493,10 @@
           margin-top: 0.85rem;
         }
 
+        .hero-description-row {
+          display: grid;
+        }
+
         .metrics {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -1339,6 +1516,10 @@
       }
 
       @media (max-width: 480px) {
+        .explainer-grid {
+          grid-template-columns: 1fr;
+        }
+
         .stat-grid {
           grid-template-columns: 1fr;
         }
@@ -1436,13 +1617,57 @@
           <div>
             <p class="eyebrow">Harris County, TX</p>
             <h1 id="dashboard-title">Dashboard Preview</h1>
-            <p id="dashboard-description">
-              First draft dashboard over five synthetic parcels. This is for UI/workflow feedback,
-              not real parcel-content feedback or scoring decisions.
-            </p>
+            <div class="hero-description-row">
+              <p id="dashboard-description">
+                First draft dashboard over five synthetic parcels. This is for UI/workflow feedback,
+                not real parcel-content feedback or scoring decisions.
+              </p>
+              <button class="help-button" id="ranking-help-button" type="button" aria-expanded="false" aria-controls="ranking-modal" title="How screening and ranking work">
+                <span class="help-mark" aria-hidden="true">?</span>
+                How ranking works
+              </button>
+            </div>
           </div>
           <div class="source-pill" id="source-pill">Sample parcel data</div>
         </section>
+
+        <div class="modal-backdrop" id="ranking-modal" hidden>
+          <section class="ranking-modal" role="dialog" aria-modal="true" aria-labelledby="ranking-modal-title" aria-describedby="ranking-modal-summary">
+            <div class="modal-header">
+              <div>
+                <h2 id="ranking-modal-title">How screening and ranking work</h2>
+                <p id="ranking-modal-summary">The list first removes obvious non-candidates, then ranks the remaining parcels by access, flood position, market signals, price, district signals, and ownership.</p>
+              </div>
+              <button class="modal-close" id="ranking-modal-close" type="button" aria-label="Close ranking explanation">&times;</button>
+            </div>
+            <div class="modal-body">
+              <div class="explainer-section">
+                <h3>Screen first</h3>
+                <p>In the real scored snapshot, a parcel is ranked only if it is at least 5 acres, is in a commercial or land category, and is the one row used for that site when HCAD splits a property across multiple accounts. Confirmed rows are vacant or have physical building coverage below 10%. Needs confirmation rows look like they may pass, but HCAD shows improvement evidence without a reliable building footprint, so coverage should be checked before treating them as confirmed.</p>
+              </div>
+              <div class="explainer-section">
+                <h3>Score formula</h3>
+                <div class="formula-box">Score = owner warning multiplier * 100 * (20% road access + 20% flood position + 20% area momentum + 20% relative price + 10% serviceability proxy + 10% ownership)</div>
+                <p>Each part scores from 0 to 1. Missing inputs score neutral at 0.5. Final scores are capped at 0-100 and rounded to one decimal. The owner warning multiplier is 1.00 for ordinary owners and 0.65 for likely-unbuyable owner classes.</p>
+              </div>
+              <div class="explainer-section">
+                <h3>What the subscores mean</h3>
+                <div class="explainer-grid">
+                  <div class="explainer-chip"><strong>Road access:</strong> closer to a TxDOT major corridor scores better. Frontage = 1.00, quarter mile = 0.75, mile = 0.45, far = 0.15, missing = 0.50.</div>
+                  <div class="explainer-chip"><strong>Flood position:</strong> outside mapped zones = 1.00, 500-year = 0.70, 100-year = 0.35, floodway = 0.00 plus manual-review badge.</div>
+                  <div class="explainer-chip"><strong>Area momentum:</strong> neighborhood value growth and recent permit activity. Stronger local movement scores higher.</div>
+                  <div class="explainer-chip"><strong>Relative price:</strong> lower appraised land value per acre scores higher versus nearby peers when enough peers exist, otherwise versus the county.</div>
+                  <div class="explainer-chip"><strong>Serviceability proxy:</strong> city = 1.00, MUD = 0.80, special district = 0.60, no district = 0.40, missing = 0.50. This is a district-membership signal, not proof of utilities, taps, detention, or entitlements.</div>
+                  <div class="explainer-chip"><strong>Ownership:</strong> longer-held ownership and absentee owners score higher. Absentee is based on mailing ZIP differing from site ZIP.</div>
+                </div>
+              </div>
+              <div class="explainer-section">
+                <h3>Visible warnings</h3>
+                <p>Floodway parcels and likely-unbuyable owner classes stay visible. They rank lower or carry warning flags instead of being silently excluded. Likely-unbuyable classes include HOA/POA, cemetery, church, pipeline/utility, and government/remnant owners.</p>
+              </div>
+            </div>
+          </section>
+        </div>
 
         <section class="metrics" aria-label="Radar metrics">
           <div class="metric">
@@ -1471,12 +1696,12 @@
           </div>
           <div class="metric">
             <div class="metric-label">
-              <span>Needs check</span>
+              <span>Needs confirmation</span>
               <button
                 class="info-button"
                 type="button"
-                aria-label="Parcels that pass the basic screen but still need footprint confirmation before treating them as confirmed candidates."
-                title="Parcels that pass the basic screen but still need footprint confirmation before treating them as confirmed candidates."
+                aria-label="Parcels that pass the size and CRE screen but need physical building footprint confirmation before treating them as confirmed candidates."
+                title="Parcels that pass the size and CRE screen but need physical building footprint confirmation before treating them as confirmed candidates."
               >i</button>
             </div>
             <strong id="metric-unknown">0</strong>
@@ -1529,7 +1754,7 @@
               </div>
               <div class="map-legend" aria-label="Map legend">
                 <span class="legend-item"><span class="legend-dot"></span>Confirmed</span>
-                <span class="legend-item"><span class="legend-dot unknown"></span>Needs footprint confirmation</span>
+                <span class="legend-item"><span class="legend-dot unknown"></span>Needs confirmation</span>
                 <span class="legend-help">Drag the map. Use + / - to zoom.</span>
               </div>
               <div class="map-wrap" id="map-wrap"></div>
@@ -1756,6 +1981,9 @@
       const listMore = document.getElementById('list-more');
       const listCount = document.getElementById('list-count');
       const infoButtons = [...document.querySelectorAll('.info-button')];
+      const rankingHelpButton = document.getElementById('ranking-help-button');
+      const rankingModal = document.getElementById('ranking-modal');
+      const rankingModalClose = document.getElementById('ranking-modal-close');
 
       function resolvedTheme() {
         if (settings.theme === 'system') {
@@ -1774,6 +2002,18 @@
       function setSettingsMenuOpen(isOpen) {
         settingsMenu.hidden = !isOpen;
         settingsButton.setAttribute('aria-expanded', String(isOpen));
+      }
+
+      function setRankingModalOpen(isOpen) {
+        rankingModal.hidden = !isOpen;
+        rankingHelpButton.setAttribute('aria-expanded', String(isOpen));
+        if (isOpen) {
+          closeInfoButtons();
+          setSettingsMenuOpen(false);
+          rankingModalClose.focus();
+        } else {
+          rankingHelpButton.focus();
+        }
       }
 
       function closeInfoButtons() {
@@ -1800,6 +2040,21 @@
         setSettingsMenuOpen(settingsMenu.hidden);
       });
 
+      rankingHelpButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        setRankingModalOpen(rankingModal.hidden);
+      });
+
+      rankingModalClose.addEventListener('click', () => {
+        setRankingModalOpen(false);
+      });
+
+      rankingModal.addEventListener('click', (event) => {
+        if (event.target === rankingModal) {
+          setRankingModalOpen(false);
+        }
+      });
+
       settingsMenu.addEventListener('click', (event) => {
         event.stopPropagation();
       });
@@ -1812,6 +2067,9 @@
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
           closeInfoButtons();
+          if (!rankingModal.hidden) {
+            setRankingModalOpen(false);
+          }
         }
         if (event.key === 'Escape' && !settingsMenu.hidden) {
           setSettingsMenuOpen(false);
@@ -1839,6 +2097,12 @@
 
       function titleCase(value) {
         return String(value).replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+
+      function candidateStatusLabel(value) {
+        if (value === 'unknown') return 'Needs confirmation';
+        if (value === 'not_candidate') return 'Not candidate';
+        return titleCase(value);
       }
 
       function escapeHtml(value) {
@@ -1957,9 +2221,9 @@
       function setCandidateStatusOptions(select) {
         select.innerHTML = '';
         [
-          ['screened', 'Confirmed + unknown'],
+          ['screened', 'Confirmed + needs confirmation'],
           ['confirmed', 'Confirmed only'],
-          ['unknown', 'Unknown only'],
+          ['unknown', 'Needs confirmation only'],
           ['all', 'All rows'],
         ].forEach(([value, label]) => {
           const option = document.createElement('option');
@@ -2221,7 +2485,7 @@
               </span>
             </span>
             <span class="parcel-side">
-              <span class="badge ${escapeHtml(parcel.candidate_status)}">${escapeHtml(titleCase(parcel.candidate_status))}</span>
+              <span class="badge ${escapeHtml(parcel.candidate_status)}">${escapeHtml(candidateStatusLabel(parcel.candidate_status))}</span>
             </span>
           `;
           row.addEventListener('click', () => {
@@ -2270,10 +2534,10 @@
         ` : `
             <div class="future-item">Scoring is not enabled in this preview.</div>
             <div class="future-item">Flood, MUD, access, permit, and ownership overlays are future data layers.</div>
-            <div class="future-item">Rows marked unknown need HCAD bulk footprint confirmation before Phase 1 status is trusted.</div>
+            <div class="future-item">Rows marked needs confirmation need HCAD bulk footprint confirmation before Phase 1 status is trusted.</div>
         `;
         detail.innerHTML = `
-          <span class="badge ${selected.candidate_status}">${titleCase(selected.candidate_status)}</span>
+          <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
           <div class="note-box">${selected.candidate_status_reason}</div>
