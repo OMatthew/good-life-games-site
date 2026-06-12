@@ -1037,76 +1037,56 @@
         background: var(--surface-2);
       }
 
-      .leaflet-control-layers {
-        border: 1px solid rgba(15, 23, 42, 0.16);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
-        color: var(--ink-0);
-        font-size: 0.82rem;
-        font-weight: 700;
-      }
-
-      .leaflet-control-layers-toggle {
+      .map-layer-toggle {
         position: relative;
-        display: block;
-        width: 34px;
-        height: 34px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        width: 78px;
+        height: 64px;
+        padding: 0.45rem 0.35rem;
+        overflow: hidden;
+        border: 2px solid rgba(255, 255, 255, 0.92);
+        border-radius: 10px;
+        background-color: var(--surface-1);
+        background-position: center;
+        background-size: cover;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.24);
+        color: white;
+        cursor: pointer;
+        font: 800 0.82rem/1 var(--font-body);
+        text-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
       }
 
-      .leaflet-control-layers-toggle::before,
-      .leaflet-control-layers-toggle::after {
+      .map-layer-toggle::after {
         content: "";
         position: absolute;
-        left: 9px;
-        width: 16px;
-        height: 10px;
-        border: 2px solid var(--ink-0);
-        border-radius: 3px;
-        transform: rotate(-16deg);
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.05) 56%);
       }
 
-      .leaflet-control-layers-toggle::before {
-        top: 8px;
+      .map-layer-toggle.target-satellite {
+        background-image: url("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/11/846/481");
       }
 
-      .leaflet-control-layers-toggle::after {
-        top: 14px;
-        background: rgba(255, 255, 255, 0.84);
+      .map-layer-toggle.target-road {
+        background-image: url("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/11/846/481");
       }
 
-      .leaflet-control-layers-list {
-        padding: 0.55rem 0.65rem;
+      .map-layer-toggle span {
+        position: relative;
+        z-index: 1;
       }
 
-      .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-list {
-        display: none;
+      .map-layer-toggle:hover,
+      .map-layer-toggle:focus-visible {
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.3);
+        transform: translateY(-1px);
       }
 
-      .leaflet-control-layers-expanded .leaflet-control-layers-toggle {
-        display: none;
-      }
-
-      .leaflet-control-layers label {
-        display: flex;
-        gap: 0.4rem;
-        align-items: center;
-        white-space: nowrap;
-      }
-
-      body[data-theme="dark"] .leaflet-control-layers {
-        border-color: var(--surface-3);
-        background: var(--surface-1);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-      }
-
-      body[data-theme="dark"] .leaflet-control-layers-toggle::before,
-      body[data-theme="dark"] .leaflet-control-layers-toggle::after {
-        border-color: var(--ink-0);
-      }
-
-      body[data-theme="dark"] .leaflet-control-layers-toggle::after {
-        background: var(--surface-1);
+      body[data-theme="dark"] .map-layer-toggle {
+        border-color: rgba(255, 255, 255, 0.74);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.42);
       }
 
       .leaflet-control-attribution {
@@ -2109,6 +2089,10 @@
         map: null,
         markers: [],
         filteredSignature: '',
+        baseLayer: 'road',
+        roadLayer: null,
+        satelliteLayer: null,
+        layerToggleButton: null,
       };
 
       const brandSubtitle = document.getElementById('brand-subtitle');
@@ -2782,6 +2766,52 @@
         document.getElementById('metric-road-ready').textContent = filtered.filter(isRoadReady).length;
       }
 
+      function updateMapLayerToggle() {
+        const button = mapState.layerToggleButton;
+        if (!button) return;
+        const target = mapState.baseLayer === 'road' ? 'satellite' : 'road';
+        const label = target === 'satellite' ? 'Satellite' : 'Road map';
+        button.classList.toggle('target-satellite', target === 'satellite');
+        button.classList.toggle('target-road', target === 'road');
+        button.setAttribute('aria-label', `Switch to ${label}`);
+        button.setAttribute('title', `Switch to ${label}`);
+        button.innerHTML = `<span>${label}</span>`;
+      }
+
+      function setBaseLayer(layerName) {
+        if (!mapState.map || !mapState.roadLayer || !mapState.satelliteLayer) return;
+        const nextLayer = layerName === 'satellite' ? mapState.satelliteLayer : mapState.roadLayer;
+        const previousLayer = layerName === 'satellite' ? mapState.roadLayer : mapState.satelliteLayer;
+        if (mapState.map.hasLayer(previousLayer)) {
+          mapState.map.removeLayer(previousLayer);
+        }
+        if (!mapState.map.hasLayer(nextLayer)) {
+          nextLayer.addTo(mapState.map);
+        }
+        mapState.baseLayer = layerName === 'satellite' ? 'satellite' : 'road';
+        updateMapLayerToggle();
+      }
+
+      function addMapLayerToggle() {
+        const ToggleControl = L.Control.extend({
+          options: { position: 'topright' },
+          onAdd() {
+            const button = L.DomUtil.create('button', 'map-layer-toggle target-satellite');
+            button.type = 'button';
+            L.DomEvent.disableClickPropagation(button);
+            L.DomEvent.disableScrollPropagation(button);
+            L.DomEvent.on(button, 'click', (event) => {
+              L.DomEvent.stop(event);
+              setBaseLayer(mapState.baseLayer === 'road' ? 'satellite' : 'road');
+            });
+            mapState.layerToggleButton = button;
+            updateMapLayerToggle();
+            return button;
+          },
+        });
+        new ToggleControl().addTo(mapState.map);
+      }
+
       function renderMap(filtered) {
         if (!window.L) return;
         const filteredSignature = filtered.map((parcel) => parcel.account_id).join('|');
@@ -2812,15 +2842,10 @@
             attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
           });
 
+          mapState.roadLayer = roadLayer;
+          mapState.satelliteLayer = satelliteLayer;
           roadLayer.addTo(mapState.map);
-          L.control.layers(
-            {
-              'Road map': roadLayer,
-              Satellite: satelliteLayer,
-            },
-            null,
-            { collapsed: true, position: 'topright' },
-          ).addTo(mapState.map);
+          addMapLayerToggle();
         }
 
         mapState.markers.forEach((marker) => marker.remove());
