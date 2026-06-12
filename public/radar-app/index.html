@@ -1768,7 +1768,7 @@
               <span aria-hidden="true">!</span>
               <span>
                 <strong>Parcel data did not load.</strong>
-                The app is not showing placeholder or sample parcels. Reload the page or regenerate the radar app export.
+                The parcel snapshot is unavailable. Please reload or ask the maintainer to refresh the export.
               </span>
             </div>
           </div>
@@ -1802,7 +1802,7 @@
                   <div class="explainer-chip"><strong>Area momentum:</strong> neighborhood value growth and recent permit activity. Stronger local movement scores higher.</div>
                   <div class="explainer-chip"><strong>Relative price:</strong> lower appraised land value per acre scores higher versus nearby peers when enough peers exist, otherwise versus the county.</div>
                   <div class="explainer-chip"><strong>Serviceability proxy:</strong> city = 1.00, MUD = 0.80, special district = 0.60, no district = 0.40, missing = 0.50. This is a district-membership signal, not proof of utilities, taps, detention, or entitlements.</div>
-                  <div class="explainer-chip"><strong>Ownership:</strong> longer-held ownership and absentee owners score higher. Absentee is based on mailing ZIP differing from site ZIP.</div>
+                  <div class="explainer-chip"><strong>Ownership:</strong> more years since the HCAD owner-change date and absentee owners score higher. Absentee is based on mailing ZIP differing from site ZIP.</div>
                 </div>
               </div>
               <div class="explainer-section">
@@ -1896,7 +1896,7 @@
                 <input id="coverage-filter" type="range" min="0" max="0.1" step="0.005" value="0.1" />
               </div>
               <div class="filter-group">
-                <label for="owner-years-filter">Minimum years held: <span id="owner-years-value" class="filter-value">Any</span></label>
+                <label for="owner-years-filter">Minimum years since owner change: <span id="owner-years-value" class="filter-value">Any</span></label>
                 <input id="owner-years-filter" type="range" min="0" max="40" step="1" value="0" />
               </div>
               <div class="filter-group">
@@ -1951,7 +1951,7 @@
                     <option value="score">Score high to low</option>
                     <option value="land_per_acre">Land $/acre low to high</option>
                     <option value="total_market">Total market value low to high</option>
-                    <option value="owner_years">Longest-held owner</option>
+                    <option value="owner_years">Most years since owner change</option>
                     <option value="road">Road access</option>
                     <option value="acres">Acres</option>
                     <option value="coverage">Lowest coverage</option>
@@ -2288,16 +2288,16 @@
 
       function ownerYearsLabel(parcel) {
         const years = ownerYearsHeld(parcel);
-        if (years === null) return 'Held unknown';
+        if (years === null) return 'Change date unknown';
         const rounded = Math.floor(years);
-        if (rounded < 1) return 'Held <1 yr';
-        return `Held ${rounded} yr${rounded === 1 ? '' : 's'}`;
+        if (rounded < 1) return '<1 yr since change';
+        return `${rounded} yr${rounded === 1 ? '' : 's'} since change`;
       }
 
       function ownershipDurationText(parcel) {
         const ownerSince = parseOwnerSince(parcel.owner_since);
         const years = ownerYearsHeld(parcel);
-        if (!ownerSince || years === null) return 'Ownership duration unknown';
+        if (!ownerSince || years === null) return 'Ownership change date unknown';
         const year = ownerSince.getFullYear();
         const rounded = Math.floor(years);
         const yearsText = rounded < 1 ? '<1 year' : `${rounded} year${rounded === 1 ? '' : 's'}`;
@@ -2590,7 +2590,7 @@
         ownerYearsFilter.disabled = !hasOwnerDates;
         if (!hasOwnerDates) {
           ownerYearsFilter.value = ownerYearsFilter.min;
-          ownerYearsValue.textContent = 'Not in export';
+          ownerYearsValue.textContent = 'Unavailable';
         }
       }
 
@@ -2608,7 +2608,14 @@
           dataLoadError = null;
         } catch (error) {
           parcels = [];
-          dataMetadata = defaultMetadata;
+          dataMetadata = {
+            ...defaultMetadata,
+            source_label: 'No data loaded',
+            filter_note: 'Filters are unavailable until the parcel snapshot loads.',
+            map_note: 'The parcel snapshot is unavailable.',
+            list_note: 'The parcel snapshot is unavailable. Please reload or ask the maintainer to refresh the export.',
+            detail_note: 'The parcel snapshot is unavailable.',
+          };
           dataLoadError = error;
           console.warn('Radar parcel data failed to load.', error);
         }
@@ -2791,7 +2798,7 @@
         if (dataLoadError) {
           document.getElementById('map-wrap').innerHTML = `
             <div class="empty-state error">
-              Parcel map unavailable because the exported parcel data did not load.
+              Parcel map unavailable. Please reload or ask the maintainer to refresh the export.
             </div>
           `;
           return;
@@ -2887,7 +2894,7 @@
           listMore.hidden = true;
           list.innerHTML = `
             <div class="empty-state error">
-              Parcel list unavailable because <code>parcels.json</code> did not load.
+              Parcel list unavailable. Please reload or ask the maintainer to refresh the export.
             </div>
           `;
           return;
@@ -2958,7 +2965,7 @@
           if (closeBtn) closeBtn.style.display = 'none';
           detail.innerHTML = `
             <div class="empty-state error" style="padding: 1.5rem;">
-              Property detail unavailable because the exported parcel data did not load.
+              Property detail unavailable. Please reload or ask the maintainer to refresh the export.
             </div>
           `;
           return;
@@ -3024,8 +3031,8 @@
             <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
             <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
             <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
-            <div class="stat"><span>Last owner change (HCAD)</span><strong>${ownerSinceLabel(selected)}</strong></div>
-            <div class="stat"><span>Estimated years held</span><strong>${ownerYearsLabel(selected).replace('Held ', '')}</strong></div>
+            <div class="stat"><span>Ownership last changed (HCAD)</span><strong>${ownerSinceLabel(selected)}</strong></div>
+            <div class="stat"><span>Years since owner change</span><strong>${ownerYearsLabel(selected)}</strong></div>
             <div class="stat"><span>Coverage evidence</span><strong>${coverageEvidenceLabel(selected)}</strong></div>
           </div>
           <div class="future-grid">
