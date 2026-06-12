@@ -1739,6 +1739,65 @@
         gap: 0.4rem;
       }
 
+      .detail-owner-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem 0.6rem;
+        align-items: center;
+      }
+
+      .copy-account-button {
+        min-height: 1.65rem;
+        border: 1px solid var(--surface-3);
+        border-radius: 999px;
+        padding: 0.2rem 0.55rem;
+        background: var(--surface-1);
+        color: var(--ink-1);
+        font-size: 0.72rem;
+        font-weight: 900;
+      }
+
+      .copy-account-button:hover,
+      .copy-account-button:focus-visible {
+        border-color: var(--teal-0);
+        color: var(--teal-0);
+        outline: 0;
+      }
+
+      .copy-status {
+        color: var(--teal-0);
+        font-size: 0.74rem;
+        font-weight: 900;
+      }
+
+      .copy-status[hidden] {
+        display: none;
+      }
+
+      .external-copy-spinner {
+        display: inline-block;
+        width: 0.68rem;
+        height: 0.68rem;
+        margin-left: 0.38rem;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 999px;
+        vertical-align: -0.08em;
+        animation: external-copy-spin 0.7s linear infinite;
+      }
+
+      @keyframes external-copy-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .external-copy-spinner {
+          animation: none;
+        }
+      }
+
       body.map-expanded .detail-summary-stats {
         grid-column: 2;
         grid-row: 1 / span 2;
@@ -2575,6 +2634,57 @@
         scheduleMapResize();
       }
 
+      function copyTextFallback(text) {
+        const copyField = document.createElement('textarea');
+        copyField.value = text;
+        copyField.setAttribute('readonly', '');
+        copyField.style.position = 'fixed';
+        copyField.style.top = '0';
+        copyField.style.left = '0';
+        copyField.style.opacity = '0';
+        document.body.appendChild(copyField);
+        copyField.focus();
+        copyField.select();
+        let didCopy = false;
+        try {
+          didCopy = document.execCommand('copy');
+        } finally {
+          copyField.remove();
+        }
+        return didCopy;
+      }
+
+      async function copyAccountNumber(accountId, statusTarget = null) {
+        if (!accountId) return false;
+        let didCopy = copyTextFallback(accountId);
+
+        if (!didCopy && navigator.clipboard?.writeText) {
+          try {
+            await navigator.clipboard.writeText(accountId);
+            didCopy = true;
+          } catch (error) {
+            console.warn('Account copy failed.', error);
+          }
+        }
+
+        if (didCopy) {
+          if (statusTarget) {
+            statusTarget.textContent = 'Account # copied';
+            statusTarget.hidden = false;
+            setTimeout(() => {
+              statusTarget.hidden = true;
+            }, 1800);
+          }
+          return true;
+        }
+
+        if (statusTarget) {
+          statusTarget.textContent = 'Copy unavailable';
+          statusTarget.hidden = false;
+        }
+        return false;
+      }
+
       function setSettingsMenuOpen(isOpen) {
         settingsMenu.hidden = !isOpen;
         settingsButton.setAttribute('aria-expanded', String(isOpen));
@@ -3216,6 +3326,45 @@
         setDetailExpanded(!state.detailExpanded);
       });
 
+      document.addEventListener('click', (event) => {
+        const copyButton = event.target.closest('[data-copy-account]');
+        if (!copyButton) return;
+        const statusTarget = copyButton.dataset.copyStatus
+          ? document.getElementById(copyButton.dataset.copyStatus)
+          : null;
+        if (copyButton instanceof HTMLAnchorElement) {
+          event.preventDefault();
+          const destination = copyButton.href;
+          const target = copyButton.target || '_self';
+          const originalText = copyButton.textContent;
+          const openedWindow = target === '_blank' ? window.open('', target) : null;
+          const spinner = document.createElement('span');
+          spinner.className = 'external-copy-spinner';
+          spinner.setAttribute('aria-hidden', 'true');
+          copyButton.replaceChildren(document.createTextNode('Account # copied'), spinner);
+          copyButton.setAttribute('aria-busy', 'true');
+          if (openedWindow) {
+            openedWindow.opener = null;
+          }
+          void copyAccountNumber(copyButton.dataset.copyAccount, statusTarget);
+          window.setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.removeAttribute('aria-busy');
+          }, 1800);
+          window.setTimeout(() => {
+            if (openedWindow) {
+              openedWindow.location.href = destination;
+            } else if (target === '_blank') {
+              window.open(destination, target);
+            } else {
+              window.location.assign(destination);
+            }
+          }, 120);
+          return;
+        }
+        void copyAccountNumber(copyButton.dataset.copyAccount, statusTarget);
+      });
+
       function getFilteredParcels() {
         const minAcres = Number(acreFilter.value);
         const maxTotalMarket = Number(totalMarketFilter.value);
@@ -3554,7 +3703,9 @@
         detailExpandToggle.setAttribute('aria-expanded', String(state.detailExpanded));
         detailExpandToggle.textContent = state.detailExpanded ? 'Less details' : 'More details';
         const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
-        const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
+        const hcadUrl = 'https://search.hcad.org/';
+        const summaryCopyStatusId = `summary-account-copy-status-${selected.account_id}`;
+        const fullCopyStatusId = `full-account-copy-status-${selected.account_id}`;
         const selectedLandPerAcre = landValuePerAcre(selected);
         const reason = detailReason(selected);
         const assemblageBox = assemblageContextHtml(selected);
@@ -3583,7 +3734,11 @@
                 <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
                 <h3 class="detail-title">${selected.site_address}</h3>
               </div>
-              <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+              <div class="detail-owner-row">
+                <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+                <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy HCAD account number ${selected.account_id}">Copy account #</button>
+                <span class="copy-status" id="${summaryCopyStatusId}" hidden></span>
+              </div>
               <div class="detail-summary-stats">
                 <span class="signal-chip">${selected.score_rank ? `#${selected.score_rank}` : 'Unranked'}</span>
                 <span class="signal-chip">${hasScore(selected) ? `Score ${formatNumber(selected.opportunity_score, 1)}` : 'No score'}</span>
@@ -3595,13 +3750,17 @@
             </div>
             <div class="detail-summary-actions">
               <a class="secondary-button" href="${gmapsUrl}" target="_blank" rel="noreferrer">Google Maps</a>
-              <a class="secondary-button" href="${hcadUrl}" target="_blank" rel="noreferrer">HCAD</a>
+              <a class="secondary-button" href="${hcadUrl}" target="_blank" rel="noreferrer" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}">Search HCAD</a>
             </div>
           </div>
           <div class="detail-full">
             <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
             <h3 class="detail-title">${selected.site_address}</h3>
-            <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+            <div class="detail-owner-row">
+              <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+              <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy HCAD account number ${selected.account_id}">Copy account #</button>
+              <span class="copy-status" id="${fullCopyStatusId}" hidden></span>
+            </div>
             <details class="note-box detail-disclosure">
               <summary>Why it qualifies</summary>
               <span>${escapeHtml(reason)}</span>
@@ -3630,7 +3789,7 @@
             </div>
             <div class="action-links">
               <a href="${gmapsUrl}" target="_blank" rel="noreferrer">Open in Google Maps</a>
-              <a href="${hcadUrl}" target="_blank" rel="noreferrer">Open HCAD profile</a>
+              <a href="${hcadUrl}" target="_blank" rel="noreferrer" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}">Search HCAD</a>
             </div>
           </div>
         `;
