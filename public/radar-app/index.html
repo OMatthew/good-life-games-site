@@ -544,6 +544,28 @@
         color: #fde68a;
       }
 
+      .preview-disclaimer {
+        max-width: 76ch;
+        border: 1px solid rgba(217, 119, 6, 0.28);
+        border-radius: 8px;
+        margin-top: 0.75rem;
+        padding: 0.72rem 0.85rem;
+        background: var(--amber-1);
+        color: #7c3f05;
+        font-size: 0.88rem;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .preview-disclaimer[hidden],
+      .scored-only-control[hidden] {
+        display: none;
+      }
+
+      body[data-theme="dark"] .preview-disclaimer {
+        color: #fde68a;
+      }
+
       .data-error-banner {
         display: flex;
         gap: 0.75rem;
@@ -2205,6 +2227,13 @@
               <div class="settings-menu" id="settings-menu" hidden>
                 <p class="settings-title">Settings</p>
                 <div class="settings-field">
+                  <label for="county-setting">County</label>
+                  <select id="county-setting">
+                    <option value="harris">Harris County</option>
+                    <option value="travis">Travis County — preview</option>
+                  </select>
+                </div>
+                <div class="settings-field">
                   <label for="theme-setting">Theme</label>
                   <select id="theme-setting">
                     <option value="system">System</option>
@@ -2241,6 +2270,7 @@
               Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by
               access, flood position, value, local momentum, and ownership signals.
             </p>
+            <div class="preview-disclaimer" id="preview-disclaimer" hidden></div>
             <div class="data-error-banner" id="data-error-banner" hidden role="status">
               <span aria-hidden="true">!</span>
               <span>
@@ -2326,9 +2356,10 @@
           </div>
           <div class="metric">
             <div class="metric-label">
-              <span>Road-ready</span>
+              <span id="metric-road-label">Road-ready</span>
               <button
                 class="info-button"
+                id="metric-road-info"
                 type="button"
                 aria-label="Visible parcels with frontage or within a quarter mile of a TxDOT major corridor. This is an access proxy, not driveway or frontage diligence."
               >i</button>
@@ -2345,7 +2376,7 @@
             <div class="filter-body">
               <label class="check-row" for="hide-unbuyable">
                 <input id="hide-unbuyable" type="checkbox" />
-                Hide likely unbuyable owner flags
+                <span id="hide-unbuyable-label">Hide likely unbuyable owner flags</span>
               </label>
               <div class="filter-group">
                 <label for="category-filter">Property category</label>
@@ -2375,7 +2406,7 @@
                 <label for="owner-years-filter">Minimum years since owner change: <span id="owner-years-value" class="filter-value">Any</span></label>
                 <input id="owner-years-filter" type="range" min="0" max="40" step="1" value="0" />
               </div>
-              <div class="filter-group">
+              <div class="filter-group scored-only-control">
                 <label for="road-filter">Road access</label>
                 <select id="road-filter">
                   <option value="any">Any</option>
@@ -2384,11 +2415,11 @@
                   <option value="mile">Within 1 mile</option>
                 </select>
               </div>
-              <label class="check-row" for="hide-floodway">
+              <label class="check-row scored-only-control" for="hide-floodway">
                 <input id="hide-floodway" type="checkbox" />
                 Hide floodway
               </label>
-              <label class="check-row" for="hide-100yr-flood">
+              <label class="check-row scored-only-control" for="hide-100yr-flood">
                 <input id="hide-100yr-flood" type="checkbox" />
                 Hide 100-year flood
               </label>
@@ -2441,6 +2472,10 @@
                     <option value="coverage">Lowest coverage</option>
                   </select>
                 </label>
+                <label class="check-row scored-only-control" for="score-ex-flood-toggle">
+                  <input id="score-ex-flood-toggle" type="checkbox" />
+                  Exclude flood
+                </label>
                 <button id="list-top" class="list-top-button" type="button">Top</button>
               </div>
               <div class="parcel-list" id="parcel-list"></div>
@@ -2479,6 +2514,9 @@
     <script>
       const dashboardHeroTitle = 'Harris County, TX';
       const defaultMetadata = {
+        county: 'harris',
+        scored: true,
+        provisional: false,
         title: 'Opportunity Radar',
         subtitle: 'Harris County parcel shortlist',
         description: 'Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by access, flood position, value, local momentum, and ownership signals.',
@@ -2487,6 +2525,24 @@
         map_note: 'Pins show the center of each parcel, not the exact building location.',
         list_note: 'Click a parcel to inspect score, constraints, and source links.',
         detail_note: 'Shows why this parcel qualifies or what still needs confirmation.',
+      };
+      const datasets = {
+        harris: {
+          label: 'Harris County',
+          title: 'Harris County, TX',
+          path: './parcels.json',
+          accountSearchLabel: 'HCAD',
+          ownershipSource: 'HCAD',
+          defaultSort: 'rank',
+        },
+        travis: {
+          label: 'Travis County',
+          title: 'Travis County, TX',
+          path: './parcels_travis.json',
+          accountSearchLabel: 'TCAD',
+          ownershipSource: 'TCAD',
+          defaultSort: 'rank',
+        },
       };
 
       let dataMetadata = defaultMetadata;
@@ -2503,6 +2559,7 @@
         listSort: 'rank',
         mapExpanded: false,
         detailExpanded: false,
+        county: 'harris',
       };
 
       const settings = {
@@ -2526,6 +2583,7 @@
       const dashboardTitle = document.getElementById('dashboard-title');
       const dashboardDescription = document.getElementById('dashboard-description');
       const dashboardInfoButton = document.getElementById('dashboard-info-button');
+      const previewDisclaimer = document.getElementById('preview-disclaimer');
       const sourcePill = document.getElementById('source-pill');
       const dataErrorBanner = document.getElementById('data-error-banner');
       const filtersNote = document.getElementById('filters-note');
@@ -2534,6 +2592,7 @@
       const detailNote = document.getElementById('detail-note');
       const settingsButton = document.getElementById('settings-button');
       const settingsMenu = document.getElementById('settings-menu');
+      const countySetting = document.getElementById('county-setting');
       const themeSetting = document.getElementById('theme-setting');
       const metricDensitySetting = document.getElementById('metric-density-setting');
       const categoryFilter = document.getElementById('category-filter');
@@ -2549,7 +2608,9 @@
       const ownerYearsFilter = document.getElementById('owner-years-filter');
       const ownerYearsValue = document.getElementById('owner-years-value');
       const roadFilter = document.getElementById('road-filter');
+      const scoreExFloodToggle = document.getElementById('score-ex-flood-toggle');
       const hideUnbuyable = document.getElementById('hide-unbuyable');
+      const hideUnbuyableLabel = document.getElementById('hide-unbuyable-label');
       const hideFloodway = document.getElementById('hide-floodway');
       const hide100yrFlood = document.getElementById('hide-100yr-flood');
       const resetFilters = document.getElementById('reset-filters');
@@ -2564,6 +2625,12 @@
       const rankingHelpButton = document.getElementById('ranking-help-button');
       const rankingModal = document.getElementById('ranking-modal');
       const rankingModalClose = document.getElementById('ranking-modal-close');
+      const rankingModalTitle = document.getElementById('ranking-modal-title');
+      const rankingModalSummary = document.getElementById('ranking-modal-summary');
+      const rankingModalBody = rankingModal.querySelector('.modal-body');
+      const scoredOnlyControls = [...document.querySelectorAll('.scored-only-control')];
+      const metricRoadLabel = document.getElementById('metric-road-label');
+      const metricRoadInfo = document.getElementById('metric-road-info');
 
       function resolvedTheme() {
         if (settings.theme === 'system') {
@@ -2575,12 +2642,16 @@
       function applySettings() {
         document.body.dataset.theme = resolvedTheme();
         document.body.dataset.metricDensity = settings.metricDensity;
+        countySetting.value = state.county;
         themeSetting.value = settings.theme;
         metricDensitySetting.value = settings.metricDensity;
       }
 
       function normalizeMetadata(metadata = {}) {
         const normalized = { ...defaultMetadata, ...metadata };
+        normalized.scored = metadata.scored === undefined ? defaultMetadata.scored : Boolean(metadata.scored);
+        normalized.provisional = Boolean(metadata.provisional);
+        normalized.county = metadata.county || state.county || defaultMetadata.county;
         if (/dashboard preview/i.test(String(normalized.title || ''))) {
           normalized.title = defaultMetadata.title;
         }
@@ -2600,6 +2671,111 @@
           normalized.detail_note = defaultMetadata.detail_note;
         }
         return normalized;
+      }
+
+      function currentDataset() {
+        return datasets[state.county] || datasets.harris;
+      }
+
+      function isScoredDataset() {
+        return dataMetadata.scored !== false;
+      }
+
+      function isTravisDataset() {
+        return (dataMetadata.county || state.county) === 'travis';
+      }
+
+      function accountSearchUrl() {
+        return state.county === 'travis'
+          ? 'https://traviscad.org/propertysearch'
+          : 'https://search.hcad.org/';
+      }
+
+      const defaultFactorDetails = [
+        { key: 'access', label: 'Road access', note: 'Closer to a TxDOT major corridor scores better. Frontage = 1.00, quarter mile = 0.75, mile = 0.45, far = 0.15, missing = 0.50.' },
+        { key: 'flood', label: 'Flood position', note: 'Outside mapped zones = 1.00, 500-year = 0.70, 100-year = 0.35, floodway = 0.00 plus manual-review badge.' },
+        { key: 'momentum', label: 'Area momentum', note: 'Neighborhood value growth and recent permit activity. Stronger local movement scores higher.' },
+        { key: 'rel_price', label: 'Relative price', note: 'Lower appraised land value per acre scores higher versus nearby peers when enough peers exist, otherwise versus the county.' },
+        { key: 'serviceability', label: 'Serviceability proxy', note: 'City = 1.00, MUD = 0.80, special district = 0.60, no district = 0.40, missing = 0.50. This is a district-membership signal, not proof of utilities, taps, detention, or entitlements.' },
+        { key: 'ownership', label: 'Ownership', note: 'More years since the owner-change date and absentee owners score higher. Absentee is based on mailing ZIP differing from site ZIP.' },
+      ];
+
+      function factorDetails() {
+        const declared = Array.isArray(dataMetadata.factors) && dataMetadata.factors.length
+          ? dataMetadata.factors
+          : defaultFactorDetails;
+        const defaultsByKey = Object.fromEntries(defaultFactorDetails.map((factor) => [factor.key, factor]));
+        return declared.map((factor) => {
+          const fallback = defaultsByKey[factor.key] || {};
+          return {
+            key: factor.key || fallback.key || '',
+            label: factor.label || fallback.label || titleCase(factor.key || ''),
+            source: factor.source || '',
+            note: factor.note || fallback.note || '',
+          };
+        });
+      }
+
+      function updateRankingExplainer() {
+        if (isScoredDataset()) {
+          const factors = factorDetails();
+          const factorLabels = factors.map((factor) => factor.label.toLowerCase()).join(', ');
+          const provisional = Boolean(dataMetadata.provisional);
+          rankingModalTitle.textContent = provisional ? 'How provisional ranking works' : 'How parcels are selected and ranked';
+          rankingModalSummary.textContent = provisional
+            ? `This county is ranked within-county only using declared factors: ${factorLabels}.`
+            : 'The app first keeps parcels that match the basic acreage, category, and coverage rules, then ranks them by access, flood position, market signals, price, district signals, and ownership.';
+          const factorChips = factors.map((factor) => `
+                  <div class="explainer-chip"><strong>${escapeHtml(factor.label)}:</strong> ${escapeHtml(factor.note || factor.source || 'Included in the shared scoring profile.')}</div>
+          `).join('');
+          const excludedInputs = dataMetadata.excluded_inputs || {};
+          const excludedText = Object.entries(excludedInputs)
+            .map(([factor, inputs]) => `${titleCase(factor)} excludes ${Array.isArray(inputs) ? inputs.join(', ') : inputs}`)
+            .join('; ');
+          const formulaTerms = factors.map((factor) => escapeHtml(factor.label.toLowerCase())).join(' + ');
+          rankingModalBody.innerHTML = `
+              <div class="explainer-section">
+                <h3>Qualify parcels first</h3>
+                <p>A parcel can be ranked when it passes this county's acreage and low-coverage screen. Confirmed parcels are vacant or have building footprint coverage below 10%. Needs confirmation means value or building records suggest improvements, but footprint data is missing or unclear, so coverage needs manual review.</p>
+              </div>
+              <div class="explainer-section">
+                <h3>Score formula</h3>
+                <div class="formula-box">Score = owner warning multiplier * 100 * shared weights over ${formulaTerms}</div>
+                <p>Each part scores from 0 to 1. Missing parcel-level inputs score neutral at 0.5. If a county omits a factor, the remaining shared weights re-normalize. Final scores are capped at 0-100 and rounded to one decimal. The owner warning multiplier is 1.00 for ordinary owners and 0.65 for likely-unbuyable owner classes.</p>
+                <p>Scores and ranks are within this county only. Do not compare Harris and Travis scores as one combined ranked list.</p>
+                ${provisional ? '<p><strong>Provisional ranking:</strong> this county has not gone through the Harris feedback loop yet.</p>' : ''}
+                ${excludedText ? `<p>${escapeHtml(excludedText)}.</p>` : ''}
+              </div>
+              <div class="explainer-section">
+                <h3>What the subscores mean</h3>
+                <div class="explainer-grid">
+                  ${factorChips}
+                </div>
+              </div>
+              <div class="explainer-section">
+                <h3>Visible warnings</h3>
+                <p>Floodway parcels and likely-unbuyable owner classes stay visible. They rank lower or carry warning flags instead of being silently excluded. Likely-unbuyable classes include HOA/POA, cemetery, church, pipeline/utility, and government/remnant owners.</p>
+              </div>
+          `;
+          return;
+        }
+
+        rankingModalTitle.textContent = 'How Travis preview parcels are selected';
+        rankingModalSummary.textContent = 'Travis County is screened but not ranked. The app shows mapped parcels that pass the acreage and low-coverage preview screen.';
+        rankingModalBody.innerHTML = `
+          <div class="explainer-section">
+            <h3>Preview screen only</h3>
+            <p>Travis preview rows are 5+ acre parcels from public TCAD and Travis County records that appear vacant, have measured physical coverage below 10%, or have improvement evidence without a confirmed footprint.</p>
+          </div>
+          <div class="explainer-section">
+            <h3>No score yet</h3>
+            <p>This county does not include ranking weights, flood position, road access, serviceability, area momentum, or owner-duration scoring. The list defaults to largest acreage first.</p>
+          </div>
+          <div class="explainer-section">
+            <h3>Visible warnings</h3>
+            <p>Public, institutional, conservation, church, cemetery, utility, water-district, and HOA-style owners are flagged and can be hidden. They are not silently dropped.</p>
+          </div>
+        `;
       }
 
       function scheduleMapResize() {
@@ -2818,6 +2994,13 @@
         applySettings();
       });
 
+      countySetting.addEventListener('change', async () => {
+        state.county = countySetting.value in datasets ? countySetting.value : 'harris';
+        setSettingsMenuOpen(false);
+        await loadDataset();
+        render();
+      });
+
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         if (settings.theme === 'system') {
           applySettings();
@@ -2863,6 +3046,7 @@
       }
 
       function formatNumber(value, digits = 0) {
+        if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return 'N/A';
         return new Intl.NumberFormat('en-US', {
           maximumFractionDigits: digits,
           minimumFractionDigits: digits,
@@ -2870,6 +3054,7 @@
       }
 
       function pct(value) {
+        if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return 'N/A';
         return `${formatNumber((value || 0) * 100, 1)}%`;
       }
 
@@ -2898,8 +3083,15 @@
         return pct(Number(value));
       }
 
-      function parseOwnerSince(value) {
+      function parseOwnerSince(value, preserveDateOnly = false) {
         if (!value) return null;
+        if (preserveDateOnly) {
+          const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+          if (match) {
+            const [, year, month, day] = match;
+            return new Date(Number(year), Number(month) - 1, Number(day));
+          }
+        }
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return null;
         return date;
@@ -2923,7 +3115,7 @@
       }
 
       function ownerSinceLabel(parcel) {
-        const ownerSince = parseOwnerSince(parcel.owner_since);
+        const ownerSince = parseOwnerSince(parcel.owner_since, !isScoredDataset());
         if (!ownerSince) return 'Unknown';
         return ownerSince.toLocaleDateString('en-US', {
           year: 'numeric',
@@ -2941,13 +3133,13 @@
       }
 
       function ownershipDurationText(parcel) {
-        const ownerSince = parseOwnerSince(parcel.owner_since);
+        const ownerSince = parseOwnerSince(parcel.owner_since, !isScoredDataset());
         const years = ownerYearsHeld(parcel);
         if (!ownerSince || years === null) return 'Ownership change date unknown';
         const year = ownerSince.getFullYear();
         const rounded = Math.floor(years);
         const yearsText = rounded < 1 ? '<1 year' : `${rounded} year${rounded === 1 ? '' : 's'}`;
-        return `Ownership last changed in ${year} per HCAD. Estimated years since change: ${yearsText}.`;
+        return `Ownership last changed in ${year} per ${currentDataset().ownershipSource}. Estimated years since change: ${yearsText}.`;
       }
 
       function formatGeneratedAt(value) {
@@ -2993,10 +3185,26 @@
       }
 
       function hasScore(parcel) {
-        return parcel.opportunity_score !== undefined && parcel.opportunity_score !== null;
+        return isScoredDataset() && parcel.opportunity_score !== undefined && parcel.opportunity_score !== null;
+      }
+
+      function useExFloodScore() {
+        return isScoredDataset() && scoreExFloodToggle && scoreExFloodToggle.checked;
+      }
+
+      function scoreValue(parcel) {
+        const value = useExFloodScore() ? parcel.opportunity_score_ex_flood : parcel.opportunity_score;
+        return Number(value) || 0;
+      }
+
+      function scoreDisplayText(parcel) {
+        if (!hasScore(parcel)) return 'No score';
+        const label = useExFloodScore() ? 'Ex-flood score' : 'Score';
+        return `${label} ${formatNumber(scoreValue(parcel), 1)}`;
       }
 
       function floodLabel(parcel) {
+        if (parcel.in_100yr_flood === null || parcel.in_100yr_flood === undefined) return 'Flood input unavailable';
         if (parcel.in_floodway) return 'FLOODWAY';
         if (parcel.in_100yr_flood) return '100-yr flood zone';
         if (parcel.in_500yr_flood) return '500-yr flood zone';
@@ -3038,6 +3246,7 @@
       }
 
       function compactFloodLabel(parcel) {
+        if (parcel.in_100yr_flood === null || parcel.in_100yr_flood === undefined) return 'Flood unknown';
         if (parcel.in_floodway) return 'Floodway';
         if (parcel.in_100yr_flood) return '100-yr flood';
         if (parcel.in_500yr_flood) return '500-yr flood';
@@ -3053,6 +3262,7 @@
           parcel.nearest_major_road,
           parcel.city_name,
           parcel.mud_name,
+          parcel.owner_flag,
           parcel.owner_class,
           parcel.same_owner_assemblage?.assemblage_id,
           ...(parcel.same_owner_assemblage?.member_accounts || []),
@@ -3061,7 +3271,6 @@
 
       function sortListParcels(rows) {
         const sorted = [...rows];
-        const score = (parcel) => Number(parcel.opportunity_score) || 0;
         const rank = (parcel) => Number(parcel.score_rank) || Number.MAX_SAFE_INTEGER;
         const valueAsc = (field) => (a, b) => {
           const aValue = field(a);
@@ -3084,13 +3293,14 @@
           return bValue - aValue || rank(a) - rank(b);
         };
         sorted.sort((a, b) => {
-          if (state.listSort === 'score') return score(b) - score(a) || rank(a) - rank(b);
+          if (state.listSort === 'score') return scoreValue(b) - scoreValue(a) || rank(a) - rank(b);
           if (state.listSort === 'land_per_acre') return valueAsc(landValuePerAcre)(a, b);
           if (state.listSort === 'total_market') return valueAsc((parcel) => parcel.total_market_val)(a, b);
           if (state.listSort === 'owner_years') return valueDesc(ownerYearsHeld)(a, b);
           if (state.listSort === 'road') return roadAccessRank(a) - roadAccessRank(b) || rank(a) - rank(b);
           if (state.listSort === 'acres') return b.acres - a.acres || rank(a) - rank(b);
-          if (state.listSort === 'coverage') return a.coverage_ratio - b.coverage_ratio || rank(a) - rank(b);
+          if (state.listSort === 'coverage') return valueAsc((parcel) => parcel.coverage_ratio)(a, b);
+          if (useExFloodScore()) return scoreValue(b) - scoreValue(a) || rank(a) - rank(b);
           return rank(a) - rank(b);
         });
         return sorted;
@@ -3102,7 +3312,15 @@
 
       function candidateScreenSummary(parcel) {
         const parts = [];
-        if (parcel.candidate_status === 'unknown') {
+        if (!isScoredDataset()) {
+          if (parcel.candidate_status === 'unknown') {
+            parts.push('This Travis preview parcel is at least 5 acres and has improvement evidence, but footprint coverage needs confirmation before outreach.');
+          } else if (parcel.coverage_status === 'vacant') {
+            parts.push('This Travis preview parcel is at least 5 acres and has no counted improvement evidence in the TCAD screen export.');
+          } else {
+            parts.push('This Travis preview parcel is at least 5 acres and measured physical coverage is below 10%.');
+          }
+        } else if (parcel.candidate_status === 'unknown') {
           parts.push('This parcel is at least 5 acres and categorized as commercial or land, but building coverage needs confirmation before outreach.');
         } else if (parcel.coverage_status === 'vacant') {
           parts.push('This parcel qualifies because it is at least 5 acres, is categorized as commercial or land, and appears vacant.');
@@ -3204,6 +3422,10 @@
       }
 
       function normalizeParcel(parcel) {
+        const ownerFlag = parcel.owner_flag || (parcel.is_likely_unbuyable ? parcel.owner_class || 'owner_flag' : null);
+        const coverageRatio = parcel.coverage_ratio === null || parcel.coverage_ratio === undefined
+          ? null
+          : Number(parcel.coverage_ratio);
         return {
           ...parcel,
           account_id: String(parcel.account_id || parcel.hcad_num || parcel.account || ''),
@@ -3215,14 +3437,15 @@
           candidate_status_reason: parcel.candidate_status_reason || 'Current scoring output.',
           coverage_status: parcel.coverage_status || parcel.type || 'unknown',
           coverage_source: parcel.coverage_source || 'unknown',
+          owner_flag: ownerFlag,
           owner_class: parcel.owner_class || '',
-          is_likely_unbuyable: Boolean(parcel.is_likely_unbuyable),
+          is_likely_unbuyable: Boolean(parcel.is_likely_unbuyable || ownerFlag),
           same_owner_assemblage: normalizeAssemblageContext(parcel.same_owner_assemblage),
           ownership_duration_years: parcel.ownership_duration_years === null || parcel.ownership_duration_years === undefined ? null : Number(parcel.ownership_duration_years),
           ownership_score_component: parcel.ownership_score_component === null || parcel.ownership_score_component === undefined ? null : Number(parcel.ownership_score_component),
           state_class: parcel.state_class || 'N/A',
           acres: Number(parcel.acres) || 0,
-          coverage_ratio: Number(parcel.coverage_ratio) || 0,
+          coverage_ratio: Number.isFinite(coverageRatio) ? coverageRatio : null,
           land_value: Number(parcel.land_value) || 0,
           impr_value: Number(parcel.impr_value) || 0,
           total_market_val: Number(parcel.total_market_val) || 0,
@@ -3234,13 +3457,18 @@
       function applyDataMetadata() {
         const generatedLabel = formatGeneratedAt(dataMetadata.generated_at);
         const freshness = dataFreshness(dataMetadata.generated_at);
+        const dataset = currentDataset();
         brandSubtitle.textContent = dataMetadata.subtitle || defaultMetadata.subtitle;
-        dashboardTitle.textContent = dashboardHeroTitle;
+        dashboardTitle.textContent = dataMetadata.title && !/opportunity radar/i.test(dataMetadata.title)
+          ? dataMetadata.title
+          : dataset.title;
         dashboardDescription.textContent = dataMetadata.description || defaultMetadata.description;
         dashboardInfoButton.setAttribute('aria-label', dataMetadata.description || defaultMetadata.description);
         sourcePill.textContent = generatedLabel ? `Data updated ${generatedLabel}` : 'Data update unavailable';
         sourcePill.classList.toggle('is-stale', freshness.isStale);
         sourcePill.title = freshness.title;
+        previewDisclaimer.textContent = dataMetadata.preview_disclaimer || '';
+        previewDisclaimer.hidden = !(previewDisclaimer.textContent.trim() && (dataMetadata.provisional || !isScoredDataset()));
         if (filtersNote) {
           filtersNote.textContent = dataMetadata.filter_note || defaultMetadata.filter_note;
           filtersNote.hidden = !filtersNote.textContent.trim();
@@ -3249,6 +3477,45 @@
         listNote.textContent = dataMetadata.list_note || defaultMetadata.list_note;
         detailNote.textContent = dataMetadata.detail_note || defaultMetadata.detail_note;
         dataErrorBanner.hidden = !dataLoadError;
+        if (dataLoadError) {
+          dataErrorBanner.querySelector('strong').textContent = `${dataset.label} parcel data did not load.`;
+        }
+        updateRankingExplainer();
+      }
+
+      function configureSortOptions() {
+        const previous = listSort.value || state.listSort;
+        const options = isScoredDataset()
+          ? [
+              ['rank', 'Rank'],
+              ['score', 'Score high to low'],
+              ['land_per_acre', 'Land $/acre low to high'],
+              ['total_market', 'Total market value low to high'],
+              ['owner_years', 'Most years since owner change'],
+              ['road', 'Road access'],
+              ['acres', 'Acres'],
+              ['coverage', 'Lowest coverage'],
+            ]
+          : [
+              ['acres', 'Acres high to low'],
+              ['land_per_acre', 'Land $/acre low to high'],
+              ['total_market', 'Total market value low to high'],
+              ['owner_years', 'Most years since owner change'],
+              ['coverage', 'Lowest coverage'],
+            ];
+        listSort.innerHTML = '';
+        options.forEach(([value, label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          listSort.append(option);
+        });
+        const valid = options.some(([value]) => value === previous);
+        state.listSort = valid ? previous : currentDataset().defaultSort;
+        if (!options.some(([value]) => value === state.listSort)) {
+          state.listSort = options[0][0];
+        }
+        listSort.value = state.listSort;
       }
 
       function configureFilters() {
@@ -3264,11 +3531,28 @@
           ownerYearsFilter.value = ownerYearsFilter.min;
           ownerYearsValue.textContent = 'Unavailable';
         }
+        const scored = isScoredDataset();
+        scoredOnlyControls.forEach((control) => {
+          control.hidden = !scored;
+        });
+        roadFilter.disabled = !scored;
+        if (scoreExFloodToggle) scoreExFloodToggle.disabled = !scored;
+        hideFloodway.disabled = !scored;
+        hide100yrFlood.disabled = !scored;
+        metricRoadLabel.textContent = scored ? 'Road-ready' : 'Owner flags';
+        metricRoadInfo.setAttribute(
+          'aria-label',
+          scored
+            ? 'Visible parcels with frontage or within a quarter mile of a TxDOT major corridor. This is an access proxy, not driveway or frontage diligence.'
+            : 'Visible parcels flagged as public, institutional, conservation, church, cemetery, utility, water-district, or HOA-style ownership.'
+        );
+        configureSortOptions();
       }
 
       async function loadDataset() {
+        const dataset = currentDataset();
         try {
-          const response = await fetch('./parcels.json', { cache: 'no-store' });
+          const response = await fetch(dataset.path, { cache: 'no-store' });
           if (!response.ok) throw new Error(`snapshot not available: ${response.status}`);
           const payload = await response.json();
           if (!Array.isArray(payload.parcels) || payload.parcels.length === 0) {
@@ -3277,10 +3561,15 @@
           parcels = payload.parcels.map(normalizeParcel).filter((parcel) => Number.isFinite(parcel.latitude) && Number.isFinite(parcel.longitude));
           if (!parcels.length) throw new Error('snapshot has no mappable parcel rows');
           dataMetadata = normalizeMetadata(payload.metadata || {});
+          dataMetadata.county = state.county;
           dataLoadError = null;
         } catch (error) {
           parcels = [];
           dataMetadata = normalizeMetadata({
+            county: state.county,
+            scored: state.county === 'harris',
+            title: dataset.title,
+            subtitle: `${dataset.label} unavailable`,
             source_label: 'No data loaded',
             filter_note: 'Filters are unavailable until the parcel snapshot loads.',
             map_note: 'The parcel snapshot is unavailable.',
@@ -3292,15 +3581,19 @@
         }
         state.selectedId = null;
         state.filtered = parcels;
+        state.listQuery = '';
+        listSearch.value = '';
+        mapState.filteredSignature = '';
         applyDataMetadata();
         configureFilters();
+        resetFiltersToDefaults({ renderAfter: false });
       }
 
       function resetListLimit() {
         state.listLimit = initialListLimit;
       }
 
-      function resetFiltersToDefaults() {
+      function resetFiltersToDefaults(options = {}) {
         categoryFilter.value = 'all';
         statusFilter.value = 'screened';
         acreFilter.value = '5';
@@ -3309,11 +3602,21 @@
         coverageFilter.value = coverageFilter.max;
         ownerYearsFilter.value = ownerYearsFilter.min;
         roadFilter.value = 'any';
-        hideUnbuyable.checked = false;
+        if (scoreExFloodToggle) scoreExFloodToggle.checked = false;
+        hideUnbuyable.checked = isTravisDataset() || !isScoredDataset();
         hideFloodway.checked = false;
         hide100yrFlood.checked = false;
+        state.listSort = currentDataset().defaultSort;
+        if ([...listSort.options].some((option) => option.value === state.listSort)) {
+          listSort.value = state.listSort;
+        } else if (listSort.options.length) {
+          state.listSort = listSort.options[0].value;
+          listSort.value = state.listSort;
+        }
         resetListLimit();
-        render();
+        if (options.renderAfter !== false) {
+          render();
+        }
       }
 
       [
@@ -3325,6 +3628,7 @@
         coverageFilter,
         ownerYearsFilter,
         roadFilter,
+        scoreExFloodToggle,
         hideUnbuyable,
         hideFloodway,
         hide100yrFlood,
@@ -3434,19 +3738,33 @@
         ownerYearsValue.textContent = ownerYearsFilter.disabled
           ? 'Not in export'
           : formatOwnerYearsCap(minOwnerYears);
+        const flaggedOwnerCount = parcels.filter((parcel) => parcel.owner_flag || parcel.is_likely_unbuyable).length;
+        if (isTravisDataset()) {
+          hideUnbuyableLabel.textContent = hideUnbuyable.checked
+            ? `Hide public/institutional owners (${formatNumber(flaggedOwnerCount, 0)} hidden)`
+            : `Hide public/institutional owners (${formatNumber(flaggedOwnerCount, 0)} flagged)`;
+        } else if (isScoredDataset()) {
+          hideUnbuyableLabel.textContent = flaggedOwnerCount
+            ? `Hide likely unbuyable owner flags (${formatNumber(flaggedOwnerCount, 0)} flagged)`
+            : 'Hide likely unbuyable owner flags';
+        } else {
+          hideUnbuyableLabel.textContent = hideUnbuyable.checked
+            ? `Hide public/institutional owners (${formatNumber(flaggedOwnerCount, 0)} hidden)`
+            : `Hide public/institutional owners (${formatNumber(flaggedOwnerCount, 0)} flagged)`;
+        }
         return parcels.filter((parcel) => {
           const perAcre = landValuePerAcre(parcel);
           const yearsHeld = ownerYearsHeld(parcel);
-          if (hideUnbuyable.checked && parcel.is_likely_unbuyable) return false;
-          if (hideFloodway.checked && parcel.in_floodway) return false;
-          if (hide100yrFlood.checked && parcel.in_100yr_flood) return false;
+          if (hideUnbuyable.checked && (parcel.is_likely_unbuyable || parcel.owner_flag)) return false;
+          if (isScoredDataset() && hideFloodway.checked && parcel.in_floodway) return false;
+          if (isScoredDataset() && hide100yrFlood.checked && parcel.in_100yr_flood) return false;
           if (categoryFilter.value !== 'all' && parcel.prop_category !== categoryFilter.value) return false;
           if (statusFilter.value === 'screened' && parcel.candidate_status === 'not_candidate') return false;
           if (statusFilter.value === 'confirmed' && parcel.candidate_status !== 'confirmed') return false;
           if (statusFilter.value === 'unknown' && parcel.candidate_status !== 'unknown') return false;
-          if (!passesRoadFilter(parcel, roadFilter.value)) return false;
+          if (isScoredDataset() && !passesRoadFilter(parcel, roadFilter.value)) return false;
           if (parcel.acres < minAcres) return false;
-          if (parcel.coverage_ratio > maxCoverage) return false;
+          if (parcel.coverage_ratio !== null && parcel.coverage_ratio > maxCoverage) return false;
           if (minOwnerYears > 0 && (yearsHeld === null || yearsHeld < minOwnerYears)) return false;
           if (totalMarketCapActive && (!hasUsableValue(parcel.total_market_val) || parcel.total_market_val > maxTotalMarket)) return false;
           if (landPerAcreCapActive && (!hasUsableValue(perAcre) || perAcre > maxLandPerAcre)) return false;
@@ -3458,7 +3776,9 @@
         document.getElementById('metric-count').textContent = filtered.length;
         document.getElementById('metric-confirmed').textContent = filtered.filter((parcel) => parcel.candidate_status === 'confirmed').length;
         document.getElementById('metric-unknown').textContent = filtered.filter((parcel) => parcel.candidate_status === 'unknown').length;
-        document.getElementById('metric-road-ready').textContent = filtered.filter(isRoadReady).length;
+        document.getElementById('metric-road-ready').textContent = isScoredDataset()
+          ? filtered.filter(isRoadReady).length
+          : filtered.filter((parcel) => parcel.owner_flag || parcel.is_likely_unbuyable).length;
       }
 
       function updateMapLayerToggle() {
@@ -3551,21 +3871,49 @@
         });
       }
 
+      function panMapToParcelIfNeeded(parcel) {
+        if (!mapState.map || !parcel) return;
+        const latLng = L.latLng(parcel.latitude, parcel.longitude);
+        const point = mapState.map.latLngToContainerPoint(latLng);
+        const size = mapState.map.getSize();
+        const insetX = size.x * 0.18;
+        const insetY = size.y * 0.18;
+        const isComfortablyVisible = (
+          point.x >= insetX
+          && point.x <= size.x - insetX
+          && point.y >= insetY
+          && point.y <= size.y - insetY
+        );
+        if (isComfortablyVisible) return;
+        mapState.map.panInside(latLng, {
+          animate: true,
+          duration: 0.35,
+          paddingTopLeft: [insetX, insetY],
+          paddingBottomRight: [insetX, insetY],
+        });
+      }
+
       function renderMap(filtered) {
         if (!window.L) return;
         if (dataLoadError) {
-          document.getElementById('map-wrap').innerHTML = `
-            <div class="empty-state error">
-              Parcel map unavailable. Please reload or ask the maintainer to refresh the export.
-            </div>
-          `;
+          mapState.markers.forEach((marker) => marker.remove());
+          mapState.markers = [];
+          mapState.filteredSignature = '';
+          if (!mapState.map) {
+            document.getElementById('map-wrap').innerHTML = `
+              <div class="empty-state error">
+                Parcel map unavailable. Please reload or ask the maintainer to refresh the export.
+              </div>
+            `;
+          }
           return;
         }
-        const filteredSignature = filtered.map((parcel) => parcel.account_id).join('|');
+        const filteredSignature = `${state.county}:${filtered.map((parcel) => parcel.account_id).join('|')}`;
         const shouldFitBounds = filteredSignature !== mapState.filteredSignature;
         mapState.filteredSignature = filteredSignature;
 
         if (!mapState.map) {
+          document.getElementById('map-wrap').innerHTML = '';
           mapState.map = L.map('map-wrap', {
             attributionControl: true,
             fadeAnimation: false,
@@ -3687,12 +4035,13 @@
           const row = document.createElement('button');
           row.type = 'button';
           row.className = `parcel-row${parcel.account_id === state.selectedId ? ' active' : ''}`;
-          const rankText = parcel.score_rank ? `#${parcel.score_rank}` : 'Unranked';
-          const scoreText = hasScore(parcel) ? `Score ${formatNumber(parcel.opportunity_score, 1)}` : 'No score';
+          const scored = isScoredDataset();
+          const rankText = scored && parcel.score_rank ? `#${parcel.score_rank}` : 'Preview';
+          const scoreText = scored && hasScore(parcel) ? scoreDisplayText(parcel) : 'Screen-only';
           const roadClass = isRoadReady(parcel) ? 'good' : '';
           const floodClass = parcel.in_floodway || parcel.in_100yr_flood ? 'warn' : 'good';
-          const ownerFlag = parcel.is_likely_unbuyable
-            ? `<span class="signal-chip owner-warn">Owner flag</span>`
+          const ownerFlag = parcel.is_likely_unbuyable || parcel.owner_flag
+            ? `<span class="signal-chip owner-warn">${scored ? 'Owner flag' : 'Public/institutional owner'}</span>`
             : '';
           const ownerYearsChip = parcel.owner_since
             ? `<span class="signal-chip">${escapeHtml(ownerYearsLabel(parcel))}</span>`
@@ -3706,10 +4055,11 @@
               <span class="parcel-address">${escapeHtml(parcel.site_address)}</span>
               <span class="parcel-meta">${escapeHtml(parcel.owner_name)} · ${escapeHtml(titleCase(parcel.prop_category))} · ${escapeHtml(parcel.account_id)}</span>
               <span class="parcel-signals">
-                <span class="signal-chip ${roadClass}">${escapeHtml(compactRoadLabel(parcel))}</span>
-                <span class="signal-chip ${floodClass}">${escapeHtml(compactFloodLabel(parcel))}</span>
+                ${scored ? `<span class="signal-chip ${roadClass}">${escapeHtml(compactRoadLabel(parcel))}</span>` : ''}
+                ${scored ? `<span class="signal-chip ${floodClass}">${escapeHtml(compactFloodLabel(parcel))}</span>` : ''}
                 <span class="signal-chip">${formatNumber(parcel.acres, 1)} ac</span>
                 <span class="signal-chip">${pct(parcel.coverage_ratio)} cover</span>
+                ${scored ? '' : `<span class="signal-chip">${escapeHtml(coverageEvidenceLabel(parcel))}</span>`}
                 ${ownerYearsChip}
                 ${ownerFlag}
               </span>
@@ -3719,8 +4069,12 @@
             </span>
           `;
           row.addEventListener('click', () => {
-            state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
+            const nextSelectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
+            state.selectedId = nextSelectedId;
             render();
+            if (nextSelectedId) {
+              panMapToParcelIfNeeded(parcel);
+            }
           });
           list.append(row);
         });
@@ -3785,7 +4139,7 @@
         detailExpandToggle.setAttribute('aria-expanded', String(state.detailExpanded));
         detailExpandToggle.textContent = state.detailExpanded ? 'Less details' : 'More details';
         const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
-        const hcadUrl = 'https://search.hcad.org/';
+        const hcadUrl = accountSearchUrl();
         const summaryCopyStatusId = `summary-account-copy-status-${selected.account_id}`;
         const fullCopyStatusId = `full-account-copy-status-${selected.account_id}`;
         const selectedLandPerAcre = landValuePerAcre(selected);
@@ -3793,9 +4147,12 @@
         const assemblageBox = assemblageContextHtml(selected);
         const summaryRoadClass = isRoadReady(selected) ? 'good' : '';
         const summaryFloodClass = selected.in_floodway || selected.in_100yr_flood ? 'warn' : 'good';
+        const scored = isScoredDataset();
+        const accountLabel = currentDataset().accountSearchLabel;
+        const activeScoreLabel = useExFloodScore() ? 'Ex-flood score' : 'Score';
         const scoreStats = hasScore(selected) ? `
             <div class="stat"><span>Rank</span><strong>#${selected.score_rank || 'N/A'}</strong></div>
-            <div class="stat"><span>Score</span><strong>${formatNumber(selected.opportunity_score, 1)}</strong></div>
+            <div class="stat"><span>${activeScoreLabel}</span><strong>${formatNumber(scoreValue(selected), 1)}</strong></div>
             <div class="stat"><span>Score ex-flood</span><strong>${selected.opportunity_score_ex_flood === undefined || selected.opportunity_score_ex_flood === null ? 'N/A' : formatNumber(selected.opportunity_score_ex_flood, 1)}</strong></div>
         ` : '';
         const overlayDetails = hasScore(selected) ? `
@@ -3805,10 +4162,22 @@
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
             <div class="future-item">Ownership: ${ownershipDurationText(selected)}</div>
         ` : `
-            <div class="future-item">Scoring is not available in this sample.</div>
-            <div class="future-item">Flood, MUD, access, and permit overlays are future data layers.</div>
+            <div class="future-item">This county is preview-only and not ranked.</div>
+            <div class="future-item">Flood, access, serviceability, and permit momentum are not loaded for this county.</div>
             <div class="future-item">Parcels marked needs confirmation need building coverage confirmation before outreach.</div>
         `;
+        const summaryScoreChips = scored
+          ? `
+                <span class="signal-chip">${selected.score_rank ? `#${selected.score_rank}` : 'Unranked'}</span>
+                <span class="signal-chip">${hasScore(selected) ? scoreDisplayText(selected) : 'No score'}</span>
+            `
+          : '<span class="signal-chip">Preview</span><span class="signal-chip">Unranked</span>';
+        const summaryOverlayChips = scored
+          ? `
+                <span class="signal-chip ${summaryRoadClass}">${escapeHtml(compactRoadLabel(selected))}</span>
+                <span class="signal-chip ${summaryFloodClass}">${escapeHtml(compactFloodLabel(selected))}</span>
+            `
+          : '';
         detail.innerHTML = `
           <div class="detail-summary">
             <div class="detail-summary-main">
@@ -3818,21 +4187,19 @@
               </div>
               <div class="detail-owner-row">
                 <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-                <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy HCAD account number ${selected.account_id}">Copy account #</button>
+                <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">Copy account #</button>
                 <span class="copy-status" id="${summaryCopyStatusId}" hidden></span>
               </div>
               <div class="detail-summary-stats">
-                <span class="signal-chip">${selected.score_rank ? `#${selected.score_rank}` : 'Unranked'}</span>
-                <span class="signal-chip">${hasScore(selected) ? `Score ${formatNumber(selected.opportunity_score, 1)}` : 'No score'}</span>
+                ${summaryScoreChips}
                 <span class="signal-chip">${formatNumber(selected.acres, 1)} ac</span>
                 <span class="signal-chip">${pct(selected.coverage_ratio)} cover</span>
-                <span class="signal-chip ${summaryRoadClass}">${escapeHtml(compactRoadLabel(selected))}</span>
-                <span class="signal-chip ${summaryFloodClass}">${escapeHtml(compactFloodLabel(selected))}</span>
+                ${summaryOverlayChips}
               </div>
             </div>
             <div class="detail-summary-actions">
               <a class="secondary-button" href="${gmapsUrl}" target="_blank" rel="noreferrer">Google Maps</a>
-              <a class="secondary-button" href="${hcadUrl}" target="_blank" rel="noreferrer" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}">Search HCAD</a>
+              <a class="secondary-button" href="${hcadUrl}" target="_blank" rel="noreferrer" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}">Search ${accountLabel}</a>
             </div>
           </div>
           <div class="detail-full">
@@ -3840,7 +4207,7 @@
             <h3 class="detail-title">${selected.site_address}</h3>
             <div class="detail-owner-row">
               <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-              <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy HCAD account number ${selected.account_id}">Copy account #</button>
+              <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">Copy account #</button>
               <span class="copy-status" id="${fullCopyStatusId}" hidden></span>
             </div>
             <details class="note-box detail-disclosure">
@@ -3862,7 +4229,7 @@
               <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
               <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
               <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
-              <div class="stat"><span>Ownership last changed (HCAD)</span><strong>${ownerSinceLabel(selected)}</strong></div>
+              <div class="stat"><span>Ownership last changed (${currentDataset().ownershipSource})</span><strong>${ownerSinceLabel(selected)}</strong></div>
               <div class="stat"><span>Years since owner change</span><strong>${ownerYearsLabel(selected)}</strong></div>
               <div class="stat"><span>Coverage evidence</span><strong>${coverageEvidenceLabel(selected)}</strong></div>
             </div>
@@ -3871,7 +4238,7 @@
             </div>
             <div class="action-links">
               <a href="${gmapsUrl}" target="_blank" rel="noreferrer">Open in Google Maps</a>
-              <a href="${hcadUrl}" target="_blank" rel="noreferrer" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}">Search HCAD</a>
+              <a href="${hcadUrl}" target="_blank" rel="noreferrer" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}">Search ${accountLabel}</a>
             </div>
           </div>
         `;
