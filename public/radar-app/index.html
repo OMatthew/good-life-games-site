@@ -503,14 +503,45 @@
       }
 
       .source-pill {
-        border: 1px solid var(--surface-3);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid rgba(20, 184, 166, 0.3);
         border-radius: 999px;
-        padding: 0.5rem 0.8rem;
-        background: #fff;
-        color: var(--ink-2);
+        padding: 0.42rem 0.82rem;
+        background: rgba(216, 247, 241, 0.58);
+        color: rgba(7, 92, 81, 0.78);
         font-size: 0.82rem;
         font-weight: 800;
         white-space: nowrap;
+      }
+
+      .source-pill::before {
+        content: '';
+        width: 0.44rem;
+        height: 0.44rem;
+        border-radius: 999px;
+        background: var(--teal-1);
+      }
+
+      .source-pill.is-stale {
+        border-color: rgba(217, 119, 6, 0.24);
+        background: var(--amber-1);
+        color: #8a4b04;
+      }
+
+      .source-pill.is-stale::before {
+        background: var(--amber-0);
+      }
+
+      body[data-theme="dark"] .source-pill {
+        border-color: rgba(94, 234, 212, 0.28);
+        color: rgba(183, 255, 243, 0.78);
+      }
+
+      body[data-theme="dark"] .source-pill.is-stale {
+        border-color: rgba(251, 191, 36, 0.28);
+        color: #fde68a;
       }
 
       .data-error-banner {
@@ -2218,7 +2249,7 @@
               </span>
             </div>
           </div>
-          <div class="source-pill" id="source-pill">Scored parcel snapshot</div>
+          <div class="source-pill" id="source-pill">Data updated</div>
         </section>
 
         <div class="modal-backdrop" id="ranking-modal" hidden>
@@ -2462,6 +2493,7 @@
       let parcels = [];
       let dataLoadError = null;
       const initialListLimit = 100;
+      const dataStaleThresholdDays = 31;
 
       const state = {
         selectedId: null,
@@ -2919,13 +2951,35 @@
       }
 
       function formatGeneratedAt(value) {
-        const date = value ? new Date(value) : null;
-        if (!date || Number.isNaN(date.getTime())) return null;
+        const date = parseGeneratedAt(value);
+        if (!date) return null;
         return date.toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric',
         });
+      }
+
+      function parseGeneratedAt(value) {
+        const date = value ? new Date(value) : null;
+        if (!date || Number.isNaN(date.getTime())) return null;
+        return date;
+      }
+
+      function dataFreshness(value) {
+        const date = parseGeneratedAt(value);
+        if (!date) {
+          return {
+            isStale: true,
+            title: 'Data update date unavailable',
+          };
+        }
+        const ageDays = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
+        const isStale = ageDays >= dataStaleThresholdDays;
+        return {
+          isStale,
+          title: `Data age: ${ageDays} day${ageDays === 1 ? '' : 's'}. Marked stale after ${dataStaleThresholdDays} days.`,
+        };
       }
 
       function coverageEvidenceLabel(parcel) {
@@ -3179,14 +3233,14 @@
 
       function applyDataMetadata() {
         const generatedLabel = formatGeneratedAt(dataMetadata.generated_at);
+        const freshness = dataFreshness(dataMetadata.generated_at);
         brandSubtitle.textContent = dataMetadata.subtitle || defaultMetadata.subtitle;
         dashboardTitle.textContent = dashboardHeroTitle;
         dashboardDescription.textContent = dataMetadata.description || defaultMetadata.description;
         dashboardInfoButton.setAttribute('aria-label', dataMetadata.description || defaultMetadata.description);
-        sourcePill.textContent = [
-          dataMetadata.source_label || defaultMetadata.source_label,
-          generatedLabel ? `Data updated ${generatedLabel}` : '',
-        ].filter(Boolean).join(' · ');
+        sourcePill.textContent = generatedLabel ? `Data updated ${generatedLabel}` : 'Data update unavailable';
+        sourcePill.classList.toggle('is-stale', freshness.isStale);
+        sourcePill.title = freshness.title;
         if (filtersNote) {
           filtersNote.textContent = dataMetadata.filter_note || defaultMetadata.filter_note;
           filtersNote.hidden = !filtersNote.textContent.trim();
