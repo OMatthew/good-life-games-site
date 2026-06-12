@@ -7,7 +7,7 @@
     <title>Opportunity Radar — Harris County CRE</title>
     <meta
       name="description"
-      content="Private preview for the Opportunity Radar Harris County commercial real-estate shortlist."
+      content="Opportunity Radar Harris County commercial real-estate shortlist."
     />
     <link rel="icon" type="image/png" href="/radar-assets/logo-colored.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -70,7 +70,20 @@
         box-sizing: border-box;
       }
 
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
       html {
+        max-width: 100%;
+        overflow-x: hidden;
         scroll-behavior: smooth;
       }
 
@@ -417,6 +430,11 @@
         padding: clamp(1rem, 3vw, 1.8rem);
       }
 
+      body.map-expanded .dashboard {
+        width: min(1380px, 100%);
+        padding: clamp(0.75rem, 2.2vw, 1.4rem);
+      }
+
       .hero-row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -425,9 +443,19 @@
         margin-bottom: 1rem;
       }
 
+      body.map-expanded .hero-row {
+        display: none;
+      }
+
       .hero-row h1 {
         font-size: clamp(2rem, 4vw, 3.2rem);
         letter-spacing: -0.03em;
+      }
+
+      .hero-title-line {
+        display: flex;
+        gap: 0.55rem;
+        align-items: center;
       }
 
       .hero-row p {
@@ -661,6 +689,10 @@
         margin-bottom: 1rem;
       }
 
+      body.map-expanded .metrics {
+        display: none;
+      }
+
       .metric {
         position: relative;
         border: 1px solid var(--surface-3);
@@ -702,11 +734,20 @@
       }
 
       .info-button:hover,
-      .info-button:focus,
+      .info-button[data-open="true"],
       .info-button:focus-visible {
         border-color: var(--teal-0);
         color: var(--teal-0);
         outline: 0;
+      }
+
+      .info-button.info-button-closing:hover {
+        border-color: var(--surface-3);
+        color: var(--ink-2);
+      }
+
+      .info-button:focus-visible {
+        box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.18);
       }
 
       .info-button::after {
@@ -734,6 +775,20 @@
         transition: opacity 0.15s ease, transform 0.15s ease;
       }
 
+      .hero-title-line .info-button::after {
+        bottom: auto;
+        top: calc(100% + 0.5rem);
+        left: auto;
+        right: 0;
+        transform: translateY(-0.2rem);
+      }
+
+      .hero-title-line .info-button {
+        width: 1.35rem;
+        height: 1.35rem;
+        font-size: 0.78rem;
+      }
+
       .metric:first-child .info-button::after {
         left: 0;
         transform: translateY(0.2rem);
@@ -745,22 +800,17 @@
         transform: translateY(0.2rem);
       }
 
-      .info-button:hover::after,
-      .info-button:focus::after,
-      .info-button[data-open="true"]::after,
-      .info-button:focus-visible::after {
+      .info-button[data-open="true"]::after {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
       }
 
-      .metric:first-child .info-button:hover::after,
-      .metric:first-child .info-button:focus::after,
+      .hero-title-line .info-button[data-open="true"]::after {
+        transform: translateY(0);
+      }
+
       .metric:first-child .info-button[data-open="true"]::after,
-      .metric:first-child .info-button:focus-visible::after,
-      .metric:last-child .info-button:hover::after,
-      .metric:last-child .info-button:focus::after,
-      .metric:last-child .info-button[data-open="true"]::after,
-      .metric:last-child .info-button:focus-visible::after {
+      .metric:last-child .info-button[data-open="true"]::after {
         transform: translateY(0);
       }
 
@@ -804,6 +854,44 @@
         align-items: start;
       }
 
+      body.map-expanded .workspace {
+        grid-template-columns: minmax(270px, 0.36fr) minmax(0, 1fr);
+        width: min(1320px, 100%);
+        margin: 0 auto;
+      }
+
+      .map-list-column {
+        min-width: 0;
+      }
+
+      body.map-expanded .map-list-column {
+        display: contents;
+      }
+
+      body.map-expanded .filters {
+        order: 3;
+        grid-column: 1;
+        position: static;
+      }
+
+      body.map-expanded .detail-panel {
+        order: 1;
+        grid-column: 1 / -1;
+        position: static;
+        top: auto;
+      }
+
+      body.map-expanded .map-panel {
+        order: 2;
+        grid-column: 1 / -1;
+      }
+
+      body.map-expanded .list-panel {
+        order: 4;
+        grid-column: 2;
+        margin-top: 0;
+      }
+
       .panel {
         border: 1px solid var(--surface-3);
         border-radius: 8px;
@@ -823,6 +911,18 @@
       .panel-header h2,
       .panel-header h3 {
         font-size: 1.1rem;
+      }
+
+      .panel-title-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .panel-title-row > div:first-child {
+        min-width: 0;
       }
 
       .panel-header p {
@@ -889,15 +989,38 @@
       }
 
       .map-panel {
+        position: relative;
         min-height: 356px;
         overflow: hidden;
       }
 
+      body.map-expanded .map-panel {
+        min-height: clamp(500px, 64svh, 720px);
+        margin-top: 1rem;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      body.map-expanded .map-panel .panel-header,
+      body.map-expanded .map-panel .map-legend {
+        display: none;
+      }
+
       .map-wrap {
         position: relative;
+        contain: layout paint;
         overflow: hidden;
+        overflow: clip;
         height: 356px;
         background: var(--surface-2);
+      }
+
+      body.map-expanded .map-wrap {
+        height: clamp(500px, 64svh, 720px);
+        border: 1px solid rgba(15, 23, 42, 0.16);
+        border-radius: 8px;
+        box-shadow: 0 18px 48px -38px rgba(15, 23, 42, 0.68);
       }
 
       .leaflet-pane,
@@ -916,7 +1039,9 @@
       }
 
       .leaflet-container {
+        contain: layout paint;
         overflow: hidden;
+        overflow: clip;
       }
 
       .leaflet-map-pane {
@@ -988,11 +1113,11 @@
         width: 0.62rem;
         height: 0.62rem;
         border-radius: 999px;
-        background: var(--teal-0);
+        background: #0f766e;
       }
 
       .legend-dot.unknown {
-        background: var(--amber-0);
+        background: #b45309;
       }
 
       .legend-help {
@@ -1123,6 +1248,43 @@
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.42);
       }
 
+      .map-expand-toggle {
+        display: inline-grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border: 1px solid rgba(15, 23, 42, 0.16);
+        border-radius: 8px;
+        padding: 0;
+        background: rgba(255, 255, 255, 0.94);
+        color: var(--ink-0);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
+      }
+
+      .map-expand-toggle:hover,
+      .map-expand-toggle:focus-visible {
+        background: #fff;
+        color: var(--teal-0);
+      }
+
+      .map-expand-toggle svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      body[data-theme="dark"] .map-expand-toggle {
+        border-color: var(--surface-3);
+        background: rgba(24, 35, 31, 0.94);
+        color: var(--ink-0);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      body[data-theme="dark"] .map-expand-toggle:hover,
+      body[data-theme="dark"] .map-expand-toggle:focus-visible {
+        background: var(--surface-2);
+        color: var(--teal-0);
+      }
+
       .leaflet-control-attribution {
         position: relative;
         z-index: 1000;
@@ -1215,6 +1377,9 @@
 
       .list-top-button,
       .secondary-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         min-height: 38px;
         border: 1px solid var(--surface-3);
         border-radius: 8px;
@@ -1223,6 +1388,7 @@
         background: var(--surface-1);
         font-size: 0.82rem;
         font-weight: 900;
+        text-decoration: none;
       }
 
       .list-top-button:hover,
@@ -1437,8 +1603,86 @@
         top: 5.1rem;
       }
 
+      body.map-expanded .detail-panel {
+        overflow: hidden;
+      }
+
       .detail-body {
         padding: 1rem;
+      }
+
+      body.map-expanded .detail-body {
+        padding: 0.8rem 1rem 0.9rem;
+      }
+
+      body.map-expanded.detail-empty .detail-body {
+        display: none;
+      }
+
+      body.map-expanded .detail-body .empty-state {
+        padding: 0.75rem !important;
+      }
+
+      .detail-header {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+
+      .detail-header > div:first-child {
+        min-width: 0;
+      }
+
+      .detail-header-actions {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 0.45rem;
+        align-items: center;
+      }
+
+      .detail-expand-toggle {
+        display: none;
+      }
+
+      body.map-expanded .detail-expand-toggle {
+        display: inline-flex;
+        min-height: 32px;
+        padding: 0.4rem 0.62rem;
+      }
+
+      .detail-expand-toggle[hidden] {
+        display: none !important;
+      }
+
+      body.map-expanded .detail-header {
+        padding: 0.75rem 1rem 0.6rem;
+      }
+
+      body.map-expanded .detail-header p {
+        display: none;
+      }
+
+      body.map-expanded.detail-empty .detail-header {
+        align-items: center;
+        padding: 0.72rem 1rem;
+      }
+
+      body.map-expanded.detail-empty .detail-header > div:first-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem 0.7rem;
+        align-items: baseline;
+      }
+
+      body.map-expanded.detail-empty .detail-header p {
+        display: block;
+        margin: 0;
+        font-size: 0.84rem;
+      }
+
+      body.map-expanded .detail-header h2 {
+        font-size: 1rem;
       }
 
       .detail-title {
@@ -1446,9 +1690,88 @@
         font-size: 1.35rem;
       }
 
+      body.map-expanded .detail-title {
+        margin-bottom: 0;
+        font-size: 1.05rem;
+      }
+
       .detail-owner {
         margin: 0 0 1rem;
         color: var(--ink-2);
+      }
+
+      body.map-expanded .detail-owner {
+        margin: 0;
+        font-size: 0.84rem;
+      }
+
+      .detail-summary {
+        display: none;
+      }
+
+      body.map-expanded .detail-summary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .detail-summary-main {
+        display: grid;
+        gap: 0.45rem;
+        min-width: 0;
+      }
+
+      body.map-expanded .detail-summary-main {
+        grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.2fr);
+        gap: 0.45rem 0.9rem;
+        align-items: center;
+      }
+
+      .detail-summary-heading {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .detail-summary-heading .detail-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .detail-summary-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      body.map-expanded .detail-summary-stats {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+
+      .detail-summary-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        justify-content: flex-end;
+      }
+
+      body.map-expanded .detail-full {
+        margin-top: 0.9rem;
+      }
+
+      body.map-expanded:not(.detail-expanded) .detail-full {
+        display: none;
+      }
+
+      body.map-expanded .detail-full > .badge,
+      body.map-expanded .detail-full > .detail-title,
+      body.map-expanded .detail-full > .detail-owner {
+        display: none;
       }
 
       .stat-grid {
@@ -1501,6 +1824,19 @@
 
       body[data-theme="dark"] .note-box {
         color: #b7fff3;
+      }
+
+      .detail-disclosure {
+        margin-top: 0.75rem;
+      }
+
+      .detail-disclosure summary {
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .detail-disclosure summary::-webkit-details-marker {
+        color: currentColor;
       }
 
       .future-grid {
@@ -1583,6 +1919,12 @@
         border-color: var(--ink-2);
       }
 
+      .detail-header .close-button {
+        position: static;
+        top: auto;
+        right: auto;
+      }
+
       /* Sleek premium Leaflet tooltip */
       .leaflet-tooltip-own,
       .leaflet-tooltip {
@@ -1610,6 +1952,23 @@
         .detail-panel {
           grid-column: 1 / -1;
           position: static;
+        }
+
+        body.map-expanded .workspace {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        body.map-expanded .filters,
+        body.map-expanded .list-panel {
+          grid-column: 1;
+        }
+
+        body.map-expanded .filters {
+          order: 4;
+        }
+
+        body.map-expanded .list-panel {
+          order: 3;
         }
       }
 
@@ -1650,6 +2009,42 @@
         .map-wrap {
           height: 300px;
         }
+
+        body.map-expanded .workspace {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        body.map-expanded .map-panel {
+          min-height: clamp(400px, 66svh, 560px);
+        }
+
+        body.map-expanded .map-wrap {
+          height: clamp(400px, 66svh, 560px);
+        }
+
+        body.map-expanded .filters {
+          margin-top: 1rem;
+          margin-bottom: 0;
+        }
+
+        body.map-expanded:not(.detail-expanded) .detail-summary-actions {
+          display: none;
+        }
+
+        body.map-expanded .detail-summary-main {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        body.map-expanded .detail-summary-stats {
+          grid-column: auto;
+          grid-row: auto;
+        }
+
+        .detail-summary-heading .detail-title {
+          white-space: normal;
+        }
+
       }
 
       @media (max-width: 480px) {
@@ -1753,17 +2148,19 @@
         <section class="hero-row" aria-labelledby="dashboard-title">
           <div>
             <p class="eyebrow">Harris County, TX</p>
-            <h1 id="dashboard-title">Dashboard Preview</h1>
-            <div class="hero-description-row">
-              <p id="dashboard-description">
-                Real Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by
-                access, flood position, value, local momentum, and ownership signals.
-              </p>
-              <button class="help-button" id="ranking-help-button" type="button" aria-expanded="false" aria-controls="ranking-modal" title="How parcel selection and ranking work">
-                <span class="help-mark" aria-hidden="true">?</span>
-                How ranking works
-              </button>
+            <div class="hero-title-line">
+              <h1 id="dashboard-title">Opportunity Radar</h1>
+              <button
+                class="info-button"
+                id="dashboard-info-button"
+                type="button"
+                aria-label="Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by access, flood position, value, local momentum, and ownership signals."
+              >i</button>
             </div>
+            <p class="sr-only" id="dashboard-description">
+              Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by
+              access, flood position, value, local momentum, and ownership signals.
+            </p>
             <div class="data-error-banner" id="data-error-banner" hidden role="status">
               <span aria-hidden="true">!</span>
               <span>
@@ -1772,7 +2169,7 @@
               </span>
             </div>
           </div>
-          <div class="source-pill" id="source-pill">Real parcel data</div>
+          <div class="source-pill" id="source-pill">Scored parcel snapshot</div>
         </section>
 
         <div class="modal-backdrop" id="ranking-modal" hidden>
@@ -1861,10 +2258,10 @@
         </section>
 
         <section class="workspace">
-          <aside class="panel filters" aria-label="Preview filters">
+          <aside class="panel filters" aria-label="Radar filters">
             <div class="panel-header">
               <h2>Filters</h2>
-              <p id="filters-note">Preview controls only. Real ranking weights are not enabled.</p>
+              <p id="filters-note">Filters operate on the exported scored snapshot.</p>
             </div>
             <div class="filter-body">
               <label class="check-row" for="hide-unbuyable">
@@ -1920,11 +2317,11 @@
             </div>
           </aside>
 
-          <section>
+          <section class="map-list-column">
             <div class="panel map-panel">
               <div class="panel-header">
                 <h2>Parcel Map</h2>
-                <p id="map-note">Real parcel centroids from the latest exported mart snapshot.</p>
+                <p id="map-note">Parcel centroids from the latest exported mart snapshot.</p>
               </div>
               <div class="map-legend" aria-label="Map legend">
                 <span class="legend-item"><span class="legend-dot"></span>Confirmed</span>
@@ -1936,8 +2333,16 @@
 
             <div class="panel list-panel">
               <div class="panel-header">
-                <h2>Candidate Preview</h2>
-                <p id="list-note">Click a parcel to update the detail panel.</p>
+                <div class="panel-title-row">
+                  <div>
+                    <h2>Ranked Parcel List</h2>
+                    <p id="list-note">Click a parcel to update the detail panel.</p>
+                  </div>
+                  <button class="help-button" id="ranking-help-button" type="button" aria-expanded="false" aria-controls="ranking-modal" title="How parcel selection and ranking work">
+                    <span class="help-mark" aria-hidden="true">?</span>
+                    How ranking works
+                  </button>
+                </div>
               </div>
               <div class="list-tools" aria-label="Candidate list controls">
                 <label class="list-field" for="list-search">
@@ -1971,10 +2376,15 @@
           </section>
 
           <section class="panel detail-panel" aria-live="polite">
-            <div class="panel-header" style="position: relative;">
-              <h2>Property Detail</h2>
-              <p id="detail-note">Shows why this parcel qualifies or what still needs confirmation.</p>
-              <button id="close-detail-btn" class="close-button" aria-label="Close detail panel" title="Deselect property">&times;</button>
+            <div class="panel-header detail-header">
+              <div>
+                <h2>Property Detail</h2>
+                <p id="detail-note">Shows why this parcel qualifies or what still needs confirmation.</p>
+              </div>
+              <div class="detail-header-actions">
+                <button id="detail-expand-toggle" class="secondary-button detail-expand-toggle" type="button" aria-expanded="false" hidden>More details</button>
+                <button id="close-detail-btn" class="close-button" aria-label="Close detail panel" title="Deselect property">&times;</button>
+              </div>
             </div>
             <div class="detail-body" id="detail-body"></div>
           </section>
@@ -1989,12 +2399,12 @@
     ></script>
     <script>
       const defaultMetadata = {
-        title: 'Dashboard Preview',
+        title: 'Opportunity Radar',
         subtitle: 'Harris County parcel shortlist',
-        description: 'Real Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by access, flood position, value, local momentum, and ownership signals.',
-        source_label: 'Real parcel data',
+        description: 'Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by access, flood position, value, local momentum, and ownership signals.',
+        source_label: 'Scored parcel snapshot',
         filter_note: 'Filters operate on the exported scored snapshot.',
-        map_note: 'Real parcel centroids from the latest exported mart snapshot.',
+        map_note: 'Parcel centroids from the latest exported mart snapshot.',
         list_note: 'Click a parcel to inspect score, constraints, and source links.',
         detail_note: 'Shows why this parcel qualifies or what still needs confirmation.',
       };
@@ -2010,6 +2420,8 @@
         listLimit: initialListLimit,
         listQuery: '',
         listSort: 'rank',
+        mapExpanded: false,
+        detailExpanded: false,
       };
 
       const settings = {
@@ -2025,11 +2437,14 @@
         roadLayer: null,
         satelliteLayer: null,
         layerToggleButton: null,
+        expandToggleButton: null,
+        lastMarkerClickAt: 0,
       };
 
       const brandSubtitle = document.getElementById('brand-subtitle');
       const dashboardTitle = document.getElementById('dashboard-title');
       const dashboardDescription = document.getElementById('dashboard-description');
+      const dashboardInfoButton = document.getElementById('dashboard-info-button');
       const sourcePill = document.getElementById('source-pill');
       const dataErrorBanner = document.getElementById('data-error-banner');
       const filtersNote = document.getElementById('filters-note');
@@ -2063,6 +2478,7 @@
       const listLess = document.getElementById('list-less');
       const listMore = document.getElementById('list-more');
       const listCount = document.getElementById('list-count');
+      const detailExpandToggle = document.getElementById('detail-expand-toggle');
       const infoButtons = [...document.querySelectorAll('.info-button')];
       const rankingHelpButton = document.getElementById('ranking-help-button');
       const rankingModal = document.getElementById('ranking-modal');
@@ -2080,6 +2496,93 @@
         document.body.dataset.metricDensity = settings.metricDensity;
         themeSetting.value = settings.theme;
         metricDensitySetting.value = settings.metricDensity;
+      }
+
+      function normalizeMetadata(metadata = {}) {
+        const normalized = { ...defaultMetadata, ...metadata };
+        if (/dashboard preview/i.test(String(normalized.title || ''))) {
+          normalized.title = defaultMetadata.title;
+        }
+        if (/preview controls/i.test(String(normalized.filter_note || ''))) {
+          normalized.filter_note = defaultMetadata.filter_note;
+        }
+        if (/\breal\b/i.test(String(normalized.description || ''))) {
+          normalized.description = String(normalized.description).replace(/\breal\s+/gi, '');
+        }
+        if (/\breal\b/i.test(String(normalized.source_label || ''))) {
+          normalized.source_label = defaultMetadata.source_label;
+        }
+        if (/\breal\b/i.test(String(normalized.map_note || ''))) {
+          normalized.map_note = String(normalized.map_note).replace(/\breal\s+/gi, '');
+        }
+        if (/explain why|ranked here|diligence/i.test(String(normalized.detail_note || ''))) {
+          normalized.detail_note = defaultMetadata.detail_note;
+        }
+        return normalized;
+      }
+
+      function scheduleMapResize() {
+        if (!mapState.map) return;
+        [0, 100, 400].forEach((delay) => {
+          setTimeout(() => {
+            mapState.map.invalidateSize();
+          }, delay);
+        });
+      }
+
+      function updateMapExpandToggle() {
+        const button = mapState.expandToggleButton;
+        if (!button) return;
+        const label = state.mapExpanded ? 'Collapse map' : 'Expand map';
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+        button.setAttribute('aria-pressed', String(state.mapExpanded));
+        button.innerHTML = state.mapExpanded
+          ? `
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          `
+          : `
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          `;
+      }
+
+      function setMapExpanded(isExpanded) {
+        state.mapExpanded = Boolean(isExpanded);
+        if (state.mapExpanded) {
+          state.detailExpanded = false;
+        }
+        document.body.classList.toggle('map-expanded', state.mapExpanded);
+        document.body.classList.toggle('detail-expanded', state.detailExpanded);
+        document.body.classList.toggle('detail-empty', !state.selectedId);
+        if (!state.selectedId) {
+          detailNote.textContent = state.mapExpanded
+            ? 'Select a parcel from the map or list.'
+            : (dataMetadata.detail_note || defaultMetadata.detail_note);
+        }
+        detailExpandToggle.hidden = !state.mapExpanded || !state.selectedId;
+        detailExpandToggle.setAttribute('aria-expanded', String(state.detailExpanded));
+        detailExpandToggle.textContent = state.detailExpanded ? 'Less details' : 'More details';
+        if (mapState.map) {
+          if (state.mapExpanded) {
+            mapState.map.scrollWheelZoom.enable();
+          } else {
+            mapState.map.scrollWheelZoom.disable();
+          }
+        }
+        updateMapExpandToggle();
+        scheduleMapResize();
+      }
+
+      function setDetailExpanded(isExpanded) {
+        state.detailExpanded = Boolean(isExpanded);
+        document.body.classList.toggle('detail-expanded', state.detailExpanded);
+        detailExpandToggle.setAttribute('aria-expanded', String(state.detailExpanded));
+        detailExpandToggle.textContent = state.detailExpanded ? 'Less details' : 'More details';
+        scheduleMapResize();
       }
 
       function setSettingsMenuOpen(isOpen) {
@@ -2101,6 +2604,7 @@
 
       function closeInfoButtons() {
         infoButtons.forEach((button) => {
+          button.classList.remove('info-button-closing');
           button.dataset.open = 'false';
           button.setAttribute('aria-expanded', 'false');
         });
@@ -2108,12 +2612,22 @@
 
       infoButtons.forEach((button) => {
         button.setAttribute('aria-expanded', 'false');
+        button.addEventListener('pointerleave', () => {
+          button.classList.remove('info-button-closing');
+        });
         button.addEventListener('click', (event) => {
           event.stopPropagation();
-          const shouldOpen = button.dataset.open !== 'true';
+          const wasOpen = button.dataset.open === 'true';
           closeInfoButtons();
+          const shouldOpen = !wasOpen;
           button.dataset.open = String(shouldOpen);
           button.setAttribute('aria-expanded', String(shouldOpen));
+          if (shouldOpen) {
+            button.classList.remove('info-button-closing');
+          } else {
+            button.classList.add('info-button-closing');
+            button.blur();
+          }
         });
       });
 
@@ -2494,11 +3008,11 @@
           : 'coverage needs review';
         const ownerFlag = group.likely_unbuyable_owner ? ' Owner flag applies to the group.' : '';
         return `
-          <div class="note-box" style="margin-top: 0.75rem;">
-            <strong>Same-owner adjacent group</strong>
+          <details class="note-box detail-disclosure">
+            <summary>Same-owner adjacent group</summary>
             <span>This parcel is part of a same-owner adjacent group: ${escapeHtml(String(group.parcel_count))} parcels, ${escapeHtml(acres)}. ${escapeHtml(status)} · ${escapeHtml(coverageText)}.${escapeHtml(ownerFlag)}</span>
             <span>Members: ${escapeHtml(memberText)}</span>
-          </div>
+          </details>
         `;
       }
 
@@ -2568,6 +3082,7 @@
         brandSubtitle.textContent = dataMetadata.subtitle || defaultMetadata.subtitle;
         dashboardTitle.textContent = dataMetadata.title || defaultMetadata.title;
         dashboardDescription.textContent = dataMetadata.description || defaultMetadata.description;
+        dashboardInfoButton.setAttribute('aria-label', dataMetadata.description || defaultMetadata.description);
         sourcePill.textContent = [
           dataMetadata.source_label || defaultMetadata.source_label,
           generatedLabel ? `Data updated ${generatedLabel}` : '',
@@ -2604,18 +3119,17 @@
           }
           parcels = payload.parcels.map(normalizeParcel).filter((parcel) => Number.isFinite(parcel.latitude) && Number.isFinite(parcel.longitude));
           if (!parcels.length) throw new Error('snapshot has no mappable parcel rows');
-          dataMetadata = { ...defaultMetadata, ...(payload.metadata || {}) };
+          dataMetadata = normalizeMetadata(payload.metadata || {});
           dataLoadError = null;
         } catch (error) {
           parcels = [];
-          dataMetadata = {
-            ...defaultMetadata,
+          dataMetadata = normalizeMetadata({
             source_label: 'No data loaded',
             filter_note: 'Filters are unavailable until the parcel snapshot loads.',
             map_note: 'The parcel snapshot is unavailable.',
             list_note: 'The parcel snapshot is unavailable. Please reload or ask the maintainer to refresh the export.',
             detail_note: 'The parcel snapshot is unavailable.',
-          };
+          });
           dataLoadError = error;
           console.warn('Radar parcel data failed to load.', error);
         }
@@ -2705,6 +3219,10 @@
         });
       }
 
+      detailExpandToggle.addEventListener('click', () => {
+        setDetailExpanded(!state.detailExpanded);
+      });
+
       function getFilteredParcels() {
         const minAcres = Number(acreFilter.value);
         const maxTotalMarket = Number(totalMarketFilter.value);
@@ -2775,7 +3293,7 @@
 
       function addMapLayerToggle() {
         const ToggleControl = L.Control.extend({
-          options: { position: 'topright' },
+          options: { position: 'bottomleft' },
           onAdd() {
             const button = L.DomUtil.create('button', 'map-layer-toggle target-satellite');
             button.type = 'button';
@@ -2791,6 +3309,26 @@
           },
         });
         new ToggleControl().addTo(mapState.map);
+      }
+
+      function addMapExpandToggle() {
+        const ExpandControl = L.Control.extend({
+          options: { position: 'topright' },
+          onAdd() {
+            const button = L.DomUtil.create('button', 'map-expand-toggle');
+            button.type = 'button';
+            L.DomEvent.disableClickPropagation(button);
+            L.DomEvent.disableScrollPropagation(button);
+            L.DomEvent.on(button, 'click', (event) => {
+              L.DomEvent.stop(event);
+              setMapExpanded(!state.mapExpanded);
+            });
+            mapState.expandToggleButton = button;
+            updateMapExpandToggle();
+            return button;
+          },
+        });
+        new ExpandControl().addTo(mapState.map);
       }
 
       function renderMap(filtered) {
@@ -2835,6 +3373,14 @@
           mapState.satelliteLayer = satelliteLayer;
           roadLayer.addTo(mapState.map);
           addMapLayerToggle();
+          addMapExpandToggle();
+          mapState.map.on('click', () => {
+            if (Date.now() - mapState.lastMarkerClickAt < 150) return;
+            if (!state.selectedId) return;
+            state.selectedId = null;
+            render();
+          });
+          setMapExpanded(state.mapExpanded);
         }
 
         mapState.markers.forEach((marker) => marker.remove());
@@ -2854,13 +3400,15 @@
             fillOpacity: 0.95,
           });
 
-          const tooltipOptions = isSelected
-            ? { permanent: true, direction: 'top', offset: [0, -8] }
-            : { direction: 'top', offset: [0, -8] };
-            
-          marker.bindTooltip(parcel.site_address, tooltipOptions);
+          if (isSelected) {
+            marker.bindTooltip(parcel.site_address, { permanent: true, direction: 'top', offset: [0, -8] });
+          }
           
-          marker.on('click', () => {
+          marker.on('click', (event) => {
+            mapState.lastMarkerClickAt = Date.now();
+            if (event.originalEvent) {
+              L.DomEvent.stop(event.originalEvent);
+            }
             state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
             render();
           });
@@ -2879,11 +3427,7 @@
           mapState.map.fitBounds(bounds, { padding: [34, 34], maxZoom: 11 });
         }
 
-        [0, 100, 400].forEach((delay) => {
-          setTimeout(() => {
-            mapState.map.invalidateSize();
-          }, delay);
-        });
+        scheduleMapResize();
       }
 
       function renderList(filtered) {
@@ -2963,6 +3507,9 @@
         const closeBtn = document.getElementById('close-detail-btn');
         if (dataLoadError) {
           if (closeBtn) closeBtn.style.display = 'none';
+          detailExpandToggle.hidden = true;
+          document.body.classList.add('detail-empty');
+          detailNote.textContent = 'Property detail unavailable.';
           detail.innerHTML = `
             <div class="empty-state error" style="padding: 1.5rem;">
               Property detail unavailable. Please reload or ask the maintainer to refresh the export.
@@ -2972,9 +3519,18 @@
         }
         if (!state.selectedId) {
           if (closeBtn) closeBtn.style.display = 'none';
+          state.detailExpanded = false;
+          document.body.classList.remove('detail-expanded');
+          detailExpandToggle.hidden = true;
+          detailExpandToggle.setAttribute('aria-expanded', 'false');
+          detailExpandToggle.textContent = 'More details';
+          document.body.classList.add('detail-empty');
+          detailNote.textContent = state.mapExpanded
+            ? 'Select a parcel from the map or list.'
+            : (dataMetadata.detail_note || defaultMetadata.detail_note);
           detail.innerHTML = `
             <div class="empty-state" style="padding: 1.5rem; text-align: center; color: var(--ink-2); font-weight: 500;">
-              Select a parcel from the preview map or list to inspect details.
+              Select a parcel from the map or list to inspect details.
             </div>
           `;
           return;
@@ -2982,19 +3538,35 @@
         const selected = filtered.find((parcel) => parcel.account_id === state.selectedId);
         if (!selected) {
           if (closeBtn) closeBtn.style.display = 'none';
+          state.detailExpanded = false;
+          document.body.classList.remove('detail-expanded');
+          detailExpandToggle.hidden = true;
+          detailExpandToggle.setAttribute('aria-expanded', 'false');
+          detailExpandToggle.textContent = 'More details';
+          document.body.classList.add('detail-empty');
+          detailNote.textContent = state.mapExpanded
+            ? 'Select a parcel from the map or list.'
+            : (dataMetadata.detail_note || defaultMetadata.detail_note);
           detail.innerHTML = `
             <div class="empty-state" style="padding: 1.5rem; text-align: center; color: var(--ink-2); font-weight: 500;">
-              Select a parcel from the preview map or list to inspect details.
+              Select a parcel from the map or list to inspect details.
             </div>
           `;
           return;
         }
         if (closeBtn) closeBtn.style.display = 'grid';
+        document.body.classList.remove('detail-empty');
+        detailNote.textContent = dataMetadata.detail_note || defaultMetadata.detail_note;
+        detailExpandToggle.hidden = !state.mapExpanded;
+        detailExpandToggle.setAttribute('aria-expanded', String(state.detailExpanded));
+        detailExpandToggle.textContent = state.detailExpanded ? 'Less details' : 'More details';
         const gmapsUrl = `https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`;
         const hcadUrl = `https://public.hcad.org/records/Real.asp?acct=${selected.account_id}`;
         const selectedLandPerAcre = landValuePerAcre(selected);
         const reason = detailReason(selected);
         const assemblageBox = assemblageContextHtml(selected);
+        const summaryRoadClass = isRoadReady(selected) ? 'good' : '';
+        const summaryFloodClass = selected.in_floodway || selected.in_100yr_flood ? 'warn' : 'good';
         const scoreStats = hasScore(selected) ? `
             <div class="stat"><span>Rank</span><strong>#${selected.score_rank || 'N/A'}</strong></div>
             <div class="stat"><span>Score</span><strong>${formatNumber(selected.opportunity_score, 1)}</strong></div>
@@ -3012,35 +3584,61 @@
             <div class="future-item">Parcels marked needs confirmation need building coverage confirmation before outreach.</div>
         `;
         detail.innerHTML = `
-          <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
-          <h3 class="detail-title">${selected.site_address}</h3>
-          <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-          <div class="note-box"><strong>Why it qualifies</strong><span>${escapeHtml(reason)}</span></div>
-          <div class="note-box" style="margin-top: 0.75rem;">
-            <strong>Map and coverage note</strong>
-            <span>The map pin marks the center of the parcel/account geometry, not a building point. ${escapeHtml(coverageEvidenceLabel(selected))}. Satellite imagery can be newer or older than county records.</span>
+          <div class="detail-summary">
+            <div class="detail-summary-main">
+              <div class="detail-summary-heading">
+                <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
+                <h3 class="detail-title">${selected.site_address}</h3>
+              </div>
+              <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+              <div class="detail-summary-stats">
+                <span class="signal-chip">${selected.score_rank ? `#${selected.score_rank}` : 'Unranked'}</span>
+                <span class="signal-chip">${hasScore(selected) ? `Score ${formatNumber(selected.opportunity_score, 1)}` : 'No score'}</span>
+                <span class="signal-chip">${formatNumber(selected.acres, 1)} ac</span>
+                <span class="signal-chip">${pct(selected.coverage_ratio)} cover</span>
+                <span class="signal-chip ${summaryRoadClass}">${escapeHtml(compactRoadLabel(selected))}</span>
+                <span class="signal-chip ${summaryFloodClass}">${escapeHtml(compactFloodLabel(selected))}</span>
+              </div>
+            </div>
+            <div class="detail-summary-actions">
+              <a class="secondary-button" href="${gmapsUrl}" target="_blank" rel="noreferrer">Google Maps</a>
+              <a class="secondary-button" href="${hcadUrl}" target="_blank" rel="noreferrer">HCAD</a>
+            </div>
           </div>
-          ${assemblageBox}
-          <div class="stat-grid">
-            ${scoreStats}
-            <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
-            <div class="stat"><span>Coverage</span><strong>${pct(selected.coverage_ratio)}</strong></div>
-            <div class="stat"><span>Category</span><strong>${titleCase(selected.prop_category)}</strong></div>
-            <div class="stat"><span>State class</span><strong>${selected.state_class}</strong></div>
-            <div class="stat"><span>Land value</span><strong>${formatMoney(selected.land_value)}</strong></div>
-            <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
-            <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
-            <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
-            <div class="stat"><span>Ownership last changed (HCAD)</span><strong>${ownerSinceLabel(selected)}</strong></div>
-            <div class="stat"><span>Years since owner change</span><strong>${ownerYearsLabel(selected)}</strong></div>
-            <div class="stat"><span>Coverage evidence</span><strong>${coverageEvidenceLabel(selected)}</strong></div>
-          </div>
-          <div class="future-grid">
-            ${overlayDetails}
-          </div>
-          <div class="action-links">
-            <a href="${gmapsUrl}" target="_blank" rel="noreferrer">Open in Google Maps</a>
-            <a href="${hcadUrl}" target="_blank" rel="noreferrer">Open HCAD profile</a>
+          <div class="detail-full">
+            <span class="badge ${selected.candidate_status}">${candidateStatusLabel(selected.candidate_status)}</span>
+            <h3 class="detail-title">${selected.site_address}</h3>
+            <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
+            <details class="note-box detail-disclosure">
+              <summary>Why it qualifies</summary>
+              <span>${escapeHtml(reason)}</span>
+            </details>
+            <details class="note-box detail-disclosure">
+              <summary>Map and coverage note</summary>
+              <span>The map pin marks the center of the parcel/account geometry, not a building point. ${escapeHtml(coverageEvidenceLabel(selected))}. Satellite imagery can be newer or older than county records.</span>
+            </details>
+            ${assemblageBox}
+            <div class="stat-grid">
+              ${scoreStats}
+              <div class="stat"><span>Acres</span><strong>${formatNumber(selected.acres, 2)}</strong></div>
+              <div class="stat"><span>Coverage</span><strong>${pct(selected.coverage_ratio)}</strong></div>
+              <div class="stat"><span>Category</span><strong>${titleCase(selected.prop_category)}</strong></div>
+              <div class="stat"><span>State class</span><strong>${selected.state_class}</strong></div>
+              <div class="stat"><span>Land value</span><strong>${formatMoney(selected.land_value)}</strong></div>
+              <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
+              <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
+              <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
+              <div class="stat"><span>Ownership last changed (HCAD)</span><strong>${ownerSinceLabel(selected)}</strong></div>
+              <div class="stat"><span>Years since owner change</span><strong>${ownerYearsLabel(selected)}</strong></div>
+              <div class="stat"><span>Coverage evidence</span><strong>${coverageEvidenceLabel(selected)}</strong></div>
+            </div>
+            <div class="future-grid">
+              ${overlayDetails}
+            </div>
+            <div class="action-links">
+              <a href="${gmapsUrl}" target="_blank" rel="noreferrer">Open in Google Maps</a>
+              <a href="${hcadUrl}" target="_blank" rel="noreferrer">Open HCAD profile</a>
+            </div>
           </div>
         `;
       }
