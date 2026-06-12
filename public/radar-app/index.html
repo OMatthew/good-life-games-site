@@ -1114,10 +1114,13 @@
         right: 0;
         bottom: 0;
         z-index: 1000;
-        padding: 0.1rem 0.35rem;
-        background: rgba(255, 255, 255, 0.82);
+        max-width: min(58%, 23rem);
+        padding: 0.08rem 0.28rem;
+        background: rgba(255, 255, 255, 0.72);
         color: var(--ink-2);
-        font-size: 0.65rem;
+        font-size: 0.54rem;
+        line-height: 1.18;
+        text-align: right;
       }
 
       .pin {
@@ -2793,6 +2796,7 @@
             zoomAnimation: false,
             zoomControl: true,
           }).setView([29.76, -95.42], 9);
+          mapState.map.attributionControl.setPrefix(false);
 
           const roadLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
             keepBuffer: 6,
