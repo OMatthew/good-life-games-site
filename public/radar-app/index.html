@@ -494,6 +494,40 @@
         white-space: nowrap;
       }
 
+      .data-error-banner {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        border: 1px solid rgba(220, 38, 38, 0.28);
+        border-radius: 8px;
+        margin-top: 1rem;
+        padding: 0.85rem 1rem;
+        background: rgba(254, 242, 242, 0.92);
+        color: #7f1d1d;
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+
+      .data-error-banner[hidden] {
+        display: none;
+      }
+
+      .data-error-banner strong {
+        display: block;
+        margin-bottom: 0.15rem;
+        color: #991b1b;
+      }
+
+      body[data-theme="dark"] .data-error-banner {
+        border-color: rgba(248, 113, 113, 0.35);
+        background: rgba(69, 10, 10, 0.74);
+        color: #fecaca;
+      }
+
+      body[data-theme="dark"] .data-error-banner strong {
+        color: #fee2e2;
+      }
+
       .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -1507,6 +1541,20 @@
         color: var(--ink-2);
       }
 
+      .empty-state.error {
+        border: 1px solid rgba(220, 38, 38, 0.22);
+        border-radius: 8px;
+        background: rgba(254, 242, 242, 0.8);
+        color: #7f1d1d;
+        font-weight: 700;
+      }
+
+      body[data-theme="dark"] .empty-state.error {
+        border-color: rgba(248, 113, 113, 0.3);
+        background: rgba(69, 10, 10, 0.64);
+        color: #fecaca;
+      }
+
       .close-button {
         position: absolute;
         top: 1rem;
@@ -1708,16 +1756,23 @@
             <h1 id="dashboard-title">Dashboard Preview</h1>
             <div class="hero-description-row">
               <p id="dashboard-description">
-                First draft dashboard over five synthetic parcels. This is for UI/workflow feedback,
-                not real parcel-content feedback or scoring decisions.
+                Real Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by
+                access, flood position, value, local momentum, and ownership signals.
               </p>
               <button class="help-button" id="ranking-help-button" type="button" aria-expanded="false" aria-controls="ranking-modal" title="How parcel selection and ranking work">
                 <span class="help-mark" aria-hidden="true">?</span>
                 How ranking works
               </button>
             </div>
+            <div class="data-error-banner" id="data-error-banner" hidden role="status">
+              <span aria-hidden="true">!</span>
+              <span>
+                <strong>Parcel data did not load.</strong>
+                The app is not showing placeholder or sample parcels. Reload the page or regenerate the radar app export.
+              </span>
+            </div>
           </div>
-          <div class="source-pill" id="source-pill">Sample parcel data</div>
+          <div class="source-pill" id="source-pill">Real parcel data</div>
         </section>
 
         <div class="modal-backdrop" id="ranking-modal" hidden>
@@ -1869,7 +1924,7 @@
             <div class="panel map-panel">
               <div class="panel-header">
                 <h2>Parcel Map</h2>
-                <p id="map-note">Approximate fixture locations, scaled to Harris County context.</p>
+                <p id="map-note">Real parcel centroids from the latest exported mart snapshot.</p>
               </div>
               <div class="map-legend" aria-label="Map legend">
                 <span class="legend-item"><span class="legend-dot"></span>Confirmed</span>
@@ -1933,152 +1988,25 @@
       crossorigin=""
     ></script>
     <script>
-      const fallbackMetadata = {
+      const defaultMetadata = {
         title: 'Dashboard Preview',
         subtitle: 'Harris County parcel shortlist',
-        description: 'First draft dashboard over five synthetic parcels. This is for UI/workflow feedback, not real parcel-content feedback or scoring decisions.',
-        source_label: 'Sample parcel data',
-        filter_note: 'Preview controls only. Real ranking weights are not enabled.',
-        map_note: 'Approximate fixture locations, scaled to Harris County context.',
-        list_note: 'Click a parcel to update the detail panel.',
+        description: 'Real Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by access, flood position, value, local momentum, and ownership signals.',
+        source_label: 'Real parcel data',
+        filter_note: 'Filters operate on the exported scored snapshot.',
+        map_note: 'Real parcel centroids from the latest exported mart snapshot.',
+        list_note: 'Click a parcel to inspect score, constraints, and source links.',
         detail_note: 'Shows why this parcel qualifies or what still needs confirmation.',
       };
 
-      const fallbackParcels = [
-        {
-          account_id: '0010020000003',
-          owner_name: 'BAYOU HOLDINGS LLC',
-          site_address: '1000 SAMPLE INDUSTRIAL RD, HOUSTON',
-          state_class: 'F1',
-          prop_category: 'commercial',
-          roll_year: 2025,
-          acres: 6.2,
-          land_sqft: 270072,
-          land_value: 2200000,
-          impr_value: 120000,
-          total_market_val: 2320000,
-          coverage_ratio: 0.03147308865783939,
-          coverage_source: 'physical',
-          coverage_status: 'improved',
-          is_stack_anchor: true,
-          is_phase1_candidate: true,
-          candidate_status: 'confirmed',
-          candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
-          owner_since: '2001-05-14',
-          same_owner_assemblage: {
-            assemblage_id: 'same_owner:0010020000003',
-            status: 'confirmed',
-            parcel_count: 3,
-            combined_acres: 14.2,
-            coverage_source: 'physical',
-            coverage_ratio: 0.032,
-            likely_unbuyable_owner: false,
-            member_accounts: ['0010020000003', '0010020000004', '0010020000005'],
-          },
-          longitude: -95.416,
-          latitude: 29.784,
-        },
-        {
-          account_id: '0445550000001',
-          owner_name: 'NORTHWEST LAND PARTNERS LP',
-          site_address: '0 SAMPLE FARM TO MARKET RD, HOUSTON',
-          state_class: 'C1',
-          prop_category: 'land_vacant',
-          roll_year: 2025,
-          acres: 12.4,
-          land_sqft: 0,
-          land_value: 1800000,
-          impr_value: 0,
-          total_market_val: 1800000,
-          coverage_ratio: 0,
-          coverage_source: 'none',
-          coverage_status: 'vacant',
-          is_stack_anchor: true,
-          is_phase1_candidate: true,
-          candidate_status: 'confirmed',
-          candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
-          owner_since: '1994-10-03',
-          longitude: -95.572,
-          latitude: 29.918,
-        },
-        {
-          account_id: '0777770000010',
-          owner_name: 'SOUTHEAST FLEX OWNER LLC',
-          site_address: '7500 SAMPLE BELTWAY, PASADENA',
-          state_class: 'F2',
-          prop_category: 'industrial',
-          roll_year: 2025,
-          acres: 8.5,
-          land_sqft: 370260,
-          land_value: 3100000,
-          impr_value: 250000,
-          total_market_val: 3350000,
-          coverage_ratio: 0.07462686567164178,
-          coverage_source: 'value_proxy',
-          coverage_status: 'improved_footprint_unknown',
-          is_stack_anchor: true,
-          is_phase1_candidate: false,
-          candidate_status: 'unknown',
-          candidate_status_reason: 'At least 5 acres and commercial or land category, but building coverage needs confirmation.',
-          owner_since: '2022-08-19',
-          longitude: -95.192,
-          latitude: 29.658,
-        },
-        {
-          account_id: '0888880000002',
-          owner_name: 'WEST HARRIS RANCH LTD',
-          site_address: '500 SAMPLE RANCH RD, KATY',
-          state_class: 'E1',
-          prop_category: 'land_rural_ag',
-          roll_year: 2025,
-          acres: 18.2,
-          land_sqft: 792792,
-          land_value: 4200000,
-          impr_value: 320000,
-          total_market_val: 4520000,
-          coverage_ratio: 0.007820462365916912,
-          coverage_source: 'physical',
-          coverage_status: 'improved',
-          is_stack_anchor: true,
-          is_phase1_candidate: true,
-          candidate_status: 'confirmed',
-          candidate_status_reason: 'At least 5 acres, commercial or land category, with vacant or low building coverage.',
-          owner_since: '1987-02-24',
-          longitude: -95.808,
-          latitude: 29.792,
-        },
-        {
-          account_id: '0999990000101',
-          owner_name: 'STACKED SAMPLE OWNER',
-          site_address: '101 SAMPLE STACKED DR, HOUSTON',
-          state_class: 'B1',
-          prop_category: 'multifamily',
-          roll_year: 2025,
-          acres: 7.1,
-          land_sqft: 309276,
-          land_value: 5000000,
-          impr_value: 200000,
-          total_market_val: 5200000,
-          coverage_ratio: 0.038461538461538464,
-          coverage_source: 'value_proxy',
-          coverage_status: 'improved_footprint_unknown',
-          is_stack_anchor: false,
-          is_phase1_candidate: false,
-          candidate_status: 'not_candidate',
-          candidate_status_reason: 'Does not meet the current acreage, category, and coverage rules.',
-          owner_since: null,
-          longitude: -95.346,
-          latitude: 29.724,
-        },
-      ];
-
-      let dataMetadata = fallbackMetadata;
-      let parcels = fallbackParcels;
+      let dataMetadata = defaultMetadata;
+      let parcels = [];
+      let dataLoadError = null;
       const initialListLimit = 100;
 
       const state = {
         selectedId: null,
-        filtered: fallbackParcels,
+        filtered: [],
         listLimit: initialListLimit,
         listQuery: '',
         listSort: 'rank',
@@ -2103,6 +2031,7 @@
       const dashboardTitle = document.getElementById('dashboard-title');
       const dashboardDescription = document.getElementById('dashboard-description');
       const sourcePill = document.getElementById('source-pill');
+      const dataErrorBanner = document.getElementById('data-error-banner');
       const filtersNote = document.getElementById('filters-note');
       const mapNote = document.getElementById('map-note');
       const listNote = document.getElementById('list-note');
@@ -2372,7 +2301,27 @@
         const year = ownerSince.getFullYear();
         const rounded = Math.floor(years);
         const yearsText = rounded < 1 ? '<1 year' : `${rounded} year${rounded === 1 ? '' : 's'}`;
-        return `Owner appears to have held this property since ${year}. Estimated years held: ${yearsText}.`;
+        return `Ownership last changed in ${year} per HCAD. Estimated years since change: ${yearsText}.`;
+      }
+
+      function formatGeneratedAt(value) {
+        const date = value ? new Date(value) : null;
+        if (!date || Number.isNaN(date.getTime())) return null;
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        });
+      }
+
+      function coverageEvidenceLabel(parcel) {
+        if (parcel.coverage_status === 'vacant') return 'No counted improvement evidence';
+        if (parcel.coverage_source === 'physical') return 'Measured building footprint';
+        if (parcel.coverage_status === 'improved_footprint_unknown' || parcel.coverage_source === 'value_proxy') {
+          return 'Improvement evidence; footprint needs confirmation';
+        }
+        if (parcel.coverage_source === 'none') return 'No counted building footprint';
+        return 'Coverage evidence unclear';
       }
 
       function hasScore(parcel) {
@@ -2480,7 +2429,7 @@
       }
 
       function genericScoredReason(reason) {
-        return !reason || /^Current scoring output\b/.test(reason);
+        return !reason || /^Current scoring output\b/.test(reason) || /^Scored row from\b/.test(reason);
       }
 
       function candidateScreenSummary(parcel) {
@@ -2542,7 +2491,7 @@
           : 'member accounts unavailable';
         const coverageText = Number.isFinite(group.coverage_ratio)
           ? `${pct(group.coverage_ratio)} coverage`
-          : `${titleCase(group.coverage_source || 'unknown')} coverage`;
+          : 'coverage needs review';
         const ownerFlag = group.likely_unbuyable_owner ? ' Owner flag applies to the group.' : '';
         return `
           <div class="note-box" style="margin-top: 0.75rem;">
@@ -2615,14 +2564,19 @@
       }
 
       function applyDataMetadata() {
-        brandSubtitle.textContent = dataMetadata.subtitle || fallbackMetadata.subtitle;
-        dashboardTitle.textContent = dataMetadata.title || fallbackMetadata.title;
-        dashboardDescription.textContent = dataMetadata.description || fallbackMetadata.description;
-        sourcePill.textContent = dataMetadata.source_label || fallbackMetadata.source_label;
-        filtersNote.textContent = dataMetadata.filter_note || fallbackMetadata.filter_note;
-        mapNote.textContent = dataMetadata.map_note || fallbackMetadata.map_note;
-        listNote.textContent = dataMetadata.list_note || fallbackMetadata.list_note;
-        detailNote.textContent = dataMetadata.detail_note || fallbackMetadata.detail_note;
+        const generatedLabel = formatGeneratedAt(dataMetadata.generated_at);
+        brandSubtitle.textContent = dataMetadata.subtitle || defaultMetadata.subtitle;
+        dashboardTitle.textContent = dataMetadata.title || defaultMetadata.title;
+        dashboardDescription.textContent = dataMetadata.description || defaultMetadata.description;
+        sourcePill.textContent = [
+          dataMetadata.source_label || defaultMetadata.source_label,
+          generatedLabel ? `Data updated ${generatedLabel}` : '',
+        ].filter(Boolean).join(' · ');
+        filtersNote.textContent = dataMetadata.filter_note || defaultMetadata.filter_note;
+        mapNote.textContent = `${dataMetadata.map_note || defaultMetadata.map_note} Pins mark parcel/account geometry centers, not building locations.`;
+        listNote.textContent = dataMetadata.list_note || defaultMetadata.list_note;
+        detailNote.textContent = dataMetadata.detail_note || defaultMetadata.detail_note;
+        dataErrorBanner.hidden = !dataLoadError;
       }
 
       function configureFilters() {
@@ -2650,11 +2604,13 @@
           }
           parcels = payload.parcels.map(normalizeParcel).filter((parcel) => Number.isFinite(parcel.latitude) && Number.isFinite(parcel.longitude));
           if (!parcels.length) throw new Error('snapshot has no mappable parcel rows');
-          dataMetadata = { ...fallbackMetadata, ...(payload.metadata || {}) };
+          dataMetadata = { ...defaultMetadata, ...(payload.metadata || {}) };
+          dataLoadError = null;
         } catch (error) {
-          parcels = fallbackParcels.map(normalizeParcel);
-          dataMetadata = fallbackMetadata;
-          console.info('Using inline radar fixture data.', error);
+          parcels = [];
+          dataMetadata = defaultMetadata;
+          dataLoadError = error;
+          console.warn('Radar parcel data failed to load.', error);
         }
         state.selectedId = null;
         state.filtered = parcels;
@@ -2832,6 +2788,14 @@
 
       function renderMap(filtered) {
         if (!window.L) return;
+        if (dataLoadError) {
+          document.getElementById('map-wrap').innerHTML = `
+            <div class="empty-state error">
+              Parcel map unavailable because the exported parcel data did not load.
+            </div>
+          `;
+          return;
+        }
         const filteredSignature = filtered.map((parcel) => parcel.account_id).join('|');
         const shouldFitBounds = filteredSignature !== mapState.filteredSignature;
         mapState.filteredSignature = filteredSignature;
@@ -2917,6 +2881,17 @@
 
       function renderList(filtered) {
         const list = document.getElementById('parcel-list');
+        if (dataLoadError) {
+          listCount.textContent = 'No parcel data loaded';
+          listLess.hidden = true;
+          listMore.hidden = true;
+          list.innerHTML = `
+            <div class="empty-state error">
+              Parcel list unavailable because <code>parcels.json</code> did not load.
+            </div>
+          `;
+          return;
+        }
         const query = state.listQuery.trim().toLowerCase();
         const searched = query
           ? filtered.filter((parcel) => listSearchText(parcel).includes(query))
@@ -2979,6 +2954,15 @@
       function renderDetail(filtered) {
         const detail = document.getElementById('detail-body');
         const closeBtn = document.getElementById('close-detail-btn');
+        if (dataLoadError) {
+          if (closeBtn) closeBtn.style.display = 'none';
+          detail.innerHTML = `
+            <div class="empty-state error" style="padding: 1.5rem;">
+              Property detail unavailable because the exported parcel data did not load.
+            </div>
+          `;
+          return;
+        }
         if (!state.selectedId) {
           if (closeBtn) closeBtn.style.display = 'none';
           detail.innerHTML = `
@@ -3025,6 +3009,10 @@
           <h3 class="detail-title">${selected.site_address}</h3>
           <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
           <div class="note-box"><strong>Why it qualifies</strong><span>${escapeHtml(reason)}</span></div>
+          <div class="note-box" style="margin-top: 0.75rem;">
+            <strong>Map and coverage note</strong>
+            <span>The map pin marks the center of the parcel/account geometry, not a building point. ${escapeHtml(coverageEvidenceLabel(selected))}. Satellite imagery can be newer or older than county records.</span>
+          </div>
           ${assemblageBox}
           <div class="stat-grid">
             ${scoreStats}
@@ -3036,9 +3024,9 @@
             <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
             <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
             <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
-            <div class="stat"><span>Last owner change</span><strong>${ownerSinceLabel(selected)}</strong></div>
+            <div class="stat"><span>Last owner change (HCAD)</span><strong>${ownerSinceLabel(selected)}</strong></div>
             <div class="stat"><span>Estimated years held</span><strong>${ownerYearsLabel(selected).replace('Held ', '')}</strong></div>
-            <div class="stat"><span>Coverage source</span><strong>${titleCase(selected.coverage_source)}</strong></div>
+            <div class="stat"><span>Coverage evidence</span><strong>${coverageEvidenceLabel(selected)}</strong></div>
           </div>
           <div class="future-grid">
             ${overlayDetails}
