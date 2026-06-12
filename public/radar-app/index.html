@@ -3527,6 +3527,30 @@
         new ExpandControl().addTo(mapState.map);
       }
 
+      function mapMarkerSizeForZoom(zoom) {
+        const minZoom = 8;
+        const fullSizeZoom = 12;
+        const minMultiplier = 0.46;
+        const zoomProgress = Math.min(1, Math.max(0, (zoom - minZoom) / (fullSizeZoom - minZoom)));
+        const multiplier = minMultiplier + ((1 - minMultiplier) * Math.pow(zoomProgress, 1.45));
+        return {
+          radius: Math.max(3.25, Math.min(7, 7 * multiplier)),
+          weight: Math.max(0.9, Math.min(2, 2 * multiplier)),
+          selectedWeight: Math.max(2.25, Math.min(4, 4 * multiplier)),
+        };
+      }
+
+      function updateMapMarkerSizes() {
+        if (!mapState.map) return;
+        const size = mapMarkerSizeForZoom(mapState.map.getZoom());
+        mapState.markers.forEach((marker) => {
+          marker.setRadius(size.radius);
+          marker.setStyle({
+            weight: marker.options.radarIsSelected ? size.selectedWeight : size.weight,
+          });
+        });
+      }
+
       function renderMap(filtered) {
         if (!window.L) return;
         if (dataLoadError) {
@@ -3576,10 +3600,12 @@
             state.selectedId = null;
             render();
           });
+          mapState.map.on('zoomend', updateMapMarkerSizes);
           setMapExpanded(state.mapExpanded);
         }
 
         mapState.markers.forEach((marker) => marker.remove());
+        const markerSize = mapMarkerSizeForZoom(mapState.map.getZoom());
         mapState.markers = filtered.map((parcel) => {
           const isSelected = parcel.account_id === state.selectedId;
           const fillColor = parcel.candidate_status === 'unknown'
@@ -3589,11 +3615,12 @@
               : '#0f766e';
           
           const marker = L.circleMarker([parcel.latitude, parcel.longitude], {
-            radius: 7,
+            radius: markerSize.radius,
             color: isSelected ? '#1d4ed8' : '#ffffff',
-            weight: isSelected ? 4 : 2,
+            weight: isSelected ? markerSize.selectedWeight : markerSize.weight,
             fillColor,
             fillOpacity: 0.95,
+            radarIsSelected: isSelected,
           });
 
           if (isSelected) {
@@ -3621,6 +3648,7 @@
         if (shouldFitBounds && mapState.markers.length) {
           const bounds = L.latLngBounds(mapState.markers.map((marker) => marker.getLatLng()));
           mapState.map.fitBounds(bounds, { padding: [34, 34], maxZoom: 11 });
+          updateMapMarkerSizes();
         }
 
         scheduleMapResize();
