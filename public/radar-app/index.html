@@ -3893,6 +3893,35 @@
         });
       }
 
+      function addDelayedMarkerTooltip(marker, label) {
+        const hoverDelayMs = 600;
+        let tooltip = null;
+        let hoverTimer = null;
+
+        marker.on('mouseover', () => {
+          window.clearTimeout(hoverTimer);
+          hoverTimer = window.setTimeout(() => {
+            if (!mapState.map || !mapState.map.hasLayer(marker)) return;
+            if (!tooltip) {
+              tooltip = L.tooltip({
+                direction: 'top',
+                offset: [0, -8],
+              }).setContent(label);
+            }
+            tooltip.setLatLng(marker.getLatLng());
+            tooltip.addTo(mapState.map);
+          }, hoverDelayMs);
+        });
+
+        marker.on('mouseout remove', () => {
+          window.clearTimeout(hoverTimer);
+          hoverTimer = null;
+          if (tooltip) {
+            tooltip.remove();
+          }
+        });
+      }
+
       function renderMap(filtered) {
         if (!window.L) return;
         if (dataLoadError) {
@@ -3973,6 +4002,8 @@
 
           if (isSelected) {
             marker.bindTooltip(parcel.site_address, { permanent: true, direction: 'top', offset: [0, -8] });
+          } else {
+            addDelayedMarkerTooltip(marker, parcel.site_address);
           }
           
           marker.on('click', (event) => {
