@@ -2251,7 +2251,6 @@
           <aside class="panel filters" aria-label="Radar filters">
             <div class="panel-header">
               <h2>Filters</h2>
-              <p id="filters-note">Filters operate on the exported scored snapshot.</p>
             </div>
             <div class="filter-body">
               <label class="check-row" for="hide-unbuyable">
@@ -2311,7 +2310,7 @@
             <div class="panel map-panel">
               <div class="panel-header">
                 <h2>Parcel Map</h2>
-                <p id="map-note">Parcel centroids from the latest exported mart snapshot.</p>
+                <p id="map-note">Pins show the center of each parcel, not the exact building location.</p>
               </div>
               <div class="map-legend" aria-label="Map legend">
                 <span class="legend-item"><span class="legend-dot"></span>Confirmed</span>
@@ -2394,8 +2393,8 @@
         subtitle: 'Harris County parcel shortlist',
         description: 'Harris County parcels that passed the 5+ acre, low-coverage screen, ranked by access, flood position, value, local momentum, and ownership signals.',
         source_label: 'Scored parcel snapshot',
-        filter_note: 'Filters operate on the exported scored snapshot.',
-        map_note: 'Parcel centroids from the latest exported mart snapshot.',
+        filter_note: '',
+        map_note: 'Pins show the center of each parcel, not the exact building location.',
         list_note: 'Click a parcel to inspect score, constraints, and source links.',
         detail_note: 'Shows why this parcel qualifies or what still needs confirmation.',
       };
@@ -2494,7 +2493,7 @@
         if (/dashboard preview/i.test(String(normalized.title || ''))) {
           normalized.title = defaultMetadata.title;
         }
-        if (/preview controls/i.test(String(normalized.filter_note || ''))) {
+        if (/preview controls|exported scored snapshot/i.test(String(normalized.filter_note || ''))) {
           normalized.filter_note = defaultMetadata.filter_note;
         }
         if (/\breal\b/i.test(String(normalized.description || ''))) {
@@ -2503,8 +2502,8 @@
         if (/\breal\b/i.test(String(normalized.source_label || ''))) {
           normalized.source_label = defaultMetadata.source_label;
         }
-        if (/\breal\b/i.test(String(normalized.map_note || ''))) {
-          normalized.map_note = String(normalized.map_note).replace(/\breal\s+/gi, '');
+        if (/\breal\b|centroids|exported mart|geometry centers/i.test(String(normalized.map_note || ''))) {
+          normalized.map_note = defaultMetadata.map_note;
         }
         if (/explain why|ranked here|diligence/i.test(String(normalized.detail_note || ''))) {
           normalized.detail_note = defaultMetadata.detail_note;
@@ -3078,8 +3077,11 @@
           dataMetadata.source_label || defaultMetadata.source_label,
           generatedLabel ? `Data updated ${generatedLabel}` : '',
         ].filter(Boolean).join(' · ');
-        filtersNote.textContent = dataMetadata.filter_note || defaultMetadata.filter_note;
-        mapNote.textContent = `${dataMetadata.map_note || defaultMetadata.map_note} Pins mark parcel/account geometry centers, not building locations.`;
+        if (filtersNote) {
+          filtersNote.textContent = dataMetadata.filter_note || defaultMetadata.filter_note;
+          filtersNote.hidden = !filtersNote.textContent.trim();
+        }
+        mapNote.textContent = dataMetadata.map_note || defaultMetadata.map_note;
         listNote.textContent = dataMetadata.list_note || defaultMetadata.list_note;
         detailNote.textContent = dataMetadata.detail_note || defaultMetadata.detail_note;
         dataErrorBanner.hidden = !dataLoadError;
