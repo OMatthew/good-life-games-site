@@ -2331,6 +2331,8 @@
       }
 
       function ownerYearsHeld(parcel) {
+        const exportedYears = Number(parcel.ownership_duration_years);
+        if (Number.isFinite(exportedYears) && exportedYears >= 0) return exportedYears;
         const ownerSince = parseOwnerSince(parcel.owner_since);
         if (!ownerSince) return null;
         const now = new Date();
@@ -2361,6 +2363,16 @@
         const rounded = Math.floor(years);
         if (rounded < 1) return 'Held <1 yr';
         return `Held ${rounded} yr${rounded === 1 ? '' : 's'}`;
+      }
+
+      function ownershipDurationText(parcel) {
+        const ownerSince = parseOwnerSince(parcel.owner_since);
+        const years = ownerYearsHeld(parcel);
+        if (!ownerSince || years === null) return 'Ownership duration unknown';
+        const year = ownerSince.getFullYear();
+        const rounded = Math.floor(years);
+        const yearsText = rounded < 1 ? '<1 year' : `${rounded} year${rounded === 1 ? '' : 's'}`;
+        return `Owner appears to have held this property since ${year}. Estimated years held: ${yearsText}.`;
       }
 
       function hasScore(parcel) {
@@ -2589,6 +2601,8 @@
           owner_class: parcel.owner_class || '',
           is_likely_unbuyable: Boolean(parcel.is_likely_unbuyable),
           same_owner_assemblage: normalizeAssemblageContext(parcel.same_owner_assemblage),
+          ownership_duration_years: parcel.ownership_duration_years === null || parcel.ownership_duration_years === undefined ? null : Number(parcel.ownership_duration_years),
+          ownership_score_component: parcel.ownership_score_component === null || parcel.ownership_score_component === undefined ? null : Number(parcel.ownership_score_component),
           state_class: parcel.state_class || 'N/A',
           acres: Number(parcel.acres) || 0,
           coverage_ratio: Number(parcel.coverage_ratio) || 0,
@@ -3000,7 +3014,7 @@
             <div class="future-item">Road access: ${selected.road_access_bucket ? `${titleCase(selected.road_access_bucket)}${selected.nearest_major_road_ft ? ` · ${formatNumber(selected.nearest_major_road_ft, 0)} ft to ${selected.nearest_major_road || 'major road'}` : ''}` : 'Not available'}</div>
             <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
-            <div class="future-item">Ownership: ${ownerSinceLabel(selected)} · ${ownerYearsLabel(selected)}</div>
+            <div class="future-item">Ownership: ${ownershipDurationText(selected)}</div>
         ` : `
             <div class="future-item">Scoring is not available in this sample.</div>
             <div class="future-item">Flood, MUD, access, and permit overlays are future data layers.</div>
@@ -3022,8 +3036,8 @@
             <div class="stat"><span>Land $/acre</span><strong>${selectedLandPerAcre === null ? 'N/A' : formatLandPerAcre(selectedLandPerAcre)}</strong></div>
             <div class="stat"><span>Improvement value</span><strong>${formatMoney(selected.impr_value)}</strong></div>
             <div class="stat"><span>Total market</span><strong>${formatMoney(selected.total_market_val)}</strong></div>
-            <div class="stat"><span>Owner since</span><strong>${ownerSinceLabel(selected)}</strong></div>
-            <div class="stat"><span>Years held</span><strong>${ownerYearsLabel(selected).replace('Held ', '')}</strong></div>
+            <div class="stat"><span>Last owner change</span><strong>${ownerSinceLabel(selected)}</strong></div>
+            <div class="stat"><span>Estimated years held</span><strong>${ownerYearsLabel(selected).replace('Held ', '')}</strong></div>
             <div class="stat"><span>Coverage source</span><strong>${titleCase(selected.coverage_source)}</strong></div>
           </div>
           <div class="future-grid">
