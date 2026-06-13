@@ -3515,6 +3515,29 @@
           : parcel.candidate_status_reason;
       }
 
+      function finiteNumberOrNull(value) {
+        const numberValue = Number(value);
+        return Number.isFinite(numberValue) ? numberValue : null;
+      }
+
+      function approxDimensionsLabel(parcel) {
+        const width = finiteNumberOrNull(parcel.approx_width_ft);
+        const depth = finiteNumberOrNull(parcel.approx_depth_ft);
+        if (width === null || depth === null) return 'Approx. dimensions: not measured';
+        return `Approx. dimensions: ${formatNumber(width, 0)} x ${formatNumber(depth, 0)} ft`;
+      }
+
+      function shapeLabel(parcel) {
+        if (parcel.bad_shape) return 'Shape: irregular';
+        if (
+          finiteNumberOrNull(parcel.shape_regularity) !== null &&
+          finiteNumberOrNull(parcel.elongation_ratio) !== null
+        ) {
+          return 'Shape: regular';
+        }
+        return 'Shape: not measured';
+      }
+
       function normalizeAssemblageContext(value) {
         if (!value || typeof value !== 'object') return null;
         const accounts = Array.isArray(value.member_accounts)
@@ -3618,6 +3641,11 @@
           land_value: Number(parcel.land_value) || 0,
           impr_value: Number(parcel.impr_value) || 0,
           total_market_val: Number(parcel.total_market_val) || 0,
+          shape_regularity: finiteNumberOrNull(parcel.shape_regularity),
+          elongation_ratio: finiteNumberOrNull(parcel.elongation_ratio),
+          approx_width_ft: finiteNumberOrNull(parcel.approx_width_ft),
+          approx_depth_ft: finiteNumberOrNull(parcel.approx_depth_ft),
+          bad_shape: parcel.bad_shape === true,
           latitude: Number(parcel.latitude),
           longitude: Number(parcel.longitude),
         };
@@ -4287,6 +4315,9 @@
           const ownerFlag = parcel.is_likely_unbuyable || parcel.owner_flag
             ? `<span class="signal-chip owner-warn">${scored ? 'Owner flag' : 'Public/institutional owner'}</span>`
             : '';
+          const badShapeChip = parcel.bad_shape
+            ? '<span class="signal-chip owner-warn">Bad shape - review</span>'
+            : '';
           const ownerYearsChip = parcel.owner_since
             ? `<span class="signal-chip">${escapeHtml(ownerYearsLabel(parcel))}</span>`
             : '';
@@ -4306,6 +4337,7 @@
                 ${scored ? '' : `<span class="signal-chip">${escapeHtml(coverageEvidenceLabel(parcel))}</span>`}
                 ${ownerYearsChip}
                 ${ownerFlag}
+                ${badShapeChip}
               </span>
             </span>
             <span class="parcel-side">
@@ -4393,6 +4425,9 @@
         const assemblageBox = assemblageContextHtml(selected);
         const summaryRoadClass = isRoadReady(selected) ? 'good' : '';
         const summaryFloodClass = selected.in_floodway || selected.in_100yr_flood ? 'warn' : 'good';
+        const badShapeChip = selected.bad_shape
+          ? '<span class="signal-chip owner-warn">Bad shape - review</span>'
+          : '';
         const scored = isScoredDataset();
         const accountLabel = currentDataset().accountSearchLabel;
         const activeScoreLabel = useExFloodScore() ? 'Ex-flood score' : 'Score';
@@ -4407,10 +4442,14 @@
             <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
             <div class="future-item">Ownership: ${ownershipDurationText(selected)}</div>
+            <div class="future-item">${escapeHtml(approxDimensionsLabel(selected))}</div>
+            <div class="future-item">${escapeHtml(shapeLabel(selected))}</div>
         ` : `
             <div class="future-item">This county is preview-only and not ranked.</div>
             <div class="future-item">Flood, access, serviceability, and permit momentum are not loaded for this county.</div>
             <div class="future-item">Parcels marked needs confirmation need building coverage confirmation before outreach.</div>
+            <div class="future-item">${escapeHtml(approxDimensionsLabel(selected))}</div>
+            <div class="future-item">${escapeHtml(shapeLabel(selected))}</div>
         `;
         const summaryScoreChips = scored
           ? `
@@ -4441,6 +4480,7 @@
                 <span class="signal-chip">${formatNumber(selected.acres, 1)} ac</span>
                 <span class="signal-chip">${pct(selected.coverage_ratio)} cover</span>
                 ${summaryOverlayChips}
+                ${badShapeChip}
               </div>
             </div>
             <div class="detail-summary-actions">
