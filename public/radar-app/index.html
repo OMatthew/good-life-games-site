@@ -1453,6 +1453,11 @@
         text-decoration: none;
       }
 
+      .list-top-button[hidden],
+      .secondary-button[hidden] {
+        display: none;
+      }
+
       .list-top-button:hover,
       .list-top-button:focus-visible,
       .secondary-button:hover,
@@ -2229,9 +2234,6 @@
           grid-column: 1 / -1;
         }
 
-        .list-top-button {
-          justify-self: stretch;
-        }
       }
     </style>
   </head>
@@ -2512,12 +2514,12 @@
                   <input id="score-ex-flood-toggle" type="checkbox" />
                   Exclude flood
                 </label>
-                <button id="list-top" class="list-top-button" type="button">Top</button>
               </div>
               <div class="parcel-list" id="parcel-list"></div>
               <div class="list-footer">
                 <span id="list-count">Showing 0 of 0</span>
                 <span class="list-footer-actions">
+                  <button id="list-top" class="list-top-button" type="button" title="Back to top of list" hidden>Top</button>
                   <button id="list-less" class="secondary-button" type="button" hidden>Show less</button>
                   <button id="list-more" class="secondary-button" type="button">Show more</button>
                 </span>
@@ -2600,6 +2602,7 @@
         selectedId: null,
         filtered: [],
         listLimit: initialListLimit,
+        listExpanded: false,
         listQuery: '',
         listSort: 'rank',
         mapExpanded: false,
@@ -3758,6 +3761,18 @@
 
       function resetListLimit() {
         state.listLimit = initialListLimit;
+        state.listExpanded = false;
+      }
+
+      function updateListTopVisibility() {
+        const list = document.getElementById('parcel-list');
+        const rows = [...list.querySelectorAll('.parcel-row')];
+        const thresholdRow = rows[Math.min(9, rows.length - 1)];
+        if (!thresholdRow) {
+          listTop.hidden = true;
+          return;
+        }
+        listTop.hidden = list.scrollTop < thresholdRow.offsetTop;
       }
 
       function resetFiltersToDefaults(options = {}) {
@@ -3841,10 +3856,12 @@
 
       listTop.addEventListener('click', () => {
         document.getElementById('parcel-list').scrollTo({ top: 0, behavior: 'smooth' });
+        listTop.hidden = true;
       });
 
       listMore.addEventListener('click', () => {
         state.listLimit += 100;
+        state.listExpanded = true;
         render();
       });
 
@@ -3853,6 +3870,8 @@
         document.getElementById('parcel-list').scrollTo({ top: 0, behavior: 'smooth' });
         render();
       });
+
+      document.getElementById('parcel-list').addEventListener('scroll', updateListTopVisibility);
 
       const closeDetailBtn = document.getElementById('close-detail-btn');
       if (closeDetailBtn) {
@@ -4229,6 +4248,7 @@
         const list = document.getElementById('parcel-list');
         if (dataLoadError) {
           listCount.textContent = 'No parcel data loaded';
+          listTop.hidden = true;
           listLess.hidden = true;
           listMore.hidden = true;
           list.innerHTML = `
@@ -4246,10 +4266,11 @@
         const visible = sorted.slice(0, state.listLimit);
 
         listCount.textContent = `Showing ${Math.min(visible.length, sorted.length)} of ${sorted.length}`;
-        listLess.hidden = state.listLimit <= initialListLimit;
+        listLess.hidden = !state.listExpanded;
         listMore.hidden = visible.length >= sorted.length;
 
         if (!sorted.length) {
+          listTop.hidden = true;
           list.innerHTML = '<div class="empty-state">No parcels match the current filters.</div>';
           return;
         }
@@ -4302,6 +4323,7 @@
           });
           list.append(row);
         });
+        updateListTopVisibility();
       }
 
       function renderDetail(filtered) {
