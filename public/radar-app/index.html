@@ -4458,8 +4458,14 @@
           setMapExpanded(state.mapExpanded);
         }
 
-        mapState.markers.forEach((marker) => marker.remove());
         const markerSize = mapMarkerSizeForZoom(mapState.map.getZoom());
+        // Only tear down and rebuild markers when the filtered SET changes.
+        // A selection-only render updates markers in place (below) so we never
+        // remove the just-clicked marker mid-click — that race intermittently
+        // dropped pin selections.
+        const markersNeedRebuild = shouldFitBounds || mapState.markers.length === 0;
+        if (markersNeedRebuild) {
+        mapState.markers.forEach((marker) => marker.remove());
         mapState.markers = filtered.map((parcel) => {
           const isSelected = parcel.account_id === state.selectedId;
           const fillColor = parcel.candidate_status === 'unknown'
@@ -4475,6 +4481,8 @@
             fillColor,
             fillOpacity: 0.95,
             radarIsSelected: isSelected,
+            radarAccountId: parcel.account_id,
+            radarLabel: parcel.site_address,
           });
 
           if (isSelected) {
@@ -4501,6 +4509,22 @@
 
           return marker;
         });
+        } else {
+          mapState.markers.forEach((marker) => {
+            const isSelected = marker.options.radarAccountId === state.selectedId;
+            if (marker.options.radarIsSelected === isSelected) return;
+            marker.options.radarIsSelected = isSelected;
+            marker.setStyle({
+              color: isSelected ? '#1d4ed8' : '#ffffff',
+              weight: isSelected ? markerSize.selectedWeight : markerSize.weight,
+            });
+            if (isSelected) {
+              marker.bindTooltip(marker.options.radarLabel, { permanent: true, direction: 'top', offset: [0, -8] }).openTooltip();
+            } else {
+              marker.unbindTooltip();
+            }
+          });
+        }
 
         renderSelectedBoundary(filtered);
 
