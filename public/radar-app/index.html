@@ -1800,6 +1800,10 @@
       }
 
       .copy-account-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.32rem;
         min-height: 1.65rem;
         border: 1px solid var(--surface-3);
         border-radius: 999px;
@@ -1808,6 +1812,17 @@
         color: var(--ink-1);
         font-size: 0.72rem;
         font-weight: 900;
+      }
+
+      .copy-account-button svg {
+        width: 0.82rem;
+        height: 0.82rem;
+        flex: 0 0 auto;
+        stroke-width: 2.2;
+      }
+
+      .copy-account-label {
+        line-height: 1;
       }
 
       .copy-account-button:hover,
@@ -2862,17 +2877,31 @@
         return didCopy;
       }
 
+      function clipboardIconSvg() {
+        return `
+          <svg class="copy-account-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <rect x="8" y="8" width="11" height="13" rx="2"></rect>
+            <path d="M16 8V6a2 2 0 0 0-2-2h-3a2 2 0 0 0-2 2v2"></path>
+            <path d="M8 12H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"></path>
+          </svg>
+        `;
+      }
+
       async function copyAccountNumber(accountId, statusTarget = null) {
         if (!accountId) return false;
-        let didCopy = copyTextFallback(accountId);
+        let didCopy = false;
 
-        if (!didCopy && navigator.clipboard?.writeText) {
+        if (window.isSecureContext && navigator.clipboard?.writeText) {
           try {
             await navigator.clipboard.writeText(accountId);
             didCopy = true;
           } catch (error) {
             console.warn('Account copy failed.', error);
           }
+        }
+
+        if (!didCopy) {
+          didCopy = copyTextFallback(accountId);
         }
 
         if (didCopy) {
@@ -3694,21 +3723,17 @@
           event.preventDefault();
           const destination = copyButton.href;
           const target = copyButton.target || '_self';
-          const originalText = copyButton.textContent;
+          const originalHtml = copyButton.innerHTML;
           const openedWindow = target === '_blank' ? window.open('', target) : null;
           const spinner = document.createElement('span');
           spinner.className = 'external-copy-spinner';
           spinner.setAttribute('aria-hidden', 'true');
-          copyButton.replaceChildren(document.createTextNode('Account # copied'), spinner);
+          copyButton.replaceChildren(document.createTextNode('Copying account #'), spinner);
           copyButton.setAttribute('aria-busy', 'true');
           if (openedWindow) {
             openedWindow.opener = null;
           }
           void copyAccountNumber(copyButton.dataset.copyAccount, statusTarget);
-          window.setTimeout(() => {
-            copyButton.textContent = originalText;
-            copyButton.removeAttribute('aria-busy');
-          }, 1800);
           window.setTimeout(() => {
             if (openedWindow) {
               openedWindow.location.href = destination;
@@ -3717,7 +3742,9 @@
             } else {
               window.location.assign(destination);
             }
-          }, 120);
+            copyButton.innerHTML = originalHtml;
+            copyButton.removeAttribute('aria-busy');
+          }, 1200);
           return;
         }
         void copyAccountNumber(copyButton.dataset.copyAccount, statusTarget);
@@ -4218,7 +4245,7 @@
               </div>
               <div class="detail-owner-row">
                 <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-                <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">Copy account #</button>
+                <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
                 <span class="copy-status" id="${summaryCopyStatusId}" hidden></span>
               </div>
               <div class="detail-summary-stats">
@@ -4238,7 +4265,7 @@
             <h3 class="detail-title">${selected.site_address}</h3>
             <div class="detail-owner-row">
               <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-              <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">Copy account #</button>
+              <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
               <span class="copy-status" id="${fullCopyStatusId}" hidden></span>
             </div>
             <details class="note-box detail-disclosure">
