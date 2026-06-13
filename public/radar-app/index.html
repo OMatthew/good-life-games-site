@@ -415,6 +415,24 @@
         text-transform: uppercase;
       }
 
+      .settings-about {
+        margin-top: 0.55rem;
+        padding-top: 0.7rem;
+        border-top: 1px solid var(--line, rgba(31, 41, 48, 0.12));
+      }
+
+      .settings-about a {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--teal-0);
+        text-decoration: none;
+      }
+
+      .settings-about a:hover,
+      .settings-about a:focus-visible {
+        text-decoration: underline;
+      }
+
       .dashboard {
         width: min(1420px, 100%);
         margin: 0 auto;
@@ -2262,6 +2280,9 @@
                     <option value="comfortable">Comfortable</option>
                     <option value="compact">Compact</option>
                   </select>
+                </div>
+                <div class="settings-about">
+                  <a href="/radar/">About this project &rarr;</a>
                 </div>
               </div>
             </div>
