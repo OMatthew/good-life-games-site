@@ -2565,6 +2565,15 @@
       let dataLoadError = null;
       const initialListLimit = 100;
       const dataStaleThresholdDays = 31;
+      const defaultCounty = 'harris';
+      const countyStorageKey = 'radar-county';
+      const mapLayerStorageKey = 'radar-map-layer';
+      const mapExpandedStorageKey = 'radar-map-expanded';
+      const tabSessionPrefix = 'radar-tab-';
+      if (!window.name.startsWith(tabSessionPrefix)) {
+        window.name = `${tabSessionPrefix}${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      }
+      const tabSessionId = window.name;
 
       const state = {
         selectedId: null,
@@ -2574,19 +2583,24 @@
         listSort: 'rank',
         mapExpanded: false,
         detailExpanded: false,
-        county: 'harris',
+        county: defaultCounty,
       };
 
       const settings = {
         theme: localStorage.getItem('radar-theme') || 'system',
         metricDensity: localStorage.getItem('radar-metric-density') || 'comfortable',
       };
+      const savedCounty = localStorage.getItem(countyStorageKey);
+      if (savedCounty in datasets) {
+        state.county = savedCounty;
+      }
+      state.mapExpanded = localStorage.getItem(mapExpandedStorageKey) === 'true';
 
       const mapState = {
         map: null,
         markers: [],
         filteredSignature: '',
-        baseLayer: 'road',
+        baseLayer: localStorage.getItem(mapLayerStorageKey) === 'satellite' ? 'satellite' : 'road',
         roadLayer: null,
         satelliteLayer: null,
         layerToggleButton: null,
@@ -2660,6 +2674,105 @@
         countySetting.value = state.county;
         themeSetting.value = settings.theme;
         metricDensitySetting.value = settings.metricDensity;
+      }
+
+      function sessionStateKey(county = state.county) {
+        return `radar-session-${tabSessionId}-${county}`;
+      }
+
+      function selectHasValue(select, value) {
+        return [...select.options].some((option) => option.value === value);
+      }
+
+      function restoreSelectValue(select, value) {
+        if (typeof value === 'string' && selectHasValue(select, value)) {
+          select.value = value;
+        }
+      }
+
+      function restoreRangeValue(control, value) {
+        const numericValue = Number(value);
+        if (!Number.isFinite(numericValue)) return;
+        const min = Number(control.min);
+        const max = Number(control.max);
+        const clampedValue = Math.min(
+          Number.isFinite(max) ? max : numericValue,
+          Math.max(Number.isFinite(min) ? min : numericValue, numericValue)
+        );
+        control.value = String(clampedValue);
+      }
+
+      function restoreCheckboxValue(control, value) {
+        if (control && typeof value === 'boolean') {
+          control.checked = value;
+        }
+      }
+
+      function readSessionState() {
+        try {
+          const rawValue = sessionStorage.getItem(sessionStateKey());
+          if (!rawValue) return null;
+          const parsed = JSON.parse(rawValue);
+          return parsed && typeof parsed === 'object' ? parsed : null;
+        } catch (error) {
+          console.warn('Radar session state could not be read.', error);
+          return null;
+        }
+      }
+
+      function saveSessionState() {
+        const sessionState = {
+          category: categoryFilter.value,
+          status: statusFilter.value,
+          acre: acreFilter.value,
+          totalMarket: totalMarketFilter.value,
+          landAcre: landAcreFilter.value,
+          coverage: coverageFilter.value,
+          ownerYears: ownerYearsFilter.value,
+          road: roadFilter.value,
+          scoreExFlood: Boolean(scoreExFloodToggle && scoreExFloodToggle.checked),
+          hideUnbuyable: hideUnbuyable.checked,
+          hideFloodway: hideFloodway.checked,
+          hide100yrFlood: hide100yrFlood.checked,
+          listQuery: state.listQuery,
+          listSort: state.listSort,
+          selectedId: state.selectedId,
+        };
+        sessionStorage.setItem(sessionStateKey(), JSON.stringify(sessionState));
+      }
+
+      function clearSessionState() {
+        sessionStorage.removeItem(sessionStateKey());
+      }
+
+      function restoreSessionState() {
+        const savedState = readSessionState();
+        if (!savedState) return;
+
+        restoreSelectValue(categoryFilter, savedState.category);
+        restoreSelectValue(statusFilter, savedState.status);
+        restoreRangeValue(acreFilter, savedState.acre);
+        restoreRangeValue(totalMarketFilter, savedState.totalMarket);
+        restoreRangeValue(landAcreFilter, savedState.landAcre);
+        restoreRangeValue(coverageFilter, savedState.coverage);
+        restoreRangeValue(ownerYearsFilter, savedState.ownerYears);
+        restoreSelectValue(roadFilter, savedState.road);
+        restoreCheckboxValue(scoreExFloodToggle, savedState.scoreExFlood);
+        restoreCheckboxValue(hideUnbuyable, savedState.hideUnbuyable);
+        restoreCheckboxValue(hideFloodway, savedState.hideFloodway);
+        restoreCheckboxValue(hide100yrFlood, savedState.hide100yrFlood);
+
+        state.listQuery = typeof savedState.listQuery === 'string' ? savedState.listQuery : '';
+        listSearch.value = state.listQuery;
+        restoreSelectValue(listSort, savedState.listSort);
+        state.listSort = listSort.value;
+        resetListLimit();
+
+        const savedSelectedId = typeof savedState.selectedId === 'string' ? savedState.selectedId : null;
+        const filtered = getFilteredParcels();
+        state.selectedId = savedSelectedId && filtered.some((parcel) => parcel.account_id === savedSelectedId)
+          ? savedSelectedId
+          : null;
       }
 
       function normalizeMetadata(metadata = {}) {
@@ -2824,6 +2937,7 @@
 
       function setMapExpanded(isExpanded) {
         state.mapExpanded = Boolean(isExpanded);
+        localStorage.setItem(mapExpandedStorageKey, String(state.mapExpanded));
         if (state.mapExpanded) {
           state.detailExpanded = false;
         }
@@ -3024,10 +3138,12 @@
       });
 
       countySetting.addEventListener('change', async () => {
-        state.county = countySetting.value in datasets ? countySetting.value : 'harris';
+        state.county = countySetting.value in datasets ? countySetting.value : defaultCounty;
+        localStorage.setItem(countyStorageKey, state.county);
         setSettingsMenuOpen(false);
         await loadDataset();
         render();
+        centerSelectedParcelAfterRestore();
       });
 
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
@@ -3616,6 +3732,7 @@
         applyDataMetadata();
         configureFilters();
         resetFiltersToDefaults({ renderAfter: false });
+        restoreSessionState();
       }
 
       function resetListLimit() {
@@ -3623,6 +3740,9 @@
       }
 
       function resetFiltersToDefaults(options = {}) {
+        if (options.clearSession) {
+          clearSessionState();
+        }
         categoryFilter.value = 'all';
         statusFilter.value = 'screened';
         acreFilter.value = '5';
@@ -3635,6 +3755,9 @@
         hideUnbuyable.checked = isTravisDataset() || !isScoredDataset();
         hideFloodway.checked = false;
         hide100yrFlood.checked = false;
+        state.selectedId = null;
+        state.listQuery = '';
+        listSearch.value = '';
         state.listSort = currentDataset().defaultSort;
         if ([...listSort.options].some((option) => option.value === state.listSort)) {
           listSort.value = state.listSort;
@@ -3645,6 +3768,9 @@
         resetListLimit();
         if (options.renderAfter !== false) {
           render();
+          if (!options.clearSession) {
+            saveSessionState();
+          }
         }
       }
 
@@ -3665,25 +3791,31 @@
         control.addEventListener('input', () => {
           resetListLimit();
           render();
+          saveSessionState();
         });
         control.addEventListener('change', () => {
           resetListLimit();
           render();
+          saveSessionState();
         });
       });
 
-      resetFilters.addEventListener('click', resetFiltersToDefaults);
+      resetFilters.addEventListener('click', () => {
+        resetFiltersToDefaults({ clearSession: true });
+      });
 
       listSearch.addEventListener('input', () => {
         state.listQuery = listSearch.value;
         resetListLimit();
         render();
+        saveSessionState();
       });
 
       listSort.addEventListener('change', () => {
         state.listSort = listSort.value;
         resetListLimit();
         render();
+        saveSessionState();
       });
 
       listTop.addEventListener('click', () => {
@@ -3706,6 +3838,7 @@
         closeDetailBtn.addEventListener('click', () => {
           state.selectedId = null;
           render();
+          saveSessionState();
         });
       }
 
@@ -3828,6 +3961,7 @@
           nextLayer.addTo(mapState.map);
         }
         mapState.baseLayer = layerName === 'satellite' ? 'satellite' : 'road';
+        localStorage.setItem(mapLayerStorageKey, mapState.baseLayer);
         updateMapLayerToggle();
       }
 
@@ -3920,6 +4054,14 @@
         });
       }
 
+      function centerSelectedParcelAfterRestore() {
+        if (!state.selectedId) return;
+        const selectedParcel = parcels.find((parcel) => parcel.account_id === state.selectedId);
+        if (selectedParcel) {
+          centerMapOnSelectedParcel(selectedParcel);
+        }
+      }
+
       function addDelayedMarkerTooltip(marker, label) {
         const hoverDelayMs = 600;
         let tooltip = null;
@@ -3995,7 +4137,7 @@
 
           mapState.roadLayer = roadLayer;
           mapState.satelliteLayer = satelliteLayer;
-          roadLayer.addTo(mapState.map);
+          (mapState.baseLayer === 'satellite' ? satelliteLayer : roadLayer).addTo(mapState.map);
           addMapLayerToggle();
           addMapExpandToggle();
           mapState.map.on('click', () => {
@@ -4003,6 +4145,7 @@
             if (!state.selectedId) return;
             state.selectedId = null;
             render();
+            saveSessionState();
           });
           mapState.map.on('zoomend', updateMapMarkerSizes);
           setMapExpanded(state.mapExpanded);
@@ -4040,6 +4183,7 @@
             }
             state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
             render();
+            saveSessionState();
           });
           
           marker.addTo(mapState.map);
@@ -4130,6 +4274,7 @@
             const nextSelectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
             state.selectedId = nextSelectedId;
             render();
+            saveSessionState();
             if (nextSelectedId) {
               centerMapOnSelectedParcel(parcel);
             }
@@ -4318,6 +4463,7 @@
         applySettings();
         await loadDataset();
         render();
+        centerSelectedParcelAfterRestore();
       }
 
       init();
