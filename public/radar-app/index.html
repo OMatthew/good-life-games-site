@@ -3724,21 +3724,18 @@
           const destination = copyButton.href;
           const target = copyButton.target || '_self';
           const originalHtml = copyButton.innerHTML;
-          const openedWindow = target === '_blank' ? window.open('', target) : null;
           const spinner = document.createElement('span');
           spinner.className = 'external-copy-spinner';
           spinner.setAttribute('aria-hidden', 'true');
           copyButton.replaceChildren(document.createTextNode('Copying account #'), spinner);
           copyButton.setAttribute('aria-busy', 'true');
-          if (openedWindow) {
-            openedWindow.opener = null;
-          }
           void copyAccountNumber(copyButton.dataset.copyAccount, statusTarget);
           window.setTimeout(() => {
-            if (openedWindow) {
-              openedWindow.location.href = destination;
-            } else if (target === '_blank') {
-              window.open(destination, target);
+            if (target === '_blank') {
+              const openedWindow = window.open(destination, target, 'noopener');
+              if (!openedWindow) {
+                window.location.assign(destination);
+              }
             } else {
               window.location.assign(destination);
             }
