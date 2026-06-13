@@ -1634,6 +1634,30 @@
         background: var(--red-1);
       }
 
+      .detail-flag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.38rem;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .detail-flag-row[hidden] {
+        display: none;
+      }
+
+      .detail-flag-label {
+        color: var(--ink-2);
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .detail-summary-main .detail-flag-row {
+        grid-column: 1 / -1;
+      }
+
       .parcel-side {
         display: grid;
         justify-items: end;
@@ -3526,6 +3550,49 @@
         return parcel.land_value / parcel.acres;
       }
 
+      function hasNoAppraisedValue(parcel) {
+        return !hasUsableValue(parcel.land_value) && !hasUsableValue(parcel.total_market_val);
+      }
+
+      function hasNominalValueFlag(parcel) {
+        if (parcel.nominal_value === true) return true;
+        const flags = Array.isArray(parcel.flags) ? parcel.flags : [];
+        return flags.includes('nominal_value') || String(parcel.owner_flag || '').includes('nominal_value');
+      }
+
+      function ownerFlagLabel(parcel) {
+        if (!(parcel.owner_flag || parcel.is_likely_unbuyable)) return '';
+        if (hasNominalValueFlag(parcel) && String(parcel.owner_flag || '').trim() === 'nominal_value') return '';
+        return isScoredDataset() ? 'Owner flag — review outreach fit.' : 'Owner flag — public/institutional owner.';
+      }
+
+      function detailFlagChipsHtml(parcel) {
+        const chips = [];
+        if (parcel.in_floodway || parcel.floodway_manual_review) {
+          chips.push('<span class="signal-chip owner-warn">Floodway — likely undevelopable</span>');
+        }
+        if (hasNoAppraisedValue(parcel)) {
+          chips.push('<span class="signal-chip owner-warn">No appraised value — verify (often exempt or remnant)</span>');
+        }
+        if (parcel.bad_shape) {
+          chips.push('<span class="signal-chip shape-warn">Bad shape — review</span>');
+        }
+        if (hasNominalValueFlag(parcel)) {
+          chips.push('<span class="signal-chip shape-warn">Nominal value — review $/acre</span>');
+        }
+        const ownerLabel = ownerFlagLabel(parcel);
+        if (ownerLabel) {
+          chips.push(`<span class="signal-chip owner-warn">${escapeHtml(ownerLabel)}</span>`);
+        }
+        if (!chips.length) return '';
+        return `
+          <div class="detail-flag-row" aria-label="Parcel risk flags">
+            <span class="detail-flag-label">Flags</span>
+            ${chips.join('')}
+          </div>
+        `;
+      }
+
       function formatLandPerAcre(value) {
         return `${compactMoney(value)}/ac`;
       }
@@ -3966,9 +4033,6 @@
           `;
         }
         const thumbnail = boundaryThumbnailSvg(parcel);
-        const badge = parcel.bad_shape
-          ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
-          : '';
         return `
           <div class="future-item shape-item${thumbnail ? '' : ' no-outline'}">
             ${thumbnail}
@@ -3976,7 +4040,6 @@
               <strong>Shape</strong>
               <span>${escapeHtml(approxDimensionsLabel(parcel))}</span>
               <span>${escapeHtml(shapeLabel(parcel))}</span>
-              ${badge}
             </span>
           </div>
         `;
@@ -5011,9 +5074,7 @@
         const assemblageBox = assemblageContextHtml(selected);
         const summaryRoadClass = isRoadReady(selected) ? 'good' : '';
         const summaryFloodClass = selected.in_floodway || selected.in_100yr_flood ? 'warn' : 'good';
-        const badShapeChip = selected.bad_shape
-          ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
-          : '';
+        const detailFlagChips = detailFlagChipsHtml(selected);
         const scored = isScoredDataset();
         const accountLabel = currentDataset().accountSearchLabel;
         const activeScoreLabel = useExFloodScore() ? 'Ex-flood score' : 'Score';
@@ -5024,7 +5085,7 @@
             <div class="stat"><span>Score ex-flood</span><strong>${selected.opportunity_score_ex_flood === undefined || selected.opportunity_score_ex_flood === null ? 'N/A' : formatNumber(selected.opportunity_score_ex_flood, 1)}</strong></div>
         ` : '';
         const overlayDetails = hasScore(selected) ? `
-            <div class="future-item">Flood: ${floodLabel(selected)}${selected.floodway_manual_review ? ' — manual review required' : ''}</div>
+            ${selected.in_floodway || selected.floodway_manual_review ? '' : `<div class="future-item">Flood: ${floodLabel(selected)}</div>`}
             <div class="future-item">Road access: ${selected.road_access_bucket ? `${titleCase(selected.road_access_bucket)}${selected.nearest_major_road_ft ? ` · ${formatNumber(selected.nearest_major_road_ft, 0)} ft to ${selected.nearest_major_road || 'major road'}` : ''}` : 'Not available'}</div>
             <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
@@ -5045,7 +5106,7 @@
         const summaryOverlayChips = scored
           ? `
                 <span class="signal-chip ${summaryRoadClass}">${escapeHtml(compactRoadLabel(selected))}</span>
-                <span class="signal-chip ${summaryFloodClass}">${escapeHtml(compactFloodLabel(selected))}</span>
+                ${selected.in_floodway || selected.floodway_manual_review ? '' : `<span class="signal-chip ${summaryFloodClass}">${escapeHtml(compactFloodLabel(selected))}</span>`}
             `
           : '';
         detail.innerHTML = `
@@ -5061,12 +5122,12 @@
                 <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
                 <span class="copy-status" id="${summaryCopyStatusId}" hidden></span>
               </div>
+              ${detailFlagChips}
               <div class="detail-summary-stats">
                 ${summaryScoreChips}
                 <span class="signal-chip">${formatNumber(selected.acres, 1)} ac</span>
                 <span class="signal-chip">${pct(selected.coverage_ratio)} cover</span>
                 ${summaryOverlayChips}
-                ${badShapeChip}
               </div>
             </div>
             <div class="detail-summary-actions">
@@ -5085,6 +5146,7 @@
               <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
               <span class="copy-status" id="${fullCopyStatusId}" hidden></span>
             </div>
+            ${detailFlagChips}
             <details class="note-box detail-disclosure">
               <summary>Why it qualifies</summary>
               <span>${escapeHtml(reason)}</span>
