@@ -3700,7 +3700,22 @@
         `;
       }
 
+      function shapeMeasured(parcel) {
+        return finiteNumberOrNull(parcel.shape_regularity) !== null;
+      }
+
       function shapeDetailHtml(parcel) {
+        if (!shapeMeasured(parcel)) {
+          return `
+            <div class="future-item shape-item no-outline">
+              <span class="shape-copy">
+                <strong>Shape</strong>
+                <span>Dimensions not measured for this parcel.</span>
+                <span>Its county outline comes in several separate pieces (common for stacked or multi-account land), so a single shape and width/depth would be misleading. Check the satellite view for the true footprint.</span>
+              </span>
+            </div>
+          `;
+        }
         const thumbnail = boundaryThumbnailSvg(parcel);
         const badge = parcel.bad_shape
           ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
