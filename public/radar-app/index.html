@@ -3592,8 +3592,8 @@
         if (hasNoAppraisedValue(parcel)) {
           chips.push('<span class="signal-chip owner-warn">No appraised value — verify (often exempt or remnant)</span>');
         }
-        if (parcel.bad_shape) {
-          chips.push('<span class="signal-chip shape-warn">Bad shape — review</span>');
+        if (parcel.irregular_shape) {
+          chips.push('<span class="signal-chip shape-warn">Irregular shape</span>');
         }
         if (hasNominalValueFlag(parcel)) {
           chips.push('<span class="signal-chip shape-warn">Nominal value — review $/acre</span>');
@@ -3989,7 +3989,7 @@
         const fillText = regularity === null
           ? ''
           : ` - fills ~${formatNumber(regularity * 100, 0)}% of its lot rectangle`;
-        if (parcel.bad_shape) return `Shape: irregular${fillText}`;
+        if (parcel.irregular_shape) return `Shape: irregular${fillText}`;
         if (
           regularity !== null &&
           finiteNumberOrNull(parcel.elongation_ratio) !== null
@@ -4171,7 +4171,7 @@
           approx_width_ft: finiteNumberOrNull(parcel.approx_width_ft),
           approx_depth_ft: finiteNumberOrNull(parcel.approx_depth_ft),
           boundary: normalizeBoundary(parcel.boundary),
-          bad_shape: parcel.bad_shape === true,
+          irregular_shape: parcel.irregular_shape === true,
           latitude: Number(parcel.latitude),
           longitude: Number(parcel.longitude),
         };
@@ -4979,8 +4979,8 @@
           const ownerFlag = parcel.is_likely_unbuyable || parcel.owner_flag
             ? `<span class="signal-chip owner-warn">${scored ? 'Owner flag' : 'Public/institutional owner'}</span>`
             : '';
-          const badShapeChip = parcel.bad_shape
-            ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
+          const irregularShapeChip = parcel.irregular_shape
+            ? '<span class="signal-chip shape-warn">Irregular shape</span>'
             : '';
           const ownerYearsChip = parcel.owner_since
             ? `<span class="signal-chip">${escapeHtml(ownerYearsLabel(parcel))}</span>`
@@ -5002,7 +5002,7 @@
                 ${scored ? '' : `<span class="signal-chip">${escapeHtml(coverageEvidenceLabel(parcel))}</span>`}
                 ${ownerYearsChip}
                 ${ownerFlag}
-                ${badShapeChip}
+                ${irregularShapeChip}
               </span>
             </span>
             <span class="parcel-side">
