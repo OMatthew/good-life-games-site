@@ -3637,8 +3637,13 @@
           })
           .finally(() => {
             geometryState.promise = null;
+            // Only the selected parcel's visuals depend on the freshly loaded
+            // geometry. Avoid a full render() here: it rebuilds every map marker,
+            // which can race with a click on another pin (the clicked pin appears
+            // to deselect the current parcel without selecting the new one).
             if (state.selectedId === requestedId) {
-              render();
+              renderSelectedBoundary(state.filtered || []);
+              renderDetail(state.filtered || []);
             }
           });
       }
