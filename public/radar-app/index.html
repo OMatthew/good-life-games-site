@@ -2472,7 +2472,7 @@
               <div class="list-tools" aria-label="Candidate list controls">
                 <label class="list-field" for="list-search">
                   <span>Find</span>
-                  <input id="list-search" type="search" placeholder="Owner, account, city" autocomplete="off" />
+                  <input id="list-search" type="search" placeholder="Address, owner, account, city" autocomplete="off" />
                 </label>
                 <label class="list-field" for="list-sort">
                   <span>Sort</span>
@@ -3895,25 +3895,28 @@
         });
       }
 
-      function panMapToParcelIfNeeded(parcel) {
+      function panSelectedParcelToMapCenter(parcel, { animate = true } = {}) {
         if (!mapState.map || !parcel) return;
+        if (!Number.isFinite(parcel.latitude) || !Number.isFinite(parcel.longitude)) return;
         const latLng = L.latLng(parcel.latitude, parcel.longitude);
         const point = mapState.map.latLngToContainerPoint(latLng);
         const size = mapState.map.getSize();
-        const insetX = size.x * 0.18;
-        const insetY = size.y * 0.18;
-        const isComfortablyVisible = (
-          point.x >= insetX
-          && point.x <= size.x - insetX
-          && point.y >= insetY
-          && point.y <= size.y - insetY
-        );
-        if (isComfortablyVisible) return;
-        mapState.map.panInside(latLng, {
-          animate: true,
+        const distanceFromCenter = Math.hypot(point.x - (size.x / 2), point.y - (size.y / 2));
+        if (distanceFromCenter < 4) return;
+        mapState.map.panTo(latLng, {
+          animate,
           duration: 0.35,
-          paddingTopLeft: [insetX, insetY],
-          paddingBottomRight: [insetX, insetY],
+        });
+      }
+
+      function centerMapOnSelectedParcel(parcel) {
+        if (!mapState.map || !parcel) return;
+        [120, 420].forEach((delay, index) => {
+          window.setTimeout(() => {
+            if (!mapState.map || state.selectedId !== parcel.account_id) return;
+            mapState.map.invalidateSize({ animate: false, pan: false });
+            panSelectedParcelToMapCenter(parcel, { animate: index === 0 });
+          }, delay);
         });
       }
 
@@ -4128,7 +4131,7 @@
             state.selectedId = nextSelectedId;
             render();
             if (nextSelectedId) {
-              panMapToParcelIfNeeded(parcel);
+              centerMapOnSelectedParcel(parcel);
             }
           });
           list.append(row);
