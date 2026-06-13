@@ -2630,6 +2630,7 @@
         boundaries: new Map(),
         promise: null,
         error: null,
+        loaded: false,
       };
       const initialListLimit = 100;
       const dataStaleThresholdDays = 31;
@@ -3585,6 +3586,7 @@
           boundaries: new Map(),
           promise: null,
           error: null,
+          loaded: false,
         };
         if (mapState.boundaryLayer) {
           mapState.boundaryLayer.remove();
@@ -3602,40 +3604,43 @@
       }
 
       function ensureGeometryLoadedForSelection(parcel) {
-        if (!parcel || boundaryForParcel(parcel) || geometryState.error) return;
+        if (!parcel || boundaryForParcel(parcel)) return;
+        // The sidecar is a one-time load. Once it has resolved (or failed, or is
+        // in flight) we stop: a selected parcel with no boundary in the sidecar
+        // simply has no outline. Re-fetching here would loop fetch -> render ->
+        // fetch, which froze the app on null-geometry parcels.
+        if (geometryState.loaded || geometryState.error || geometryState.promise) return;
         const path = currentGeometryPath();
         if (!path) return;
-        if (!geometryState.promise) {
-          geometryState.promise = fetch(path, { cache: 'no-store' })
-            .then((response) => {
-              if (!response.ok) throw new Error(`geometry sidecar not available: ${response.status}`);
-              return response.json();
-            })
-            .then((payload) => {
-              const boundaries = payload && payload.boundaries && typeof payload.boundaries === 'object'
-                ? payload.boundaries
-                : {};
-              const next = new Map();
-              Object.entries(boundaries).forEach(([accountId, boundary]) => {
-                const normalized = normalizeBoundary(boundary);
-                if (normalized) next.set(String(accountId), normalized);
-              });
-              geometryState.boundaries = next;
-              geometryState.county = state.county;
-            })
-            .catch((error) => {
-              geometryState.error = error;
-              console.warn('Radar parcel geometry failed to load.', error);
-            })
-            .finally(() => {
-              geometryState.promise = null;
+        const requestedId = parcel.account_id;
+        geometryState.promise = fetch(path, { cache: 'no-store' })
+          .then((response) => {
+            if (!response.ok) throw new Error(`geometry sidecar not available: ${response.status}`);
+            return response.json();
+          })
+          .then((payload) => {
+            const boundaries = payload && payload.boundaries && typeof payload.boundaries === 'object'
+              ? payload.boundaries
+              : {};
+            const next = new Map();
+            Object.entries(boundaries).forEach(([accountId, boundary]) => {
+              const normalized = normalizeBoundary(boundary);
+              if (normalized) next.set(String(accountId), normalized);
             });
-        }
-        geometryState.promise.then(() => {
-          if (state.selectedId === parcel.account_id) {
-            render();
-          }
-        });
+            geometryState.boundaries = next;
+            geometryState.county = state.county;
+            geometryState.loaded = true;
+          })
+          .catch((error) => {
+            geometryState.error = error;
+            console.warn('Radar parcel geometry failed to load.', error);
+          })
+          .finally(() => {
+            geometryState.promise = null;
+            if (state.selectedId === requestedId) {
+              render();
+            }
+          });
       }
 
       function approxDimensionsLabel(parcel) {
