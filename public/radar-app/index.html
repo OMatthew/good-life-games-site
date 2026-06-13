@@ -1896,10 +1896,10 @@
         place-items: center;
         width: 2rem;
         height: 2rem;
-        border: 1px solid rgba(217, 119, 6, 0.35);
+        border: 1px solid var(--surface-3);
         border-radius: 999px;
-        color: #d97706;
-        background: rgba(254, 243, 199, 0.56);
+        color: var(--ink-2);
+        background: var(--surface-1);
         font-size: 1.15rem;
         font-weight: 900;
         line-height: 1;
@@ -1908,7 +1908,8 @@
       .star-toggle:hover,
       .star-toggle:focus-visible {
         border-color: #d97706;
-        background: rgba(254, 243, 199, 0.92);
+        color: #d97706;
+        background: rgba(254, 243, 199, 0.34);
         outline: 3px solid rgba(217, 119, 6, 0.18);
       }
 
@@ -1920,13 +1921,26 @@
       }
 
       body[data-theme="dark"] .star-toggle {
-        color: #fbbf24;
-        background: rgba(66, 47, 18, 0.82);
+        color: var(--ink-2);
+        background: var(--surface-1);
       }
 
       body[data-theme="dark"] .star-toggle.is-starred {
         color: #422f12;
         background: #fbbf24;
+      }
+
+      .starred-parcel-icon {
+        display: grid;
+        place-items: center;
+        color: #f59e0b;
+        font-size: 1rem;
+        font-weight: 900;
+        line-height: 1;
+        pointer-events: none;
+        text-shadow:
+          0 0 2px #fff,
+          0 1px 3px rgba(15, 23, 42, 0.35);
       }
 
       .detail-summary-stats {
@@ -2023,6 +2037,10 @@
 
       body.map-expanded .detail-full {
         margin-top: 0.9rem;
+      }
+
+      .detail-full > .badge {
+        margin-bottom: 0.6rem;
       }
 
       body.map-expanded:not(.detail-expanded) .detail-full {
@@ -4621,9 +4639,9 @@
       }
 
       function removeMarker(marker) {
-        if (marker.options.radarStarRing) {
-          marker.options.radarStarRing.remove();
-          marker.options.radarStarRing = null;
+        if (marker.options.radarStarIcon) {
+          marker.options.radarStarIcon.remove();
+          marker.options.radarStarIcon = null;
         }
         marker.remove();
       }
@@ -4631,9 +4649,10 @@
       function applyMarkerVisualState(marker, markerSize = mapMarkerSizeForZoom(mapState.map.getZoom())) {
         const isSelected = marker.options.radarAccountId === state.selectedId;
         const isMarkerStarred = isStarred(marker.options.radarAccountId);
+        const radius = isMarkerStarred ? markerSize.radius * 1.18 : markerSize.radius;
         marker.options.radarIsSelected = isSelected;
         marker.options.radarIsStarred = isMarkerStarred;
-        marker.setRadius(markerSize.radius);
+        marker.setRadius(radius);
         marker.setStyle({
           color: isSelected ? '#1d4ed8' : '#ffffff',
           fillColor: marker.options.radarFillColor,
@@ -4642,33 +4661,31 @@
         });
 
         if (isMarkerStarred) {
-          const ringRadius = markerSize.radius + (isSelected ? 4.8 : 3.8);
-          const ringWeight = Math.max(2.25, markerSize.weight + 1.35);
-          if (!marker.options.radarStarRing) {
-            marker.options.radarStarRing = L.circleMarker(marker.getLatLng(), {
-              className: 'starred-parcel-ring',
-              radius: ringRadius,
-              color: '#f59e0b',
-              fill: false,
-              interactive: false,
-              opacity: 0.98,
-              pane: 'overlayPane',
-              weight: ringWeight,
-            }).addTo(mapState.map);
-          } else if (!mapState.map.hasLayer(marker.options.radarStarRing)) {
-            marker.options.radarStarRing.addTo(mapState.map);
-          }
-          marker.options.radarStarRing.setRadius(ringRadius);
-          marker.options.radarStarRing.setStyle({
-            color: '#f59e0b',
-            fill: false,
-            opacity: 0.98,
-            weight: ringWeight,
+          const iconSize = Math.max(12, Math.min(20, radius * 2.65));
+          const starIcon = L.divIcon({
+            className: 'starred-parcel-icon',
+            html: `<span style="font-size: ${iconSize.toFixed(1)}px;" aria-hidden="true">★</span>`,
+            iconSize: [iconSize, iconSize],
+            iconAnchor: [iconSize / 2, iconSize / 2],
           });
+          if (!marker.options.radarStarIcon) {
+            marker.options.radarStarIcon = L.marker(marker.getLatLng(), {
+              icon: starIcon,
+              interactive: false,
+              keyboard: false,
+              zIndexOffset: 600,
+            }).addTo(mapState.map);
+          } else {
+            marker.options.radarStarIcon.setIcon(starIcon);
+            marker.options.radarStarIcon.setLatLng(marker.getLatLng());
+            if (!mapState.map.hasLayer(marker.options.radarStarIcon)) {
+              marker.options.radarStarIcon.addTo(mapState.map);
+            }
+          }
           marker.bringToFront();
-        } else if (marker.options.radarStarRing) {
-          marker.options.radarStarRing.remove();
-          marker.options.radarStarRing = null;
+        } else if (marker.options.radarStarIcon) {
+          marker.options.radarStarIcon.remove();
+          marker.options.radarStarIcon = null;
         }
       }
 
@@ -4861,7 +4878,7 @@
               radarAccountId: parcel.account_id,
               radarFillColor: markerFillColor(parcel),
               radarLabel: parcel.site_address,
-              radarStarRing: null,
+              radarStarIcon: null,
             });
 
             if (isSelected) {
