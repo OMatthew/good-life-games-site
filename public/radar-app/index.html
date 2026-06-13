@@ -1582,6 +1582,13 @@
         background: var(--amber-1);
       }
 
+      .signal-chip.shape-warn {
+        border-color: rgba(180, 83, 9, 0.46);
+        color: var(--amber-0);
+        background: rgba(251, 191, 36, 0.26);
+        box-shadow: inset 0 0 0 1px rgba(180, 83, 9, 0.16);
+      }
+
       .signal-chip.owner-warn {
         border-color: rgba(153, 27, 27, 0.28);
         color: var(--red-0);
@@ -1993,6 +2000,36 @@
         color: var(--ink-1);
         background: var(--surface-0);
         font-size: 0.88rem;
+      }
+
+      .future-item.shape-item {
+        display: grid;
+        grid-template-columns: 5rem minmax(0, 1fr);
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .future-item.shape-item.no-outline {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .shape-thumbnail {
+        width: 5rem;
+        aspect-ratio: 3 / 2;
+        border: 1px solid rgba(22, 163, 74, 0.28);
+        border-radius: 6px;
+        background: rgba(22, 163, 74, 0.06);
+      }
+
+      .shape-copy {
+        display: grid;
+        gap: 0.22rem;
+        min-width: 0;
+      }
+
+      .shape-copy strong {
+        color: var(--ink-0);
+        font-size: 0.9rem;
       }
 
       .action-links {
@@ -2569,6 +2606,7 @@
           label: 'Harris County',
           title: 'Harris County, TX',
           path: './parcels.json',
+          geometryPath: './parcels_harris_geometry.json',
           accountSearchLabel: 'HCAD',
           ownershipSource: 'HCAD',
           defaultSort: 'rank',
@@ -2577,6 +2615,7 @@
           label: 'Travis County',
           title: 'Travis County, TX',
           path: './parcels_travis.json',
+          geometryPath: './parcels_travis_geometry.json',
           accountSearchLabel: 'TCAD',
           ownershipSource: 'TCAD',
           defaultSort: 'rank',
@@ -2586,6 +2625,12 @@
       let dataMetadata = defaultMetadata;
       let parcels = [];
       let dataLoadError = null;
+      let geometryState = {
+        county: null,
+        boundaries: new Map(),
+        promise: null,
+        error: null,
+      };
       const initialListLimit = 100;
       const dataStaleThresholdDays = 31;
       const defaultCounty = 'harris';
@@ -2629,6 +2674,7 @@
         satelliteLayer: null,
         layerToggleButton: null,
         expandToggleButton: null,
+        boundaryLayer: null,
         lastMarkerClickAt: 0,
       };
 
@@ -3520,6 +3566,78 @@
         return Number.isFinite(numberValue) ? numberValue : null;
       }
 
+      function normalizeBoundary(value) {
+        if (!Array.isArray(value) || value.length < 3) return null;
+        const points = value
+          .map((point) => {
+            if (!Array.isArray(point) || point.length < 2) return null;
+            const lng = Number(point[0]);
+            const lat = Number(point[1]);
+            return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null;
+          })
+          .filter(Boolean);
+        return points.length >= 3 ? points : null;
+      }
+
+      function resetGeometryState() {
+        geometryState = {
+          county: state.county,
+          boundaries: new Map(),
+          promise: null,
+          error: null,
+        };
+        if (mapState.boundaryLayer) {
+          mapState.boundaryLayer.remove();
+          mapState.boundaryLayer = null;
+        }
+      }
+
+      function currentGeometryPath() {
+        return dataMetadata.geometry_path || currentDataset().geometryPath || '';
+      }
+
+      function boundaryForParcel(parcel) {
+        if (!parcel) return null;
+        return parcel.boundary || geometryState.boundaries.get(parcel.account_id) || null;
+      }
+
+      function ensureGeometryLoadedForSelection(parcel) {
+        if (!parcel || boundaryForParcel(parcel) || geometryState.error) return;
+        const path = currentGeometryPath();
+        if (!path) return;
+        if (!geometryState.promise) {
+          geometryState.promise = fetch(path, { cache: 'no-store' })
+            .then((response) => {
+              if (!response.ok) throw new Error(`geometry sidecar not available: ${response.status}`);
+              return response.json();
+            })
+            .then((payload) => {
+              const boundaries = payload && payload.boundaries && typeof payload.boundaries === 'object'
+                ? payload.boundaries
+                : {};
+              const next = new Map();
+              Object.entries(boundaries).forEach(([accountId, boundary]) => {
+                const normalized = normalizeBoundary(boundary);
+                if (normalized) next.set(String(accountId), normalized);
+              });
+              geometryState.boundaries = next;
+              geometryState.county = state.county;
+            })
+            .catch((error) => {
+              geometryState.error = error;
+              console.warn('Radar parcel geometry failed to load.', error);
+            })
+            .finally(() => {
+              geometryState.promise = null;
+            });
+        }
+        geometryState.promise.then(() => {
+          if (state.selectedId === parcel.account_id) {
+            render();
+          }
+        });
+      }
+
       function approxDimensionsLabel(parcel) {
         const width = finiteNumberOrNull(parcel.approx_width_ft);
         const depth = finiteNumberOrNull(parcel.approx_depth_ft);
@@ -3528,14 +3646,71 @@
       }
 
       function shapeLabel(parcel) {
-        if (parcel.bad_shape) return 'Shape: irregular';
+        const regularity = finiteNumberOrNull(parcel.shape_regularity);
+        const fillText = regularity === null
+          ? ''
+          : ` - fills ~${formatNumber(regularity * 100, 0)}% of its lot rectangle`;
+        if (parcel.bad_shape) return `Shape: irregular${fillText}`;
         if (
-          finiteNumberOrNull(parcel.shape_regularity) !== null &&
+          regularity !== null &&
           finiteNumberOrNull(parcel.elongation_ratio) !== null
         ) {
-          return 'Shape: regular';
+          return `Shape: regular${fillText}`;
         }
         return 'Shape: not measured';
+      }
+
+      function boundaryThumbnailSvg(parcel) {
+        const boundary = boundaryForParcel(parcel);
+        if (!boundary) return '';
+        const xs = boundary.map((point) => point[0]);
+        const ys = boundary.map((point) => point[1]);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const width = maxX - minX;
+        const height = maxY - minY;
+        if (!(width > 0) || !(height > 0)) return '';
+
+        const boxWidth = 120;
+        const boxHeight = 80;
+        const padding = 8;
+        const scale = Math.min((boxWidth - (padding * 2)) / width, (boxHeight - (padding * 2)) / height);
+        const drawnWidth = width * scale;
+        const drawnHeight = height * scale;
+        const offsetX = (boxWidth - drawnWidth) / 2;
+        const offsetY = (boxHeight - drawnHeight) / 2;
+        const points = boundary
+          .map(([lng, lat]) => {
+            const x = offsetX + ((lng - minX) * scale);
+            const y = offsetY + ((maxY - lat) * scale);
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+          })
+          .join(' ');
+        return `
+          <svg class="shape-thumbnail" viewBox="0 0 ${boxWidth} ${boxHeight}" role="img" aria-label="Parcel outline thumbnail" focusable="false">
+            <polygon points="${points}" fill="rgba(22, 163, 74, 0.16)" stroke="#16a34a" stroke-width="3" vector-effect="non-scaling-stroke"></polygon>
+          </svg>
+        `;
+      }
+
+      function shapeDetailHtml(parcel) {
+        const thumbnail = boundaryThumbnailSvg(parcel);
+        const badge = parcel.bad_shape
+          ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
+          : '';
+        return `
+          <div class="future-item shape-item${thumbnail ? '' : ' no-outline'}">
+            ${thumbnail}
+            <span class="shape-copy">
+              <strong>Shape</strong>
+              <span>${escapeHtml(approxDimensionsLabel(parcel))}</span>
+              <span>${escapeHtml(shapeLabel(parcel))}</span>
+              ${badge}
+            </span>
+          </div>
+        `;
       }
 
       function normalizeAssemblageContext(value) {
@@ -3645,6 +3820,7 @@
           elongation_ratio: finiteNumberOrNull(parcel.elongation_ratio),
           approx_width_ft: finiteNumberOrNull(parcel.approx_width_ft),
           approx_depth_ft: finiteNumberOrNull(parcel.approx_depth_ft),
+          boundary: normalizeBoundary(parcel.boundary),
           bad_shape: parcel.bad_shape === true,
           latitude: Number(parcel.latitude),
           longitude: Number(parcel.longitude),
@@ -3780,6 +3956,7 @@
         state.filtered = parcels;
         state.listQuery = '';
         listSearch.value = '';
+        resetGeometryState();
         mapState.filteredSignature = '';
         applyDataMetadata();
         configureFilters();
@@ -4159,11 +4336,42 @@
         });
       }
 
+      function renderSelectedBoundary(filtered) {
+        if (!mapState.map) return;
+        if (mapState.boundaryLayer) {
+          mapState.boundaryLayer.remove();
+          mapState.boundaryLayer = null;
+        }
+        if (!state.selectedId) return;
+        const selected = filtered.find((parcel) => parcel.account_id === state.selectedId);
+        if (!selected) return;
+        const boundary = boundaryForParcel(selected);
+        if (!boundary) {
+          ensureGeometryLoadedForSelection(selected);
+          return;
+        }
+        const latLngs = boundary.map(([lng, lat]) => [lat, lng]);
+        mapState.boundaryLayer = L.polygon(latLngs, {
+          className: 'selected-parcel-boundary',
+          color: '#22c55e',
+          fillColor: '#22c55e',
+          fillOpacity: 0.14,
+          interactive: false,
+          opacity: 0.98,
+          pane: 'overlayPane',
+          weight: 4,
+        }).addTo(mapState.map);
+      }
+
       function renderMap(filtered) {
         if (!window.L) return;
         if (dataLoadError) {
           mapState.markers.forEach((marker) => marker.remove());
           mapState.markers = [];
+          if (mapState.boundaryLayer) {
+            mapState.boundaryLayer.remove();
+            mapState.boundaryLayer = null;
+          }
           mapState.filteredSignature = '';
           if (!mapState.map) {
             document.getElementById('map-wrap').innerHTML = `
@@ -4263,6 +4471,8 @@
           return marker;
         });
 
+        renderSelectedBoundary(filtered);
+
         if (shouldFitBounds && mapState.markers.length) {
           const bounds = L.latLngBounds(mapState.markers.map((marker) => marker.getLatLng()));
           mapState.map.fitBounds(bounds, { padding: [34, 34], maxZoom: 11 });
@@ -4316,7 +4526,7 @@
             ? `<span class="signal-chip owner-warn">${scored ? 'Owner flag' : 'Public/institutional owner'}</span>`
             : '';
           const badShapeChip = parcel.bad_shape
-            ? '<span class="signal-chip owner-warn">Bad shape - review</span>'
+            ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
             : '';
           const ownerYearsChip = parcel.owner_since
             ? `<span class="signal-chip">${escapeHtml(ownerYearsLabel(parcel))}</span>`
@@ -4410,6 +4620,7 @@
           `;
           return;
         }
+        ensureGeometryLoadedForSelection(selected);
         if (closeBtn) closeBtn.style.display = 'grid';
         document.body.classList.remove('detail-empty');
         detailNote.textContent = dataMetadata.detail_note || defaultMetadata.detail_note;
@@ -4426,7 +4637,7 @@
         const summaryRoadClass = isRoadReady(selected) ? 'good' : '';
         const summaryFloodClass = selected.in_floodway || selected.in_100yr_flood ? 'warn' : 'good';
         const badShapeChip = selected.bad_shape
-          ? '<span class="signal-chip owner-warn">Bad shape - review</span>'
+          ? '<span class="signal-chip shape-warn">Bad shape - review</span>'
           : '';
         const scored = isScoredDataset();
         const accountLabel = currentDataset().accountSearchLabel;
@@ -4442,14 +4653,12 @@
             <div class="future-item">Serviceability proxy: ${selected.city_name ? `City: ${selected.city_name}` : selected.mud_name ? `MUD: ${selected.mud_name}` : 'No district flagged'}</div>
             <div class="future-item">Owner class: ${selected.owner_class ? `${titleCase(selected.owner_class)}${selected.is_likely_unbuyable ? ' — likely unbuyable, review before outreach' : ''}` : 'Not classified'}</div>
             <div class="future-item">Ownership: ${ownershipDurationText(selected)}</div>
-            <div class="future-item">${escapeHtml(approxDimensionsLabel(selected))}</div>
-            <div class="future-item">${escapeHtml(shapeLabel(selected))}</div>
+            ${shapeDetailHtml(selected)}
         ` : `
             <div class="future-item">This county is preview-only and not ranked.</div>
             <div class="future-item">Flood, access, serviceability, and permit momentum are not loaded for this county.</div>
             <div class="future-item">Parcels marked needs confirmation need building coverage confirmation before outreach.</div>
-            <div class="future-item">${escapeHtml(approxDimensionsLabel(selected))}</div>
-            <div class="future-item">${escapeHtml(shapeLabel(selected))}</div>
+            ${shapeDetailHtml(selected)}
         `;
         const summaryScoreChips = scored
           ? `
