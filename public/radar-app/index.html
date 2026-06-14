@@ -1656,6 +1656,11 @@
 
       .detail-summary-main .detail-flag-row {
         grid-column: 1 / -1;
+        margin-top: 0.18rem;
+      }
+
+      .detail-full > .detail-flag-row {
+        margin-top: 0.35rem;
       }
 
       .parcel-side {
@@ -1954,6 +1959,14 @@
         flex-wrap: wrap;
         gap: 0.45rem 0.6rem;
         align-items: center;
+      }
+
+      .detail-account-copy {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.45rem;
+        align-items: center;
+        vertical-align: middle;
       }
 
       .copy-account-button {
@@ -5135,9 +5148,14 @@
                 <h3 class="detail-title">${selected.site_address}</h3>
               </div>
               <div class="detail-owner-row">
-                <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-                <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
-                <span class="copy-status" id="${summaryCopyStatusId}" hidden></span>
+                <p class="detail-owner">
+                  ${selected.owner_name} ·
+                  <span class="detail-account-copy">
+                    Account ${selected.account_id}
+                    <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${summaryCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
+                    <span class="copy-status" id="${summaryCopyStatusId}" hidden></span>
+                  </span>
+                </p>
               </div>
               ${detailFlagChips}
               <div class="detail-summary-stats">
@@ -5159,9 +5177,14 @@
               <h3 class="detail-title">${selected.site_address}</h3>
             </div>
             <div class="detail-owner-row">
-              <p class="detail-owner">${selected.owner_name} · Account ${selected.account_id}</p>
-              <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
-              <span class="copy-status" id="${fullCopyStatusId}" hidden></span>
+              <p class="detail-owner">
+                ${selected.owner_name} ·
+                <span class="detail-account-copy">
+                  Account ${selected.account_id}
+                  <button class="copy-account-button" type="button" data-copy-account="${selected.account_id}" data-copy-status="${fullCopyStatusId}" aria-label="Copy ${accountLabel} account number ${selected.account_id}">${clipboardIconSvg()}<span class="copy-account-label">Copy account #</span></button>
+                  <span class="copy-status" id="${fullCopyStatusId}" hidden></span>
+                </span>
+              </p>
             </div>
             ${detailFlagChips}
             <details class="note-box detail-disclosure">
