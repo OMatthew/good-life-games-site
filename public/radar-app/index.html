@@ -1634,6 +1634,12 @@
         background: var(--red-1);
       }
 
+      .signal-chip.muted {
+        border-color: rgba(100, 116, 139, 0.3);
+        color: var(--ink-2);
+        background: rgba(148, 163, 184, 0.14);
+      }
+
       .detail-flag-row {
         display: flex;
         flex-wrap: wrap;
@@ -3615,6 +3621,9 @@
         }
         if (hasNominalValueFlag(parcel)) {
           chips.push('<span class="signal-chip shape-warn">Nominal value — review $/acre</span>');
+        }
+        if (!shapeMeasured(parcel)) {
+          chips.push('<span class="signal-chip muted">Dimensions unknown</span>');
         }
         const ownerLabel = ownerFlagLabel(parcel);
         if (ownerLabel) {
