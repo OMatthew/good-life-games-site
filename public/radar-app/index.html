@@ -1935,17 +1935,22 @@
         background: #fbbf24;
       }
 
-      .starred-parcel-icon {
+      .parcel-map-icon {
         display: grid;
         place-items: center;
-        color: #f59e0b;
-        font-size: 1rem;
-        font-weight: 900;
-        line-height: 1;
+        background: transparent;
+        border: 0;
+      }
+
+      .parcel-map-icon svg {
+        display: block;
+        overflow: visible;
         pointer-events: none;
-        text-shadow:
-          0 0 2px #fff,
-          0 1px 3px rgba(15, 23, 42, 0.35);
+        filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.32));
+      }
+
+      .parcel-map-icon.is-starred svg {
+        filter: drop-shadow(0 1px 3px rgba(15, 23, 42, 0.42));
       }
 
       .detail-summary-stats {
@@ -4651,61 +4656,138 @@
             : '#0f766e';
       }
 
+      function starredParcelMarkerIcon(markerSize, { selected = false, accountId = '' } = {}) {
+        const accountAttr = escapeHtml(String(accountId || ''));
+        const iconSize = Math.max(20, Math.min(32, markerSize.radius * 4.45));
+        const selectedHalo = selected
+          ? '<path d="M12 2.8l2.82 5.72 6.31.92-4.56 4.45 1.08 6.28L12 17.2l-5.65 2.97 1.08-6.28-4.56-4.45 6.31-.92L12 2.8z" fill="none" stroke="#1d4ed8" stroke-width="4.6" stroke-linejoin="round" />'
+          : '';
+        return L.divIcon({
+          className: `parcel-map-icon is-starred${selected ? ' is-selected' : ''}`,
+          html: `
+            <svg viewBox="0 0 24 24" width="${iconSize.toFixed(1)}" height="${iconSize.toFixed(1)}" aria-hidden="true" data-map-account="${accountAttr}">
+              ${selectedHalo}
+              <path d="M12 2.8l2.82 5.72 6.31.92-4.56 4.45 1.08 6.28L12 17.2l-5.65 2.97 1.08-6.28-4.56-4.45 6.31-.92L12 2.8z" fill="#f59e0b" stroke="#ffffff" stroke-width="2.35" stroke-linejoin="round" />
+            </svg>
+          `,
+          iconSize: [iconSize, iconSize],
+          iconAnchor: [iconSize / 2, iconSize / 2],
+          tooltipAnchor: [0, -(iconSize / 2)],
+        });
+      }
+
       function removeMarker(marker) {
-        if (marker.options.radarStarIcon) {
-          marker.options.radarStarIcon.remove();
-          marker.options.radarStarIcon = null;
-        }
         marker.remove();
       }
 
       function applyMarkerVisualState(marker, markerSize = mapMarkerSizeForZoom(mapState.map.getZoom())) {
         const isSelected = marker.options.radarAccountId === state.selectedId;
         const isMarkerStarred = isStarred(marker.options.radarAccountId);
-        const radius = isMarkerStarred ? markerSize.radius * 1.18 : markerSize.radius;
         marker.options.radarIsSelected = isSelected;
         marker.options.radarIsStarred = isMarkerStarred;
-        marker.setRadius(radius);
+        if (marker.options.radarMarkerKind === 'star') {
+          marker.setIcon(starredParcelMarkerIcon(markerSize, {
+            selected: isSelected,
+            accountId: marker.options.radarAccountId,
+          }));
+          marker.setZIndexOffset((isSelected ? 900 : 0) + 450);
+          return;
+        }
+        marker.setRadius(markerSize.radius);
         marker.setStyle({
           color: isSelected ? '#1d4ed8' : '#ffffff',
           fillColor: marker.options.radarFillColor,
           fillOpacity: 0.95,
           weight: isSelected ? markerSize.selectedWeight : markerSize.weight,
         });
-
-        if (isMarkerStarred) {
-          const iconSize = Math.max(12, Math.min(20, radius * 2.65));
-          const starIcon = L.divIcon({
-            className: 'starred-parcel-icon',
-            html: `<span style="font-size: ${iconSize.toFixed(1)}px;" aria-hidden="true">★</span>`,
-            iconSize: [iconSize, iconSize],
-            iconAnchor: [iconSize / 2, iconSize / 2],
-          });
-          if (!marker.options.radarStarIcon) {
-            marker.options.radarStarIcon = L.marker(marker.getLatLng(), {
-              icon: starIcon,
-              interactive: false,
-              keyboard: false,
-              zIndexOffset: 600,
-            }).addTo(mapState.map);
-          } else {
-            marker.options.radarStarIcon.setIcon(starIcon);
-            marker.options.radarStarIcon.setLatLng(marker.getLatLng());
-            if (!mapState.map.hasLayer(marker.options.radarStarIcon)) {
-              marker.options.radarStarIcon.addTo(mapState.map);
-            }
-          }
+        if (isSelected && typeof marker.bringToFront === 'function') {
           marker.bringToFront();
-        } else if (marker.options.radarStarIcon) {
-          marker.options.radarStarIcon.remove();
-          marker.options.radarStarIcon = null;
         }
+      }
+
+      function syncMarkerTooltip(marker, isSelected) {
+        if (isSelected) {
+          marker.bindTooltip(marker.options.radarLabel, { permanent: true, direction: 'top', offset: [0, -8] }).openTooltip();
+        } else {
+          marker.unbindTooltip();
+        }
+      }
+
+      function attachParcelMarkerBehavior(marker, parcel) {
+        if (parcel.account_id === state.selectedId) {
+          marker.bindTooltip(parcel.site_address, { permanent: true, direction: 'top', offset: [0, -8] });
+        } else {
+          addDelayedMarkerTooltip(marker, parcel.site_address);
+        }
+
+        marker.on('click', (event) => {
+          mapState.lastMarkerClickAt = Date.now();
+          if (event.originalEvent) {
+            L.DomEvent.stop(event.originalEvent);
+          }
+          state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
+          render();
+          saveSessionState();
+        });
+      }
+
+      function createParcelMarker(parcel, markerSize) {
+        const isSelected = parcel.account_id === state.selectedId;
+        const isParcelStarred = isStarred(parcel.account_id);
+        const fillColor = markerFillColor(parcel);
+        const markerOptions = {
+          radarIsSelected: isSelected,
+          radarIsStarred: isParcelStarred,
+          radarAccountId: parcel.account_id,
+          radarFillColor: fillColor,
+          radarLabel: parcel.site_address,
+          radarMarkerKind: isParcelStarred ? 'star' : 'circle',
+        };
+        const marker = isParcelStarred
+          ? L.marker([parcel.latitude, parcel.longitude], {
+            ...markerOptions,
+            icon: starredParcelMarkerIcon(markerSize, {
+              selected: isSelected,
+              accountId: parcel.account_id,
+            }),
+            zIndexOffset: (isSelected ? 900 : 0) + 450,
+          })
+          : L.circleMarker([parcel.latitude, parcel.longitude], {
+            ...markerOptions,
+            radius: markerSize.radius,
+            color: isSelected ? '#1d4ed8' : '#ffffff',
+            weight: isSelected ? markerSize.selectedWeight : markerSize.weight,
+            fillColor,
+            fillOpacity: 0.95,
+          });
+        attachParcelMarkerBehavior(marker, parcel);
+        return marker;
+      }
+
+      function replaceMarkerForParcel(parcel, markerSize) {
+        const index = mapState.markers.findIndex((candidate) => candidate.options.radarAccountId === parcel.account_id);
+        if (index === -1) return null;
+        const oldMarker = mapState.markers[index];
+        removeMarker(oldMarker);
+        const marker = createParcelMarker(parcel, markerSize);
+        mapState.markers[index] = marker;
+        marker.addTo(mapState.map);
+        applyMarkerVisualState(marker, markerSize);
+        if (parcel.account_id === state.selectedId) {
+          marker.openTooltip();
+        }
+        return marker;
       }
 
       function refreshMarkerStyle(accountId) {
         if (!mapState.map) return;
         const marker = mapState.markers.find((candidate) => candidate.options.radarAccountId === accountId);
         if (!marker) return;
+        const parcel = state.filtered.find((candidate) => candidate.account_id === accountId);
+        if (parcel && marker.options.radarMarkerKind !== (isStarred(accountId) ? 'star' : 'circle')) {
+          replaceMarkerForParcel(parcel, mapMarkerSizeForZoom(mapState.map.getZoom()));
+          return;
+        }
         applyMarkerVisualState(marker);
       }
 
@@ -4879,58 +4961,30 @@
         if (markersNeedRebuild) {
           mapState.markers.forEach(removeMarker);
           mapState.markers = filtered.map((parcel) => {
-            const isSelected = parcel.account_id === state.selectedId;
-            const marker = L.circleMarker([parcel.latitude, parcel.longitude], {
-              radius: markerSize.radius,
-              color: isSelected ? '#1d4ed8' : '#ffffff',
-              weight: isSelected ? markerSize.selectedWeight : markerSize.weight,
-              fillColor: markerFillColor(parcel),
-              fillOpacity: 0.95,
-              radarIsSelected: isSelected,
-              radarIsStarred: false,
-              radarAccountId: parcel.account_id,
-              radarFillColor: markerFillColor(parcel),
-              radarLabel: parcel.site_address,
-              radarStarIcon: null,
-            });
-
-            if (isSelected) {
-              marker.bindTooltip(parcel.site_address, { permanent: true, direction: 'top', offset: [0, -8] });
-            } else {
-              addDelayedMarkerTooltip(marker, parcel.site_address);
-            }
-
-            marker.on('click', (event) => {
-              mapState.lastMarkerClickAt = Date.now();
-              if (event.originalEvent) {
-                L.DomEvent.stop(event.originalEvent);
-              }
-              state.selectedId = state.selectedId === parcel.account_id ? null : parcel.account_id;
-              render();
-              saveSessionState();
-            });
-
+            const marker = createParcelMarker(parcel, markerSize);
             marker.addTo(mapState.map);
             applyMarkerVisualState(marker, markerSize);
 
-            if (isSelected) {
+            if (parcel.account_id === state.selectedId) {
               marker.openTooltip();
             }
 
             return marker;
           });
         } else {
-          mapState.markers.forEach((marker) => {
+          mapState.markers.forEach((marker, index) => {
             const isSelected = marker.options.radarAccountId === state.selectedId;
             const isMarkerStarred = isStarred(marker.options.radarAccountId);
-            if (marker.options.radarIsSelected === isSelected && marker.options.radarIsStarred === isMarkerStarred) return;
-            marker.options.radarIsSelected = isSelected;
-            applyMarkerVisualState(marker, markerSize);
-            if (isSelected) {
-              marker.bindTooltip(marker.options.radarLabel, { permanent: true, direction: 'top', offset: [0, -8] }).openTooltip();
-            } else {
-              marker.unbindTooltip();
+            const markerKind = isMarkerStarred ? 'star' : 'circle';
+            if (marker.options.radarMarkerKind !== markerKind) {
+              const parcel = filtered.find((candidate) => candidate.account_id === marker.options.radarAccountId);
+              if (parcel) {
+                marker = replaceMarkerForParcel(parcel, markerSize) || mapState.markers[index];
+              }
             }
+            if (marker.options.radarIsSelected === isSelected && marker.options.radarIsStarred === isMarkerStarred) return;
+            applyMarkerVisualState(marker, markerSize);
+            syncMarkerTooltip(marker, isSelected);
           });
         }
 
